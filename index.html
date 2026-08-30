@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Rural Health Connect</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        body {
+            background: #f7faf9;
+            color: #17212b;
+        }
+
+        /* ================= SIDEBAR ================= */
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 245px;
+            height: 100vh;
+            background: white;
+            border-right: 1px solid #e4ebe8;
+            padding: 22px 12px;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 12px;
+            margin-bottom: 35px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: #37a66b;
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .logo-text h2 {
+            color: #16845a;
+            font-size: 19px;
+        }
+
+        .logo-text p {
+            font-size: 11px;
+            color: #64736d;
+            margin-top: 3px;
+        }
+
+        .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .nav-item {
+            padding: 12px 14px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            color: #34454f;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: #eef9f4;
+            color: #087b51;
+        }
+
+        .nav-item.active {
+            background: #e4f7ef;
+            color: #087b51;
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            width: 22px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .notification {
+            margin-left: auto;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        /* ================= OFFLINE BOX ================= */
+
+        .offline-box {
+            margin-top: auto;
+            border: 1px solid #e3ebe7;
+            background: #fafdfc;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .offline-title {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 7px;
+        }
+
+        .offline-text {
+            color: #68756f;
+            font-size: 12px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .sync-btn {
+            width: 100%;
+            border: none;
+            background: #15945e;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .sync-btn:hover {
+            background: #087b4c;
+        }
+
+        /* ================= MAIN ================= */
+
+        .main {
+            margin-left: 245px;
+            padding: 20px 32px 40px;
+        }
+
+        /* ================= TOP BAR ================= */
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .search {
+            flex: 1;
+            max-width: 650px;
+            height: 48px;
+            border: 1px solid #dce5e1;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            padding: 0 17px;
+            gap: 12px;
+        }
+
+        .search span {
+            font-size: 20px;
+        }
+
+        .search input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .language {
+            margin-left: auto;
+            background: white;
+            border: 1px solid #dce5e1;
+            padding: 13px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .bell {
+            font-size: 22px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .bell-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #e74c3c;
+            color: white;
+            width: 19px;
+            height: 19px;
+            font-size: 10px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .profile-image {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #dceee7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #16845a;
+        }
+
+        .profile-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .profile-role {
+            color: #78847f;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        /* ================= GRID ================= */
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+        }
+
+        /* ================= WELCOME ================= */
+
+        .welcome {
+            background: linear-gradient(110deg, #e9f8f3, #dff4f7);
+            min-height: 180px;
+            border-radius: 16px;
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome h1 {
+            font-size: 26px;
+            margin-bottom: 8px;
+        }
+
+        .welcome p {
+            color: #53645e;
+            margin-bottom: 25px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat {
+            background: rgba(255,255,255,0.85);
+            padding: 12px 18px;
+            border-radius: 10px;
+            min-width: 125px;
+        }
+
+        .stat small {
+            display: block;
+            color: #68756f;
+            margin-bottom: 4px;
+        }
+
+        .stat strong {
+            font-size: 17px;
+        }
+
+        .landscape {
+            position: absolute;
+            right: 0;
+            bottom: -20px;
+            font-size: 90px;
+            opacity: 0.3;
+        }
+
+        /* ================= QUICK ACTIONS ================= */
+
+        .quick-actions {
+            background: white;
+            padding: 20px;
+            border: 1px solid #e4ebe8;
+            border-radius: 14px;
+        }
+
+        .quick-actions h2 {
+            font-size: 17px;
+            margin-bottom: 15px;
+        }
+
+        .quick-item {
+            display: flex;
+            align-items: center;
+            padding: 13px 10px;
+            border-top: 1px solid #edf1ef;
+            cursor: pointer;
+        }
+
+        .quick-item:hover {
+            background: #f7faf9;
+        }
+
+        .quick-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: #eef8f3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+
+        .arrow {
+            margin-left: auto;
+        }
+
+        /* ================= ACTION CARDS ================= */
+
+        .action-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .action-card {
+            background: white;
+            border: 1px solid #e5ece9;
+            border-radius: 13px;
+            padding: 18px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 18px rgba(0,0,0,0.06);
+        }
+
+        .action-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #eaf8f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .action-card h3 {
+            font-size: 15px;
+            margin-bottom: 6px;
+        }
+
+        .action-card p {
+            font-size: 12px;
+            color: #697771;
+            line-height: 1.4;
+        }
+
+        .action-arrow {
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        /* ================= SECTIONS ================= */
+
+        .section-title {
+            font-size: 19px;
+            margin: 25px 0 13px;
+        }
+
+        .health-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.4fr;
+            gap: 15px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e5ece9;
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .card-header h3 {
+            font-size: 16px;
+        }
+
+        .view {
+            color: #078654;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* ================= HEALTH RECORD ================= */
+
+        .health-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 11px 0;
+            border-bottom: 1px solid #edf1ef;
+            font-size: 13px;
+        }
+
+        .health-row:last-child {
+            border-bottom: none;
+        }
+
+        .health-label {
+            color: #697771;
+        }
+
+        .health-value {
+            font-weight: 600;
+        }
+
+        .record-btn {
+            margin-top: 15px;
+            border: none;
+            background: #12935e;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* ================= VISITS ================= */
+
+        .visit {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid #edf1ef;
+        }
+
+        .visit:last-child {
+            border-bottom: none;
+        }
+
+        .date {
+            min-width: 48px;
+            height: 52px;
+            background: #edf9f4;
+            border-radius: 9px;
+            text-align: center;
+            padding-top: 6px;
+        }
+
+        .date strong {
+            display: block;
+            font-size: 16px;
+            color: #138c5c;
+        }
+
+        .date small {
+            color: #65746e;
+        }
+
+        .visit-info {
+            flex: 1;
+        }
+
+        .visit-info strong {
+            display: block;
+            font-size: 13px;
+        }
+
+        .visit-info span {
+            font-size: 12px;
+            color: #697771;
+        }
+
+        .status {
+            background: #e5f8ef;
+            color: #15865a;
+            padding: 5px 9px;
+            border-radius: 7px;
+            font-size: 11px;
+        }
+
+        /* ================= APPOINTMENTS ================= */
+
+        .appointment {
+            padding: 14px;
+            border: 1px solid #e8eeeb;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+
+        .appointment-date {
+            color: #168b5b;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .appointment strong {
+            display: block;
+            margin-top: 7px;
+            font-size: 13px;
+        }
+
+        .appointment span {
+            color: #68756f;
+            font-size: 12px;
+        }
+
+        .confirm {
+            float: right;
+            background: #e4f7ee;
+            color: #118153;
+            padding: 5px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+        }
+
+        .book-btn {
+            width: 100%;
+            border: 1px solid #dfe9e4;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            color: #16845a;
+            cursor: pointer;
+        }
+
+        /* ================= SERVICES ================= */
+
+        .services {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr) 1.6fr;
+            gap: 10px;
+        }
+
+        .facility {
+            background: white;
+            border: 1px solid #e4ebe8;
+            border-radius: 11px;
+            padding: 15px;
+        }
+
+        .facility h4 {
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .facility p {
+            color: #68756f;
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+
+        .facility ul {
+            padding-left: 15px;
+            color: #586862;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .open {
+            color: #0a8a56;
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .map {
+            background: #e8f0eb;
+            border-radius: 11px;
+            min-height: 190px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map::before {
+            content: "";
+            position: absolute;
+            width: 180%;
+            height: 3px;
+            background: #c5d7ca;
+            transform: rotate(-25deg);
+            top: 100px;
+            left: -100px;
+            box-shadow: 0 40px 0 #c5d7ca;
+        }
+
+        .map-pin {
+            position: absolute;
+            background: #128b59;
+            color: white;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pin1 {
+            left: 25%;
+            top: 30%;
+        }
+
+        .pin2 {
+            left: 50%;
+            top: 55%;
+            background: #3088d1;
+        }
+
+        .pin3 {
+            right: 20%;
+            top: 25%;
+            background: #7551c9;
+        }
+
+        .map-label {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 7px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        /* ================= HEALTH TIP ================= */
+
+        .health-tip {
+            margin-top: 15px;
+            background: #fff9e9;
+            border: 1px solid #f4e7bd;
+            border-radius: 13px;
+            padding: 20px;
+        }
+
+        .health-tip h3 {
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        .health-tip p {
+            font-size: 12px;
+            line-height: 1.6;
+            color: #655f4d;
+        }
+
+        /* ================= RESPONSIVE ================= */
+
+        @media (max-width: 1100px) {
+
+            .sidebar {
+                width: 75px;
+            }
+
+            .logo-text,
+            .nav-item span:not(.nav-icon),
+            .offline-box {
+                display: none;
+            }
+
+            .logo {
+                justify-content: center;
+            }
+
+            .nav-item {
+                justify-content: center;
+            }
+
+            .main {
+                margin-left: 75px;
+            }
+
+            .action-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .services {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 800px) {
+
+            .main {
+                padding: 15px;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .health-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                flex-wrap: wrap;
+            }
+
+            .search {
+                max-width: none;
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 550px) {
+
+            .action-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .services {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                flex-wrap: wrap;
+            }
+
+            .language,
+            .profile-name,
+            .profile-role {
+                display: none;
+            }
+
+            .welcome {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            <div class="logo-icon">✚</div>
+
+            <div class="logo-text">
+                <h2>Rural Health</h2>
+                <h2>Connect</h2>
+                <p>Access. Care. Continuity.</p>
+            </div>
+        </div>
+
+        <nav class="nav">
+
+            <div class="nav-item active" onclick="showMessage('Dashboard')">
+                <span class="nav-icon">⌂</span>
+                <span>Dashboard</span>
+            </div>
+
+            <div class="nav-item" onclick="showMessage('My Health')">
+                <span class="nav-icon">♙</span>
+                <span>My Health</span>
+            </div>
+
+            <div class="nav-item" onclick="showMessage('Appointments')">
+                <span class="nav-icon">▣</span>
+                <span>Appointments</span>
+            </div>
+
+            <div class="nav-item" onclick="showMessage('Referrals')">
+                <span class="nav-icon">⇄</span>
+                <span>Referrals</span>
+            </div>
+
+            <div class="nav-item" onclick="showMessage('Reports')">
+                <span class="nav-icon">▤</span>
+                <span>Reports</span>
+            </div>
+
+            <div class="nav-item" onclick="showMessage('Teleconsultation')">
+                <span class="nav-icon">▣</span>
+                <span>Teleconsultation</span>
+            </div>
+
+            <div class="nav-item" onclick="showMessage('Find Services')">
+                <span class="nav-icon">⌖</span>
+                <span>Find Services</span>
+            </div>
+
+            <div class="nav-item" onclick="showMessage('Health Education')">
+                <span class="nav-icon">▤</span>
+                <span>Health Education</span>
+            </div>
+
+            <div class="nav-item" onclick="showMessage('Family Members')">
+                <span class="nav-icon">♧</span>
+                <span>Family Members</span>
+            </div>
+
+            <div class="nav-item" onclick="showMessage('Messages')">
+                <span class="nav-icon">▢</span>
+                <span>Messages</span>
+                <span class="notification">3</span>
+            </div>
+
+            <div class="nav-item" onclick="showMessage('Settings')">
+                <span class="nav-icon">⚙</span>
+                <span>Settings</span>
+            </div>
+
+        </nav>
+
+        <div class="offline-box">
+
+            <div class="offline-title">
+                📡 You are Offline
+            </div>
+
+            <div class="offline-text">
+                Data will sync when internet is available.
+            </div>
+
+            <button class="sync-btn" onclick="syncData()">
+                ⟳ Sync Now
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="main">
+
+        <!-- TOP BAR -->
+
+        <div class="topbar">
+
+            <div class="search">
+                <span>⌕</span>
+                <input
+                    type="text"
+                    placeholder="Search services, doctors, hospitals..."
+                    id="searchInput"
+                >
+            </div>
+
+            <button class="language">
+                🌐 English ▾
+            </button>
+
+            <div class="bell">
+                ♧
+                <span class="bell-badge">2</span>
+            </div>
+
+            <div class="profile">
+
+                <div class="profile-image">
+                    PS
+                </div>
+
+                <div>
+                    <div class="profile-name">
+                        Priya Sharma
+                    </div>
+
+                    <div class="profile-role">
+                        Patient
+                    </div>
+                </div>
+
+                <span>⌄</span>
+
+            </div>
+
+        </div>
+
+
+        <!-- DASHBOARD -->
+
+        <div class="dashboard-grid">
+
+            <div>
+
+                <!-- WELCOME -->
+
+                <section class="welcome">
+
+                    <h1>
+                        Welcome back, Priya 👋
+                    </h1>
+
+                    <p>
+                        Your health, our priority. Let's stay healthy together.
+                    </p>
+
+                    <div class="stats">
+
+                        <div class="stat">
+                            <small>Blood Group</small>
+                            <strong>B+</strong>
+                        </div>
+
+                        <div class="stat">
+                            <small>Age</small>
+                            <strong>28</strong>
+                        </div>
+
+                        <div class="stat">
+                            <small>Member Since</small>
+                            <strong>Jan 2024</strong>
+                        </div>
+
+                    </div>
+
+                    <div class="landscape">
+                        🏥 🌳 🏠
+                    </div>
+
+                </section>
+
+
+                <!-- ACTION CARDS -->
+
+                <div class="action-cards">
+
+                    <div class="action-card"
+                         onclick="showMessage('Appointment booking opened')">
+
+                        <div class="action-icon">
+                            📅
+                        </div>
+
+                        <h3>Book Appointment</h3>
+
+                        <p>
+                            Book with doctors near you
+                        </p>
+
+                        <div class="action-arrow">
+                            →
+                        </div>
+
+                    </div>
+
+
+                    <div class="action-card"
+                         onclick="showMessage('Teleconsultation opened')">
+
+                        <div class="action-icon">
+                            🎥
+                        </div>
+
+                        <h3>Teleconsultation</h3>
+
+                        <p>
+                            Consult doctors online
+                        </p>
+
+                        <div class="action-arrow">
+                            →
+                        </div>
+
+                    </div>
+
+
+                    <div class="action-card"
+                         onclick="showMessage('Medical records opened')">
+
+                        <div class="action-icon">
+                            📁
+                        </div>
+
+                        <h3>My Records</h3>
+
+                        <p>
+                            View your health records
+                        </p>
+
+                        <div class="action-arrow">
+                            →
+                        </div>
+
+                    </div>
+
+
+                    <div class="action-card"
+                         onclick="showMessage('Referral request opened')">
+
+                        <div class="action-icon">
+                            ↗
+                        </div>
+
+                        <h3>New Referral</h3>
+
+                        <p>
+                            Get referred to specialist
+                        </p>
+
+                        <div class="action-arrow">
+                            →
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- HEALTH SUMMARY -->
+
+                <h2 class="section-title">
+                    Your Health Summary
+                </h2>
+
+                <div class="health-grid">
+
+                    <!-- RECORD -->
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <h3>
+                                Health Record Overview
+                            </h3>
+
+                        </div>
+
+                        <div class="health-row">
+                            <span class="health-label">
+                                🌿 Allergies
+                            </span>
+
+                            <span class="health-value">
+                                None known
+                            </span>
+                        </div>
+
+                        <div class="health-row">
+                            <span class="health-label">
+                                ❤️ Chronic Conditions
+                            </span>
+
+                            <span class="health-value">
+                                Hypertension
+                            </span>
+                        </div>
+
+                        <div class="health-row">
+                            <span class="health-label">
+                                💊 Current Medications
+                            </span>
+
+                            <span class="health-value">
+                                Amlodipine (5mg)
+                            </span>
+                        </div>
+
+                        <div class="health-row">
+                            <span class="health-label">
+                                📅 Last Checkup
+                            </span>
+
+                            <span class="health-value">
+                                12 May 2024
+                            </span>
+                        </div>
+
+                        <button
+                            class="record-btn"
+                            onclick="showMessage('Full health record opened')"
+                        >
+                            View Full Health Record
+                        </button>
+
+                    </div>
+
+
+                    <!-- RECENT VISITS -->
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <h3>
+                                Recent Visits
+                            </h3>
+
+                            <span class="view">
+                                View All
+                            </span>
+
+                        </div>
+
+
+                        <div class="visit">
+
+                            <div class="date">
+                                <strong>12</strong>
+                                <small>May</small>
+                            </div>
+
+                            <div class="visit-info">
+
+                                <strong>
+                                    Primary Health Centre, Sundarpur
+                                </strong>
+
+                                <span>
+                                    General Checkup · Dr. Anjali Verma
+                                </span>
+
+                            </div>
+
+                            <span class="status">
+                                Completed
+                            </span>
+
+                        </div>
+
+
+                        <div class="visit">
+
+                            <div class="date">
+                                <strong>24</strong>
+                                <small>Apr</small>
+                            </div>
+
+                            <div class="visit-info">
+
+                                <strong>
+                                    Primary Health Centre, Sundarpur
+                                </strong>
+
+                                <span>
+                                    Fever and Cold · Dr. Anjali Verma
+                                </span>
+
+                            </div>
+
+                            <span class="status">
+                                Completed
+                            </span>
+
+                        </div>
+
+
+                        <div class="visit">
+
+                            <div class="date">
+                                <strong>05</strong>
+                                <small>Mar</small>
+                            </div>
+
+                            <div class="visit-info">
+
+                                <strong>
+                                    Sub Centre, Rampur
+                                </strong>
+
+                                <span>
+                                    Blood Pressure Check · Health Worker
+                                </span>
+
+                            </div>
+
+                            <span class="status">
+                                Completed
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- HEALTHCARE SERVICES -->
+
+                <h2 class="section-title">
+                    Find Healthcare Services Near You
+                </h2>
+
+                <div class="services">
+
+                    <div class="facility">
+
+                        <h4>
+                            Primary Health Centre
+                        </h4>
+
+                        <p>
+                            Sundarpur · 1.2 km away
+                        </p>
+
+                        <ul>
+                            <li>General Physician</li>
+                            <li>Basic Medicines</li>
+                            <li>Lab Tests</li>
+                        </ul>
+
+                        <div class="open">
+                            Open · Closes 5:00 PM
+                        </div>
+
+                    </div>
+
+
+                    <div class="facility">
+
+                        <h4>
+                            Rural Hospital
+                        </h4>
+
+                        <p>
+                            Sundarpur · 5.8 km away
+                        </p>
+
+                        <ul>
+                            <li>Physicians</li>
+                            <li>X-Ray</li>
+                            <li>Lab Tests</li>
+                            <li>24×7 Emergency</li>
+                        </ul>
+
+                        <div class="open">
+                            Open 24 Hours
+                        </div>
+
+                    </div>
+
+
+                    <div class="facility">
+
+                        <h4>
+                            District Hospital
+                        </h4>
+
+                        <p>
+                            Greenfield · 18 km away
+                        </p>
+
+                        <ul>
+                            <li>Specialists</li>
+                            <li>CT Scan</li>
+                            <li>ICU</li>
+                            <li>24×7 Emergency</li>
+                        </ul>
+
+                        <div class="open">
+                            Open 24 Hours
+                        </div>
+
+                    </div>
+
+
+                    <div class="map">
+
+                        <div class="map-pin pin1">
+                            P
+                        </div>
+
+                        <div class="map-pin pin2">
+                            R
+                        </div>
+
+                        <div class="map-pin pin3">
+                            D
+                        </div>
+
+                        <div
+                            class="map-label"
+                            onclick="showMessage('Map opened')"
+                        >
+                            View Full Map ↗
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================= RIGHT COLUMN ================= -->
+
+            <div>
+
+                <div class="quick-actions">
+
+                    <h2>
+                        Quick Actions
+                    </h2>
+
+                    <div class="quick-item"
+                         onclick="showMessage('Emergency contacts opened')">
+
+                        <div class="quick-icon">
+                            📞
+                        </div>
+
+                        <span>
+                            Emergency Contacts
+                        </span>
+
+                        <span class="arrow">
+                            ›
+                        </span>
+
+                    </div>
+
+
+                    <div class="quick-item"
+                         onclick="showMessage('Nearby hospitals opened')">
+
+                        <div class="quick-icon">
+                            🏥
+                        </div>
+
+                        <span>
+                            Nearby Hospitals
+                        </span>
+
+                        <span class="arrow">
+                            ›
+                        </span>
+
+                    </div>
+
+
+                    <div class="quick-item"
+                         onclick="showMessage('Diagnostic centres opened')">
+
+                        <div class="quick-icon">
+                            🧪
+                        </div>
+
+                        <span>
+                            Diagnostic Centers
+                        </span>
+
+                        <span class="arrow">
+                            ›
+                        </span>
+
+                    </div>
+
+
+                    <div class="quick-item"
+                         onclick="showMessage('Medicine reminder opened')">
+
+                        <div class="quick-icon">
+                            💊
+                        </div>
+
+                        <span>
+                            Medicine Reminder
+                        </span>
+
+                        <span class="arrow">
+                            ›
+                        </span>
+
+                    </div>
+
+
+                    <div class="quick-item"
+                         onclick="showMessage('Health ID opened')">
+
+                        <div class="quick-icon">
+                            🪪
+                        </div>
+
+                        <span>
+                            Download Health ID
+                        </span>
+
+                        <span class="arrow">
+                            ›
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- APPOINTMENTS -->
+
+                <div class="card" style="margin-top: 15px;">
+
+                    <div class="card-header">
+
+                        <h3>
+                            Upcoming Appointments
+                        </h3>
+
+                        <span class="view">
+                            View All
+                        </span>
+
+                    </div>
+
+
+                    <div class="appointment">
+
+                        <span class="confirm">
+                            Confirmed
+                        </span>
+
+                        <div class="appointment-date">
+                            28 May 2024
+                        </div>
+
+                        <strong>
+                            Dr. Rajesh Kumar
+                        </strong>
+
+                        <span>
+                            Cardiologist
+                        </span>
+
+                        <br>
+
+                        <span>
+                            District Hospital · 11:30 AM
+                        </span>
+
+                    </div>
+
+
+                    <div class="appointment">
+
+                        <span class="confirm">
+                            Confirmed
+                        </span>
+
+                        <div class="appointment-date">
+                            02 Jun 2024
+                        </div>
+
+                        <strong>
+                            Teleconsultation
+                        </strong>
+
+                        <span>
+                            Dermatologist
+                        </span>
+
+                        <br>
+
+                        <span>
+                            Online Consultation · 05:00 PM
+                        </span>
+
+                    </div>
+
+
+                    <button
+                        class="book-btn"
+                        onclick="showMessage('New appointment booking')"
+                    >
+                        📅 &nbsp; Book New Appointment
+                    </button>
+
+                </div>
+
+
+                <!-- HEALTH TIP -->
+
+                <div class="health-tip">
+
+                    <h3>
+                        💡 Health Tip of the Day
+                    </h3>
+
+                    <p>
+                        Drink plenty of clean water and wash your hands
+                        regularly to stay healthy.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- ================= JAVASCRIPT ================= -->
+
+    <script>
+
+        function showMessage(message) {
+            alert(message);
+        }
+
+        function syncData() {
+
+            const button = document.querySelector(".sync-btn");
+
+            button.innerHTML = "⟳ Syncing...";
+
+            setTimeout(function () {
+
+                button.innerHTML = "✓ Synced";
+
+                setTimeout(function () {
+                    button.innerHTML = "⟳ Sync Now";
+                }, 1500);
+
+            }, 1500);
+        }
+
+
+        /* SEARCH */
+
+        document
+            .getElementById("searchInput")
+            .addEventListener("keyup", function(event) {
+
+                if (event.key === "Enter") {
+
+                    const value = this.value.trim();
+
+                    if (value !== "") {
+                        showMessage("Searching for: " + value);
+                    }
+
+                }
+
+            });
+
+    </script>
+
+</body>
+</html>
