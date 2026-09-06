@@ -1,0 +1,323 @@
+/* ==========================================================================
+   SwasthyaSetu — Mobile Web Browser & Touch Optimization Stylesheet
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Mobile Viewport & Safe-Area Adjustments
+   -------------------------------------------------------------------------- */
+:root {
+  --mobile-bottom-dock-height: 64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Ensure body has bottom clearance for fixed mobile dock */
+@media (max-width: 840px) {
+  body {
+    padding-bottom: calc(var(--mobile-bottom-dock-height) + var(--safe-bottom) + 16px);
+  }
+
+  /* Compact header on mobile screens */
+  .operational-hud {
+    padding: 6px 0;
+  }
+
+  .hud-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .hud-left, .hud-right {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .facility-tier-badge {
+    font-size: 0.72rem;
+    padding: 3px 8px;
+  }
+
+  .role-bar-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .role-selector-group {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .role-tab-btn {
+    padding: 6px 10px;
+    font-size: 0.76rem;
+  }
+
+  /* Hide traditional horizontal sticky nav on mobile — replaced by bottom dock */
+  .module-nav-wrapper {
+    display: none;
+  }
+
+  /* Compact banner on mobile */
+  .rural-health-banner {
+    padding: 18px 16px;
+    margin: 12px 0 20px 0;
+  }
+
+  .banner-title {
+    font-size: 1.45rem;
+  }
+
+  .banner-desc {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+
+  .banner-stat-box {
+    padding: 10px 8px;
+  }
+
+  .stat-value {
+    font-size: 1.15rem;
+  }
+
+  .stat-lbl {
+    font-size: 0.65rem;
+  }
+
+  /* Touch-friendly inputs */
+  .vital-field input, .vital-field select {
+    font-size: 16px !important; /* Prevents iOS auto-zoom on input focus */
+    min-height: 38px;
+  }
+
+  .check-pill {
+    padding: 10px 12px;
+    min-height: 48px;
+  }
+
+  /* Stacking columns on mobile */
+  .triage-container,
+  .teleconsult-suite,
+  .charts-split-grid,
+  .diagnostic-hub-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .vital-input-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Video call feed height adjustment */
+  .video-consult-feed {
+    min-height: 300px;
+  }
+
+  .pip-village-feed {
+    width: 100px;
+    height: 75px;
+  }
+
+  .video-vitals-overlay {
+    padding: 8px 12px;
+  }
+
+  .live-vital-val {
+    font-size: 0.95rem;
+  }
+
+  .ecg-canvas-wrap {
+    width: 130px;
+    height: 38px;
+  }
+
+  /* Modals full width on phones */
+  .swasthya-modal-card,
+  .emergency-modal-content {
+    width: 95% !important;
+    padding: 20px 16px !important;
+    max-height: 85vh;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Fixed Mobile Bottom App Dock (Ergonomic Thumb Navigation)
+   -------------------------------------------------------------------------- */
+.mobile-bottom-dock {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--mobile-bottom-dock-height) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: rgba(8, 13, 26, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 999;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 840px) {
+  .mobile-bottom-dock {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+  }
+}
+
+.dock-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.68rem;
+  font-weight: 600;
+  gap: 3px;
+  transition: var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.dock-item:active {
+  transform: scale(0.92);
+}
+
+.dock-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.dock-item.active {
+  color: #2dd4bf;
+}
+
+.dock-item.active .dock-icon {
+  filter: drop-shadow(0 0 8px rgba(45, 212, 191, 0.6));
+}
+
+/* --------------------------------------------------------------------------
+   Mobile Sliding Drawer Menu (Secondary Modules)
+   -------------------------------------------------------------------------- */
+.mobile-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1001;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.mobile-drawer-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-drawer-content {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 75vh;
+  overflow-y: auto;
+  background: #0d1428;
+  border-top: 1px solid rgba(45, 212, 191, 0.3);
+  border-radius: 20px 20px 0 0;
+  padding: 24px 20px calc(var(--safe-bottom) + 24px) 20px;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1002;
+}
+
+.mobile-drawer-backdrop.open .mobile-drawer-content {
+  transform: translateY(0);
+}
+
+.drawer-drag-handle {
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  margin: 0 auto 16px auto;
+}
+
+.drawer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.drawer-card-btn {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+.drawer-card-btn:active {
+  background: rgba(45, 212, 191, 0.15);
+  border-color: #2dd4bf;
+}
+
+.drawer-card-icon {
+  font-size: 1.8rem;
+}
+
+/* --------------------------------------------------------------------------
+   Scan QR Code / Mobile Share Modal
+   -------------------------------------------------------------------------- */
+.mobile-qr-card {
+  text-align: center;
+  padding: 10px 0;
+}
+
+.qr-code-svg-wrap {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  display: inline-block;
+  margin: 16px 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.network-url-pill {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  color: #2dd4bf;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  word-break: break-all;
+}
