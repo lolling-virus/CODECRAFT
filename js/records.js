@@ -215,47 +215,77 @@ const HealthRecords = {
         .select('*');
 
     if (error) {
-        console.error('[HealthRecords] Supabase load failed:', error);
+        console.error('[HealthRecords] Supabase patient load failed:', error);
         return;
     }
 
     this.patients = data.map(patient => ({
-  id: patient.id,
-  abhaId: patient.abha_id,
-  name: patient.name,
-  age: patient.age,
-  gender: patient.gender,
-  village: patient.village,
-  contact: patient.contact,
-  category: patient.category,
-  riskLevel: patient.risk_level,
-  activeConditions: [],
-  allergies: [],
-  currentMeds: [],
-  vitals: {},
-  encounters: []
-}));
+        id: patient.id,
+        abhaId: patient.abha_id,
+        name: patient.name,
+        age: patient.age,
+        gender: patient.gender,
+        village: patient.village,
+        contact: patient.contact,
+        category: patient.category,
+        riskLevel: patient.risk_level,
+        activeConditions: [],
+        allergies: [],
+        currentMeds: [],
+        vitals: {},
+        encounters: []
+    }));
 
-if (this.patients.length > 0) {
-  this.activePatientId = this.patients[0].id;
-}
+    // Load encounters for each patient
+    for (const patient of this.patients) {
+        const { data: encounters, error: encounterError } = await supabaseClient
+            .from('encounters')
+            .select('*')
+            .eq('patient_id', patient.id)
+            .order('date', { ascending: false });
 
-const selector = document.getElementById('records-patient-selector');
+        if (encounterError) {
+            console.error(
+                '[HealthRecords] Encounter load failed for',
+                patient.id,
+                encounterError
+            );
+            continue;
+        }
 
-if (selector) {
-  selector.innerHTML = this.patients.map(patient => `
-    <option value="${patient.id}">
-      ${patient.name} (${patient.age}y) — ${patient.category}
-    </option>
-  `).join('');
+        patient.encounters = encounters.map(encounter => ({
+            id: encounter.id,
+            date: encounter.date,
+            facilityType: encounter.facility_type,
+            facilityName: encounter.facility_name,
+            provider: encounter.provider,
+            reason: encounter.reason,
+            findings: encounter.findings,
+            actionTaken: encounter.action_taken,
+            tags: encounter.tags || []
+        }));
+    }
 
-  selector.value = this.activePatientId;
-}
+    if (this.patients.length > 0) {
+        this.activePatientId = this.patients[0].id;
+    }
 
-this.renderRecordView();
+    const selector = document.getElementById('records-patient-selector');
 
-console.log('[HealthRecords] Patients from Supabase:', this.patients);
-  },
+    if (selector) {
+        selector.innerHTML = this.patients.map(patient =>
+            `<option value="${patient.id}">
+                ${patient.name} (${patient.age}y) - ${patient.category}
+            </option>`
+        ).join('');
+
+        selector.value = this.activePatientId;
+    }
+
+    this.renderRecordView();
+
+    console.log('[HealthRecords] Patients from Supabase:', this.patients);
+},
 
   getAllPatients() {
     return this.patients;
@@ -270,21 +300,60 @@ console.log('[HealthRecords] Patients from Supabase:', this.patients);
     this.renderRecordView();
   },
 
-  addEncounter(patientId, encounter) {
+  async addEncounter(patientId, encounter) {
     const p = this.patients.find(pt => pt.id === patientId);
+
     if (!p) return;
-    encounter.id = 'ENC-' + Math.floor(1000 + Math.random() * 9000);
-    encounter.date = new Date().toISOString().split('T')[0];
+
+    // Generate an ID if one wasn't provided
+    encounter.id = encounter.id || 'ENC-' + Math.floor(1000 + Math.random() * 9000);
+
+    // Use today's date if one wasn't provided
+    encounter.date = encounter.date || new Date().toISOString().split('T')[0];
+
+    // Convert frontend field names to Supabase column names
+    const supabaseEncounter = {
+        id: encounter.id,
+        patient_id: patientId,
+        date: encounter.date,
+        facility_type: encounter.facilityType || null,
+        facility_name: encounter.facilityName || null,
+        provider: encounter.provider || null,
+        reason: encounter.reason || null,
+        findings: encounter.findings || null,
+        action_taken: encounter.actionTaken || null,
+        tags: encounter.tags || []
+    };
+
+    // Save to Supabase
+    const { data, error } = await supabaseClient
+        .from('encounters')
+        .insert([supabaseEncounter])
+        .select()
+        .single();
+
+    if (error) {
+        console.error('[HealthRecords] Failed to save encounter:', error);
+        return null;
+    }
+
+    console.log('[HealthRecords] Encounter saved to Supabase:', data);
+
+    // Update the local UI
     p.encounters.unshift(encounter);
 
-    // Also queue for offline sync if in offline mode
-    if (window.OfflineSync) {
-      window.OfflineSync.queueAction('add_encounter', { patientId, encounter });
+    // Keep offline queue support
+    if (!navigator.onLine && window.OfflineSync) {
+        window.OfflineSync.queueAction('add_encounter', {
+            patientId,
+            encounter
+        });
     }
 
     this.renderRecordView();
+
     return encounter;
-  },
+},
 
   // FHIR R4 Bundle JSON Export for ABDM Compliance
   exportFHIR(patientId) {
