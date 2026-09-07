@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setu Health - Sign In</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #122c2a;
+      --bg-light: #f7faf9;
+      --text-white: #ffffff;
+      --text-muted-dark: #8ba3a0;
+      --text-heading: #1a2221;
+      --text-body: #627270;
+      --primary-teal: #1d7a71;
+      --primary-hover: #16615a;
+      --card-selected-bg: #e5f4f1;
+      --card-selected-border: #1d7a71;
+      --border-color: #e2e8e6;
+      --input-bg: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-light);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* ================= LEFT PANEL ================= */
+    .left-panel {
+      width: 48%;
+      background-color: var(--bg-dark);
+      /* Subtle grid background pattern */
+      background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+      background-size: 24px 24px;
+      padding: 48px 64px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: var(--text-white);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      background-color: var(--primary-teal);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-content {
+      max-width: 480px;
+      margin: auto 0;
+    }
+
+    .hero-title {
+      font-size: 40px;
+      line-height: 1.2;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      margin-bottom: 24px;
+    }
+
+    .hero-subtitle {
+      color: var(--text-muted-dark);
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 40px;
+    }
+
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 14px;
+      color: #d1e0de;
+    }
+
+    .feature-icon {
+      width: 36px;
+      height: 36px;
+      background-color: rgba(255, 255, 255, 0.06);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ================= RIGHT PANEL ================= */
+    .right-panel {
+      width: 52%;
+      background-color: var(--bg-light);
+      padding: 48px 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow-y: auto;
+    }
+
+    .form-container {
+      max-width: 460px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .form-header {
+      margin-bottom: 32px;
+    }
+
+    .form-header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text-heading);
+      margin-bottom: 8px;
+    }
+
+    .form-header p {
+      color: var(--text-body);
+      font-size: 14px;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      color: var(--text-body);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    /* Role Cards Grid */
+    .role-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .role-card {
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px;
+      background-color: #ffffff;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .role-card:hover {
+      border-color: var(--primary-teal);
+    }
+
+    .role-card.selected {
+      background-color: var(--card-selected-bg);
+      border-color: var(--card-selected-border);
+    }
+
+    .role-card .icon-wrapper {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background-color: #f0f4f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      color: #33413e;
+      transition: all 0.2s ease;
+    }
+
+    .role-card.selected .icon-wrapper {
+      background-color: var(--primary-teal);
+      color: #ffffff;
+    }
+
+    .role-card .check-icon {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      display: none;
+      color: var(--primary-teal);
+    }
+
+    .role-card.selected .check-icon {
+      display: block;
+    }
+
+    .role-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-heading);
+      margin-bottom: 4px;
+    }
+
+    .role-desc {
+      font-size: 12px;
+      color: var(--text-body);
+      line-height: 1.3;
+    }
+
+    /* Form Controls */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .form-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-heading);
+    }
+
+    .forgot-link {
+      font-size: 13px;
+      color: var(--primary-teal);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .forgot-link:hover {
+      text-decoration: underline;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrapper svg {
+      position: absolute;
+      left: 14px;
+      color: #889694;
+      pointer-events: none;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 16px 12px 42px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      font-size: 14px;
+      color: var(--text-heading);
+      background-color: var(--input-bg);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary-teal);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background-color: var(--primary-teal);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.2s;
+      margin-top: 8px;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 24px 0;
+      color: #94a3a0;
+      font-size: 13px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .divider span {
+      padding: 0 12px;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 12px;
+      background-color: #ffffff;
+      color: var(--text-heading);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background-color: #f4f7f6;
+      border-color: #cbd5d3;
+    }
+
+    /* Registration Box */
+    .register-box {
+      margin-top: 32px;
+      border: 1px dashed #c0d4cf;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      gap: 12px;
+      background-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .register-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background-color: #e5f4f1;
+      color: var(--primary-teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .register-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .register-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-heading);
+    }
+
+    .register-desc {
+      font-size: 12px;
+      color: var(--text-body);
+      line-height: 1.4;
+    }
+
+    /* Responsive scaling for smaller laptops / tablets */
+    @media (max-width: 900px) {
+      .container {
+        flex-direction: column;
+      }
+      .left-panel, .right-panel {
+        width: 100%;
+      }
+      .left-panel {
+        padding: 32px;
+      }
+      .right-panel {
+        padding: 32px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+      <div class="brand">
+        <div class="brand-logo">
+          <!-- Pulse Icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        Setu Health
+      </div>
+
+      <div class="hero-content">
+        <h2 class="hero-title">Quality care for every village, connected or not.</h2>
+        <p class="hero-subtitle">One platform linking patients, doctors and frontline workers across rural public health systems.</p>
+
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon">
+              <!-- Wifi Off / Offline Icon -->
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a59d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+                <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+                <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+                <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+                <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                <line x1="12" y1="20" x2="12.01" y2="20"></line>
+              </svg>
+            </div>
+            <span>Works offline, syncs when connected</span>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">
+              <!-- Shield Check Icon -->
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a59d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="m9 12 2 2 4-4"/>
+              </svg>
+            </div>
+            <span>ABHA-linked, AES-256 encrypted records</span>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">
+              <!-- Languages Icon -->
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a59d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m5 8 6 6"/>
+                <path d="m4 14 6-6 2 3"/>
+                <path d="M2 5h12"/>
+                <path d="M7 2h1"/>
+                <path d="m22 22-5-10-5 10"/>
+                <path d="M14 18h6"/>
+              </svg>
+            </div>
+            <span>Available in 12 regional languages</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty footer space to balance justify-content -->
+      <div></div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+      <div class="form-container">
+        
+        <div class="form-header">
+          <h1>Sign in</h1>
+          <p>Welcome back. Choose your role to continue.</p>
+        </div>
+
+        <div class="section-label">I AM SIGNING IN AS</div>
+
+        <!-- Role Selector Grid -->
+        <div class="role-grid" id="roleGrid">
+          
+          <!-- Patient -->
+          <div class="role-card" data-role="patient">
+            <div class="icon-wrapper">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <div class="role-title">Patient</div>
+            <div class="role-desc">Access your health records</div>
+            <div class="check-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Doctor -->
+          <div class="role-card" data-role="doctor">
+            <div class="icon-wrapper">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4.8 2.3A.3.3 0 0 0 4.5 2.6V5a4 4 0 0 0 8 0V2.6a.3.3 0 0 0-.3-.3"/>
+                <path d="M8 9v2a6 6 0 0 0 12 0V9"/>
+                <circle cx="20" cy="9" r="2"/>
+              </svg>
+            </div>
+            <div class="role-title">Doctor</div>
+            <div class="role-desc">Consult & manage referrals</div>
+            <div class="check-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Health Worker (Default Selected) -->
+          <div class="role-card selected" data-role="health-worker">
+            <div class="icon-wrapper">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                <path d="M12 11v4"/>
+                <path d="M10 13h4"/>
+              </svg>
+            </div>
+            <div class="role-title">Health Worker</div>
+            <div class="role-desc">ASHA / ANM field access</div>
+            <div class="check-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Other -->
+          <div class="role-card" data-role="other">
+            <div class="icon-wrapper">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="1"/>
+                <circle cx="19" cy="12" r="1"/>
+                <circle cx="5" cy="12" r="1"/>
+              </svg>
+            </div>
+            <div class="role-title">Other</div>
+            <div class="role-desc">Admin, pharmacist, staff</div>
+            <div class="check-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Form Inputs -->
+        <form id="loginForm" onsubmit="handleSignIn(event)">
+          
+          <div class="form-group">
+            <label class="form-label" for="mobile">Mobile / ABHA number</label>
+            <div class="input-wrapper" style="margin-top: 8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+              <input type="text" id="mobile" class="form-input" placeholder="98765 43210" value="98765 43210" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="label-row">
+              <label class="form-label" for="password">PIN / Password</label>
+              <a href="#" class="forgot-link">Forgot?</a>
+            </div>
+            <div class="input-wrapper">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <input type="password" id="password" class="form-input" value="••••••" required />
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary">
+            Sign in
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+
+        </form>
+
+        <div class="divider">
+          <span>or</span>
+        </div>
+
+        <button type="button" class="btn-secondary" onclick="alert('Triggering Biometric / OTP authentication...')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12C2 6.5 6.5 2 12 2a10 10 0 0 1 8 4"/>
+            <path d="M5 19.5C6.3 21 8.6 22 11.5 22c5.5 0 9.5-4 9.5-9.5 0-2-.5-3.8-1.5-5.3"/>
+            <path d="M12 12a3 3 0 0 0 3-3c0-2-1.5-3-3-3s-3 1-3 3"/>
+            <path d="M12 16a6 6 0 0 0 6-6"/>
+          </svg>
+          Use biometric / OTP
+        </button>
+
+        <!-- Bottom Registration Callout -->
+        <div class="register-box">
+          <div class="register-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <line x1="19" y1="8" x2="19" y2="14"/>
+              <line x1="16" y1="11" x2="22" y2="11"/>
+            </svg>
+          </div>
+          <div class="register-content">
+            <div class="register-title">No record yet?</div>
+            <div class="register-desc">Create a new health record to register a patient or health worker in the system.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Handle role card selection
+    const roleCards = document.querySelectorAll('.role-card');
+    let selectedRole = 'health-worker';
+
+    roleCards.forEach(card => {
+      card.addEventListener('click', () => {
+        roleCards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedRole = card.getAttribute('data-role');
+      });
+    });
+
+    // Handle Form Submit
+    function handleSignIn(e) {
+      e.preventDefault();
+      const mobile = document.getElementById('mobile').value;
+      alert(`Signing in as: ${selectedRole.toUpperCase()}\nMobile/ABHA: ${mobile}`);
+    }
+  </script>
+</body>
+</html>
