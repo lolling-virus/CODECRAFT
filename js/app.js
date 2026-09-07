@@ -276,7 +276,10 @@ const App = {
 
     // Initialize all sub-modules
     if (window.OfflineSync) window.OfflineSync.init();
-    if (window.HealthRecords) window.HealthRecords.init();
+    if (window.HealthRecords) {
+    window.HealthRecords.init();
+    window.HealthRecords.loadFromSupabase();
+    }
     if (window.DigitalTriage) window.DigitalTriage.init();
     if (window.Teleconsult) window.Teleconsult.init();
     if (window.ReferralTracker) window.ReferralTracker.init();

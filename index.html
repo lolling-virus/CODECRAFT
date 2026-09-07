@@ -35,6 +35,56 @@
 </head>
 <body data-theme="clinical-teal">
 
+    <div id="auth-screen" style="
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #070b18;
+">
+    <div style="
+        width: min(420px, 90%);
+        padding: 32px;
+        border-radius: 20px;
+        background: #111827;
+        border: 1px solid rgba(255,255,255,0.12);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    ">
+        <h1 style="margin-top:0;">🏥 SwasthyaSetu</h1>
+
+        <p style="opacity:0.7;">
+            Public Healthcare Access Platform
+        </p>
+
+        <label>Email</label>
+        <input
+            id="auth-email"
+            type="email"
+            placeholder="Enter your email"
+            style="width:100%; margin:8px 0 16px; padding:12px; box-sizing:border-box;"
+        >
+
+        <label>Password</label>
+        <input
+            id="auth-password"
+            type="password"
+            placeholder="Enter your password"
+            style="width:100%; margin:8px 0 16px; padding:12px; box-sizing:border-box;"
+        >
+
+        <button
+            id="auth-login-btn"
+            style="width:100%; padding:12px; cursor:pointer;"
+        >
+            Sign In
+        </button>
+
+        <p id="auth-message" style="margin-bottom:0; color:#ff7676;"></p>
+    </div>
+</div>
+
   <!-- Dynamic Particle Canvas Background -->
   <canvas id="canvas-bg"></canvas>
   <div class="ambient-glow ambient-glow-1" aria-hidden="true"></div>
@@ -1103,6 +1153,9 @@
   </div>
 
   <!-- Core JavaScript Modules (Modular ES6 Architecture) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/offlineSync.js"></script>
   <script src="js/voiceLiteracy.js"></script>
   <script src="js/records.js"></script>

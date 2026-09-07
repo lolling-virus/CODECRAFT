@@ -209,6 +209,19 @@ const HealthRecords = {
     console.log('[HealthRecords] Loaded EHR system with', this.patients.length, 'patients.');
   },
 
+  async loadFromSupabase() {
+    const { data, error } = await supabaseClient
+        .from('patients')
+        .select('*');
+
+    if (error) {
+        console.error('[HealthRecords] Supabase load failed:', error);
+        return;
+    }
+
+    console.log('[HealthRecords] Patients from Supabase:', data);
+},
+
   getAllPatients() {
     return this.patients;
   },
