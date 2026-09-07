@@ -67,6 +67,19 @@ const Auth = {
 
 window.Auth = Auth;
 
+document.addEventListener('DOMContentLoaded', async () => {
+  const authScreen = document.getElementById('auth-screen');
+
+  if (!authScreen) return;
+
+  const user = await Auth.getCurrentUser();
+
+  if (user) {
+    authScreen.style.display = 'none';
+    console.log('[Auth] Existing session detected:', user.email);
+  }
+});
+
 
 // Login button
 document.addEventListener('DOMContentLoaded', () => {

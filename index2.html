@@ -574,12 +574,13 @@
         <form id="loginForm" onsubmit="handleSignIn(event)">
           
           <div class="form-group">
-            <label class="form-label" for="mobile">Mobile / ABHA number</label>
+            <label class="form-label" for="email">Email</label>
             <div class="input-wrapper" style="margin-top: 8px;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+              <path d="M3 7l9 6 9-6"></path>
               </svg>
-              <input type="text" id="mobile" class="form-input" placeholder="98765 43210" value="98765 43210" required />
+              <input type="email" id="email" class="form-input" placeholder="you@example.com" required />
             </div>
           </div>
 
@@ -593,7 +594,7 @@
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
-              <input type="password" id="password" class="form-input" value="••••••" required />
+              <input type="password" id="password" class="form-input" required />
             </div>
           </div>
 
@@ -655,11 +656,61 @@
     });
 
     // Handle Form Submit
-    function handleSignIn(e) {
-      e.preventDefault();
-      const mobile = document.getElementById('mobile').value;
-      alert(`Signing in as: ${selectedRole.toUpperCase()}\nMobile/ABHA: ${mobile}`);
+    async function handleSignIn(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    if (!email || !password)  {
+        alert('Please enter your email and password.');
+        return;
     }
+
+    const user = await Auth.login(email, password);
+
+    if (!user) {
+        alert('Please enter your email and PIN / password.');
+        return;
+    }
+
+    const profile = await Auth.getProfile();
+
+    if (!profile) {
+        alert('Your account does not have a valid role profile.');
+        return;
+    }
+
+    // Role-based routing
+    switch (profile.role) {
+        case 'patient':
+            window.location.href = 'patient.html';
+            break;
+
+        case 'doctor':
+            window.location.href = 'doctor.html';
+            break;
+
+        case 'asha_anm':
+            window.location.href = 'index.html';
+            break;
+
+        case 'admin':
+        case 'pharmacist':
+        case 'staff':
+            window.location.href = 'admin.html';
+            break;
+
+        default:
+            alert('Unknown user role: ' + profile.role);
+    }
+  }
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+
+
 </body>
 </html>
