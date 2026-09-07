@@ -203,7 +203,7 @@ const HealthRecords = {
     }
   ],
 
-  activePatientId: "P101",
+  activePatientId: null,
 
   init() {
     console.log('[HealthRecords] Loaded EHR system with', this.patients.length, 'patients.');
@@ -219,8 +219,43 @@ const HealthRecords = {
         return;
     }
 
-    console.log('[HealthRecords] Patients from Supabase:', data);
-},
+    this.patients = data.map(patient => ({
+  id: patient.id,
+  abhaId: patient.abha_id,
+  name: patient.name,
+  age: patient.age,
+  gender: patient.gender,
+  village: patient.village,
+  contact: patient.contact,
+  category: patient.category,
+  riskLevel: patient.risk_level,
+  activeConditions: [],
+  allergies: [],
+  currentMeds: [],
+  vitals: {},
+  encounters: []
+}));
+
+if (this.patients.length > 0) {
+  this.activePatientId = this.patients[0].id;
+}
+
+const selector = document.getElementById('records-patient-selector');
+
+if (selector) {
+  selector.innerHTML = this.patients.map(patient => `
+    <option value="${patient.id}">
+      ${patient.name} (${patient.age}y) — ${patient.category}
+    </option>
+  `).join('');
+
+  selector.value = this.activePatientId;
+}
+
+this.renderRecordView();
+
+console.log('[HealthRecords] Patients from Supabase:', this.patients);
+  },
 
   getAllPatients() {
     return this.patients;
@@ -296,25 +331,37 @@ const HealthRecords = {
 
   renderRecordView() {
     const p = this.getActivePatient();
+
+    // Safely handle patient data that may not have all clinical fields yet
+    const vitals = p.vitals || {};
+    const activeConditions = p.activeConditions || [];
+    const allergies = p.allergies || [];
+    const currentMeds = p.currentMeds || [];
+    const encounters = p.encounters || [];
     const container = document.getElementById('record-profile-content');
     if (!container) return;
 
     const riskBadgeClass = p.riskLevel === 'Red' ? 'tag-dh' : p.riskLevel === 'Yellow' ? 'tag-chc' : 'tag-sc';
 
     let encountersHTML = '';
-    p.encounters.forEach(enc => {
-      const tagClass = enc.facilityType.includes('District') ? 'tag-dh' :
-                       enc.facilityType.includes('Community') ? 'tag-chc' :
-                       enc.facilityType.includes('Primary') ? 'tag-phc' : 'tag-sc';
+    encounters.forEach(enc => {
 
-      const tagsPills = enc.tags.map(t => `<span class="encounter-facility-tag ${tagClass}">${t}</span>`).join(' ');
+      const facilityType = enc.facilityType || '';
+
+             const tagClass = facilityType.includes('District') ? 'tag-dh' :
+                 facilityType.includes('Community') ? 'tag-chc' :
+                 facilityType.includes('Primary') ? 'tag-phc' : 'tag-sc';
+
+      const tagsPills = (enc.tags || [])
+    .map(t => `<span class="encounter-facility-tag ${tagClass}">${t}</span>`)
+    .join(' ');
 
       encountersHTML += `
         <div class="encounter-card">
           <div class="encounter-dot"></div>
           <div class="encounter-header">
             <div>
-              <span class="encounter-facility-tag ${tagClass}">${enc.facilityType}</span>
+              <span class="encounter-facility-tag ${tagClass}">${facilityType || 'Facility'}</span>
               <strong style="margin-left: 8px; color: var(--text-primary);">${enc.facilityName}</strong>
             </div>
             <span class="encounter-date">${enc.date}</span>
@@ -328,7 +375,7 @@ const HealthRecords = {
       `;
     });
 
-    let medsHTML = p.currentMeds.map(m => `
+    let medsHTML = currentMeds.map(m => `
       <div class="rx-drug-item" style="margin-bottom:6px;">
         <div>
           <div class="rx-drug-name">${m.name}</div>
@@ -366,7 +413,7 @@ const HealthRecords = {
             <h4 style="font-family:var(--font-display); font-size:1.1rem; color:var(--text-primary);">
               Continuum of Care Timeline (Sub-Centre ➔ PHC ➔ CHC ➔ DH)
             </h4>
-            <span style="font-size:0.75rem; color:var(--text-muted);">${p.encounters.length} logged visits</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">${encounters.length} logged visits</span>
           </div>
           <div class="timeline-encounters-wrap">
             ${encountersHTML}
@@ -378,23 +425,23 @@ const HealthRecords = {
           <div class="triage-form-card" style="margin-bottom:20px;">
             <h4 style="font-size:0.95rem; font-weight:700; color:#2dd4bf; margin-bottom:12px;">Current Baseline Vitals</h4>
             <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px;">
-              <div class="vital-field"><label>BP</label><div class="stat-value" style="font-size:1.1rem;">${p.vitals.bp} <span class="vital-unit">mmHg</span></div></div>
-              <div class="vital-field"><label>Pulse</label><div class="stat-value" style="font-size:1.1rem;">${p.vitals.pulse} <span class="vital-unit">bpm</span></div></div>
-              <div class="vital-field"><label>SpO2</label><div class="stat-value teal" style="font-size:1.1rem;">${p.vitals.spo2}%</div></div>
-              <div class="vital-field"><label>Hemoglobin</label><div class="stat-value ${p.vitals.hemoglobin < 9 ? 'rose' : 'teal'}" style="font-size:1.1rem;">${p.vitals.hemoglobin} <span class="vital-unit">g/dL</span></div></div>
+              <div class="vital-field"><label>BP</label><div class="stat-value" style="font-size:1.1rem;">${vitals.bp || 'Not recorded'} <span class="vital-unit">mmHg</span></div></div>
+              <div class="vital-field"><label>Pulse</label><div class="stat-value" style="font-size:1.1rem;">${vitals.pulse || 'Not recorded'} <span class="vital-unit">bpm</span></div></div>
+              <div class="vital-field"><label>SpO2</label><div class="stat-value teal" style="font-size:1.1rem;">${vitals.spo2 || 'Not recorded'}%</div></div>
+              <div class="vital-field"><label>Hemoglobin</label><div class="stat-value ${vitals.hemoglobin < 9 ? 'rose' : 'teal'}" style="font-size:1.1rem;">${vitals.hemoglobin || 'Not recorded'} <span class="vital-unit">g/dL</span></div></div>
             </div>
-            ${p.vitals.fhr ? `<div style="margin-top:10px; font-size:0.8rem; color:#38bdf8;"><strong>Fetal Heart Rate:</strong> ${p.vitals.fhr} bpm</div>` : ''}
+            ${vitals.fhr ? `<div style="margin-top:10px; font-size:0.8rem; color:#38bdf8;"><strong>Fetal Heart Rate:</strong> ${vitals.fhr} bpm</div>` : ''}
           </div>
 
           <!-- Active Diagnoses & Allergies -->
           <div class="triage-form-card" style="margin-bottom:20px;">
             <h4 style="font-size:0.95rem; font-weight:700; color:var(--text-primary); margin-bottom:10px;">Active Diagnoses</h4>
             <ul style="padding-left:18px; font-size:0.84rem; color:var(--text-secondary); line-height:1.6; margin-bottom:14px;">
-              ${p.activeConditions.map(c => `<li>${c}</li>`).join('')}
+              ${activeConditions.length ? activeConditions.map(c => `<li>${c}</li>`).join('') : '<li>No active diagnoses recorded</li>'}
             </ul>
 
             <h4 style="font-size:0.95rem; font-weight:700; color:#f87171; margin-bottom:6px;">⚠️ Allergies</h4>
-            <div style="font-size:0.82rem; color:#fca5a5;">${p.allergies.join(', ')}</div>
+            <div style="font-size:0.82rem; color:#fca5a5;">${allergies.length ? allergies.join(', ') : 'No known allergies recorded'}</div>
           </div>
 
           <!-- Current Active Medications -->
