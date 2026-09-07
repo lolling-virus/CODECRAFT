@@ -30,6 +30,7 @@ const Auth = {
         }
 
         console.log('[Auth] Logged out');
+        window.location.href = 'index2.html';
     },
 
     async getCurrentUser() {
@@ -38,6 +39,17 @@ const Auth = {
         } = await supabaseClient.auth.getUser();
 
         return user;
+    },
+
+    async requireAuth() {
+      const user = await this.getCurrentUser();
+
+      if (!user) {
+         window.location.href = 'index2.html';
+         return null;
+        }
+
+     return user;
     },
 
     async getProfile() {
