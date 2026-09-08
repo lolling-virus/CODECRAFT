@@ -10,6 +10,10 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Supabase JS Client library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+
   <script>
     tailwind.config = {
       theme: {
@@ -349,10 +353,17 @@
     // Initialize Lucide icons
     lucide.createIcons();
 
-    // SUPABASE CONFIGURATION (Replace with your Supabase details)
-    const SUPABASE_URL = 'https://YOUR_SUPABASE_PROJECT_ID.supabase.co';
-    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    document.addEventListener('DOMContentLoaded', async () => {
+    const user = await Auth.getCurrentUser();
+
+    if (!user) {
+        window.location.href = 'index2.html';
+        return;
+    }
+
+    console.log('[Health Worker] Authenticated:', user.email);
+});
+
 
     // Clinical Journey State Object
     const careSession = {
@@ -369,12 +380,6 @@
     };
 
     // Master Hospitals Database with Distance & Specialty Tagging
-    const masterHospitals = [
-      { name: "Rampur PHC (Primary Health Center)", distance: "0.5 km away", tags: ["Fever", "Allergy", "Others"], recommendedFor: ["Fever", "Allergy"] },
-      { name: "District Hospital Rampur", distance: "4.2 km away", tags: ["Pregnancy", "Bleeding", "Burn"], recommendedFor: ["Pregnancy", "Bleeding"] },
-      { name: "City Trauma & Cardiac Center", distance: "12.8 km away", tags: ["Heart Attack", "Burn"], recommendedFor: ["Heart Attack"] },
-      { name: "Apex Burn Care & General Hospital", distance: "15.0 km away", tags: ["Burn"], recommendedFor: ["Burn"] }
-    ];
 
     // First Aid Mapping & Doctors lookup
     const conditionProtocols = {
@@ -471,42 +476,155 @@
     }
 
     // STEP 3 POPULATE & SUBMIT
-    function populateHospitals() {
-      const container = document.getElementById('hospitalListContainer');
-      container.innerHTML = '';
+    async function populateHospitals() {
+  const container = document.getElementById('hospitalListContainer');
 
-      const problemKey = careSession.selectedProblem;
+  container.innerHTML = `
+    <div class="text-sm text-gray-500 p-3">
+      Loading available facilities...
+    </div>
+  `;
 
-      // Sort hospitals: recommended for selected problem come first
-      const sorted = [...masterHospitals].sort((a, b) => {
-        const aRec = a.recommendedFor.includes(problemKey) ? 1 : 0;
-        const bRec = b.recommendedFor.includes(problemKey) ? 1 : 0;
-        return bRec - aRec;
-      });
+  const problemKey = careSession.selectedProblem;
 
-      careSession.selectedHospital = sorted[0].name; // Default closest/recommended selection
+  const conditionFacilityRules = {
+  "Heart Attack": {
+    services: ["Emergency Care", "Emergency", "Specialist Care"],
+    preferredTypes: ["District Hospital", "CHC"]
+  },
+  "Burn": {
+    services: ["Emergency Care", "Emergency", "Minor Procedures"],
+    preferredTypes: ["CHC", "District Hospital"]
+  },
+  "Fever": {
+    services: ["OPD", "Diagnostics"],
+    preferredTypes: ["PHC"]
+  },
+  "Allergy": {
+    services: ["OPD", "Emergency Care", "Emergency"],
+    preferredTypes: ["PHC", "CHC"]
+  },
+  "Bleeding": {
+    services: ["Emergency Care", "Emergency", "Minor Procedures"],
+    preferredTypes: ["CHC", "District Hospital"]
+  },
+  "Pregnancy": {
+    services: ["Maternal Care", "Obstetrics"],
+    preferredTypes: ["PHC", "CHC", "District Hospital"]
+  },
+  "Others": {
+    services: ["OPD"],
+    preferredTypes: ["PHC"]
+  }
+};
 
-      sorted.forEach((hosp, idx) => {
-        const isRec = hosp.recommendedFor.includes(problemKey) || idx === 0;
-        const div = document.createElement('div');
-        div.className = `p-3 rounded-xl border flex items-center justify-between cursor-pointer transition ${
-          isRec ? 'border-emerald-500 bg-emerald-50/40' : 'border-gray-200 hover:border-emerald-300'
-        }`;
-        div.onclick = () => selectHospitalUI(div, hosp.name);
+const rule = conditionFacilityRules[problemKey] || conditionFacilityRules["Others"];
 
-        div.innerHTML = `
-          <div class="flex items-center gap-3">
-            <input type="radio" name="hospSelect" ${idx === 0 ? 'checked' : ''} class="text-emerald-600 focus:ring-emerald-500">
-            <div>
-              <div class="text-sm font-bold text-gray-900">${hosp.name}</div>
-              <div class="text-xs text-gray-500">${hosp.distance}</div>
-            </div>
+  const { data: facilities, error } = await supabaseClient
+    .from('facilities')
+    .select('*')
+    .eq('is_active', true)
+    .order('name');
+
+  if (error) {
+    console.error('[Health Worker] Facility load failed:', error);
+
+    container.innerHTML = `
+      <div class="text-sm text-red-500 p-3">
+        Unable to load facilities. Please try again.
+      </div>
+    `;
+
+    return;
+  }
+
+  if (!facilities || facilities.length === 0) {
+    container.innerHTML = `
+      <div class="text-sm text-gray-500 p-3">
+        No active facilities found.
+      </div>
+    `;
+
+    return;
+  }
+
+  facilities.sort((a, b) => {
+  function getScore(facility) {
+    const services = facility.services || [];
+    let score = 0;
+
+    const hasService = rule.services.some(required =>
+      services.some(service =>
+        service.toLowerCase() === required.toLowerCase()
+      )
+    );
+
+    const typeMatch = rule.preferredTypes.some(type =>
+      facility.facility_type.toLowerCase() === type.toLowerCase()
+    );
+
+    if (hasService) score += 10;
+    if (typeMatch) score += 20;
+
+    return score;
+  }
+
+  return getScore(b) - getScore(a);
+});
+
+  container.innerHTML = '';
+
+  facilities.forEach((facility, idx) => {
+    const services = facility.services || [];
+
+    const isRecommended = idx === 0;
+
+    const div = document.createElement('div');
+
+    div.className = `p-3 rounded-xl border flex items-center justify-between cursor-pointer transition ${
+      isRecommended
+        ? 'border-emerald-500 bg-emerald-50/40'
+        : 'border-gray-200 hover:border-emerald-300'
+    }`;
+
+    div.onclick = () => selectHospitalUI(div, facility.name);
+
+    div.innerHTML = `
+      <div class="flex items-center gap-3">
+        <input
+          type="radio"
+          name="hospSelect"
+          ${idx === 0 ? 'checked' : ''}
+          class="text-emerald-600 focus:ring-emerald-500"
+        >
+
+        <div>
+          <div class="text-sm font-bold text-gray-900">
+            ${facility.name}
           </div>
-          ${isRec ? '<span class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">RECOMMENDED</span>' : ''}
-        `;
-        container.appendChild(div);
-      });
+
+          <div class="text-xs text-gray-500">
+            ${facility.facility_type} · ${facility.village || facility.district || ''}
+          </div>
+        </div>
+      </div>
+
+      ${
+        isRecommended
+          ? '<span class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">RECOMMENDED</span>'
+          : ''
+      }
+    `;
+
+    container.appendChild(div);
+
+    if (idx === 0) {
+      careSession.selectedHospital = facility.name;
     }
+  });
+
+  console.log('[Health Worker] Facilities loaded:', facilities);
+}
 
     function selectHospitalUI(element, hospName) {
       document.querySelectorAll('#hospitalListContainer input[type="radio"]').forEach(r => r.checked = false);
@@ -597,57 +715,117 @@
 
     // STEP 7 SUPABASE RECORD INSERTION
     async function submitStep7() {
-      const syncBtn = document.getElementById('btnSyncSupabase');
-      const statusBox = document.getElementById('supabaseStatusBox');
-      
-      syncBtn.disabled = true;
-      syncBtn.classList.add('opacity-50');
-      statusBox.innerHTML = '<span class="text-amber-600">Connecting to Supabase and storing record...</span>';
+    const syncBtn = document.getElementById('btnSyncSupabase');
+    const statusBox = document.getElementById('supabaseStatusBox');
 
-      careSession.completedAt = new Date().toISOString();
+    syncBtn.disabled = true;
+    syncBtn.classList.add('opacity-50');
 
-      try {
-        /*
-          SUPABASE TABLE SCHEMA EXPECTED:
-          Table Name: patient_records
-          Columns:
-           - patient_name (text)
-           - patient_phone (text)
-           - condition (text)
-           - burn_degree (text)
-           - hospital (text)
-           - doctor (text)
-           - referral_id (text)
-           - next_checkup (text)
-           - created_at (timestamp)
-        */
-        const { data, error } = await supabaseClient
-          .from('patient_records')
-          .insert([
-            {
-              patient_name: careSession.patientName,
-              patient_phone: careSession.patientPhone,
-              condition: careSession.selectedProblem,
-              burn_degree: careSession.selectedBurnDegree || null,
-              hospital: careSession.selectedHospital,
-              doctor: careSession.assignedDoctor,
-              referral_id: careSession.referralId,
-              next_checkup: careSession.nextCheckupDate,
-              created_at: careSession.completedAt
+    statusBox.innerHTML =
+        '<span class="text-amber-600">Saving patient journey...</span>';
+
+    careSession.completedAt = new Date().toISOString();
+
+    try {
+        // --------------------------------------------------
+        // 1. FIND EXISTING PATIENT
+        // --------------------------------------------------
+
+        let patient = null;
+
+        const { data: existingPatient, error: patientSearchError } =
+            await supabaseClient
+                .from('patients')
+                .select('*')
+                .eq('contact', careSession.patientPhone)
+                .maybeSingle();
+
+        if (patientSearchError) {
+            throw patientSearchError;
+        }
+
+        patient = existingPatient;
+
+        // --------------------------------------------------
+        // 2. CREATE PATIENT IF NOT FOUND
+        // --------------------------------------------------
+
+        if (!patient) {
+            const patientId = crypto.randomUUID();
+
+            const { data: newPatient, error: patientCreateError } =
+                await supabaseClient
+                    .from('patients')
+                    .insert([{
+                        id: patientId,
+                        name: careSession.patientName,
+                        contact: careSession.patientPhone,
+                        category: careSession.selectedProblem,
+                        risk_level: 'pending'
+                    }])
+                    .select()
+                    .single();
+
+            if (patientCreateError) {
+                throw patientCreateError;
             }
-          ]);
 
-        if (error) throw error;
+            patient = newPatient;
+        }
 
-        statusBox.innerHTML = '<span class="text-emerald-700 font-bold">✓ Record successfully inserted into Supabase database!</span>';
+        // --------------------------------------------------
+        // 3. CREATE ENCOUNTER
+        // --------------------------------------------------
+
+        const { error: encounterError } =
+            await supabaseClient
+                .from('encounters')
+                .insert([{
+                    id: crypto.randomUUID(),
+                    patient_id: patient.id,
+                    date: new Date().toISOString().split('T')[0],
+                    facility_type: 'Primary Health Centre',
+                    facility_name: careSession.selectedHospital || 'Rampur PHC',
+                    provider: careSession.assignedDoctor || 'Health Worker',
+                    reason: careSession.selectedProblem,
+                    findings: `Triage completed for ${careSession.selectedProblem}`,
+                    action_taken: careSession.selectedHospital
+                        ? `Facility selected: ${careSession.selectedHospital}`
+                        : 'Triage completed',
+                    tags: [
+                        'health-worker',
+                        'triage',
+                        careSession.selectedProblem
+                    ]
+                }]);
+
+        if (encounterError) {
+            throw encounterError;
+        }
+
+        // --------------------------------------------------
+        // 4. SUCCESS
+        // --------------------------------------------------
+
+        statusBox.innerHTML =
+            '<span class="text-emerald-700 font-bold">✓ Patient record and encounter saved successfully.</span>';
+
         markStepCompleted(7);
-      } catch (err) {
-        // Helpful fallback log status when demo Supabase keys are unconfigured
-        console.log("Supabase payload generated:", careSession);
-        statusBox.innerHTML = `<span class="text-emerald-700 font-bold">✓ Journey finalized! Payload logged locally.</span><br><span class="text-gray-400 text-[10px]">(Note: Replace SUPABASE_URL and SUPABASE_ANON_KEY to write directly to your database table)</span>`;
-        markStepCompleted(7);
-      }
+
+        console.log('[Health Worker] Patient saved:', patient);
+        console.log('[Health Worker] Encounter saved successfully.');
+
+    } catch (err) {
+
+        console.error('[Health Worker] Save failed:', err);
+
+        statusBox.innerHTML =
+            '<span class="text-red-600 font-bold">Unable to save the record. Please try again.</span>';
+
+        syncBtn.disabled = false;
+        syncBtn.classList.remove('opacity-50');
     }
+}
 
     // HELPER FUNCTIONS TO MANAGE STEP UI TRANSITIONS
     function markStepCompleted(stepNum) {
