@@ -97,8 +97,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 document.addEventListener('DOMContentLoaded', () => {
     const loginButton = document.getElementById('auth-login-btn');
 
+    // Not every page has a login button (e.g. index5.html, the Health
+    // Worker dashboard) — that's expected, not an error, so we just
+    // skip wiring it up here without cluttering the console.
     if (!loginButton) {
-        console.error('[Auth] Login button not found');
         return;
     }
 

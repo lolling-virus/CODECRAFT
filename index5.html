@@ -88,7 +88,10 @@
       <div class="flex items-center gap-4">
         <div class="relative w-72">
           <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-          <input type="text" placeholder="Search patient or ABHA ID" class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          <input id="patientSearch" type="text" placeholder="Search patient or ABHA ID" class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          <div id="patientSearchResults"
+           class="hidden absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-50    overflow-hidden">
+          </div>
         </div>
         <div class="flex items-center gap-2 bg-amber-50 text-amber-800 text-xs font-semibold px-3 py-2 rounded-full border border-amber-200">
           <i data-lucide="wifi-off" class="w-4 h-4"></i><span>Offline</span>
@@ -198,6 +201,7 @@
               </div>
             </div>
             <p id="step2Error" class="text-xs text-red-500 font-medium mb-3 hidden">Please select a valid condition/degree to continue.</p>
+            <div id="triageUrgencyResult" class="hidden mb-3 px-3 py-2 rounded-lg text-xs font-bold items-center gap-2"></div>
 
             <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
               <button onclick="submitStep2()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
@@ -217,7 +221,8 @@
             </div>
             <h3 class="text-lg font-bold text-gray-900 mb-2">Find & Select Facility</h3>
             <p class="text-sm text-gray-600 mb-4">Facilities sorted dynamic to condition. Select target health centre.</p>
-            
+            <div id="triageUrgencyBanner" class="hidden mb-3 px-3 py-2 rounded-lg text-xs font-semibold"></div>
+
             <div id="hospitalListContainer" class="space-y-2 mb-4">
               <!-- Dynamically Populated -->
             </div>
@@ -361,7 +366,19 @@
         return;
     }
 
-    console.log('[Health Worker] Authenticated:', user.email);
+    // The database role is the source of truth for who can access the
+    // Health Worker dashboard — being logged in is not enough on its
+    // own. Any authenticated user without the asha_anm role gets sent
+    // back, regardless of what a UI role-card might have shown them.
+    const profile = await Auth.getProfile();
+
+    if (!profile || profile.role !== 'asha_anm') {
+        console.warn('[Health Worker] Access denied — role is not asha_anm:', profile ? profile.role : 'no profile found');
+        window.location.href = 'index2.html';
+        return;
+    }
+
+    console.log('[Health Worker] Authenticated:', user.email, '· Role:', profile.role);
 });
 
 
@@ -372,12 +389,15 @@
       selectedProblem: '',
       selectedBurnDegree: '',
       selectedHospital: null,
+      selectedFacilityId: null,
+      urgencyLevel: '',
       assignedDoctor: '',
       firstAidText: '',
       referralId: '',
       nextCheckupDate: '',
       completedAt: null
     };
+
 
     // Master Hospitals Database with Distance & Specialty Tagging
 
@@ -420,6 +440,45 @@
       }
     };
 
+    // Urgency Categorization — administrative triage/routing support only.
+    // This is NOT a medical diagnosis; it just buckets the existing
+    // conditions into emergency/urgent/routine so facility recommendation,
+    // referral, and record-keeping can prioritize accordingly.
+    const urgencyRules = {
+      "Heart Attack": () => "emergency",
+      "Bleeding": () => "emergency",
+      "Burn": (burnDegree) => {
+        if (burnDegree === "3rd Degree Burn") return "emergency";
+        if (burnDegree === "2nd Degree Burn") return "urgent";
+        return "routine"; // 1st degree or unspecified
+      },
+      "Allergy": () => "urgent",
+      "Pregnancy": () => "urgent",
+      "Fever": () => "routine",
+      "Others": () => "routine"
+    };
+
+    function deriveUrgencyLevel(problem, burnDegree) {
+      const rule = urgencyRules[problem] || urgencyRules["Others"];
+      return rule(burnDegree);
+    }
+
+    const urgencyDisplay = {
+      emergency: { label: "EMERGENCY", classes: "bg-red-100 text-red-800 border border-red-300" },
+      urgent:    { label: "URGENT",    classes: "bg-amber-100 text-amber-800 border border-amber-300" },
+      routine:   { label: "ROUTINE",   classes: "bg-emerald-100 text-emerald-800 border border-emerald-300" }
+    };
+
+    // patients.risk_level has a CHECK constraint that only allows
+    // 'Red' / 'Yellow' / 'Green' — this maps our internal urgency
+    // categories to that exact vocabulary for database writes only.
+    // UI labels (EMERGENCY/URGENT/ROUTINE) are unaffected.
+    const urgencyToRiskLevel = {
+      emergency: 'Red',
+      urgent: 'Yellow',
+      routine: 'Green'
+    };
+
     let currentStep = 1;
 
     // Toggle Burn Degree Sub Option Input
@@ -434,26 +493,93 @@
     }
 
     // STEP 1 VALIDATION & SUBMIT
-    function submitStep1() {
-      const name = document.getElementById('inputPatientName').value.trim();
-      const phone = document.getElementById('inputPatientPhone').value.trim();
-      const err = document.getElementById('step1Error');
+    async function submitStep1() {
+    const name = document.getElementById('inputPatientName').value.trim();
+    const phone = document.getElementById('inputPatientPhone').value.trim();
+    const err = document.getElementById('step1Error');
 
-      if (!name || !phone) {
+    // Validate input
+    if (!name || !phone) {
         err.classList.remove('hidden');
         return;
-      }
-      err.classList.add('hidden');
-
-      careSession.patientName = name;
-      careSession.patientPhone = phone;
-
-      document.getElementById('patientHeaderTitle').innerText = `Care Journey: ${name}`;
-      document.getElementById('patientHeaderSubtext').innerText = `Phone: ${phone} · Rampur SC Entry`;
-
-      markStepCompleted(1);
-      unlockStep(2);
     }
+
+    err.classList.add('hidden');
+
+    try {
+        // 1. Look for an existing patient using their phone number
+        const { data: existingPatient, error: searchError } =
+            await supabaseClient
+                .from('patients')
+                .select('id, name, contact')
+                .eq('contact', phone)
+                .maybeSingle();
+
+        if (searchError) {
+            console.error('[Health Worker] Patient search failed:', searchError);
+            alert('Could not search patient records. Please try again.');
+            return;
+        }
+
+        let patient;
+
+        // 2. Use existing patient if found
+        if (existingPatient) {
+            patient = existingPatient;
+
+            console.log('[Health Worker] Existing patient found:', patient);
+        }
+
+        // 3. Otherwise create a new patient
+        else {
+            const patientId =
+                'PAT-' + Date.now().toString();
+
+            const { data: newPatient, error: insertError } =
+                await supabaseClient
+                    .from('patients')
+                    .insert({
+                        id: patientId,
+                        name: name,
+                        contact: phone
+                    })
+                    .select('id, name, contact')
+                    .single();
+
+            if (insertError) {
+                console.error('[Health Worker] Patient creation failed:', insertError);
+                alert('Could not create patient record. Please try again.');
+                return;
+            }
+
+            patient = newPatient;
+
+            console.log('[Health Worker] New patient created:', patient);
+        }
+
+        // 4. Save the database patient ID in the current care journey
+        careSession.patientId = patient.id;
+        careSession.patientName = patient.name;
+        careSession.patientPhone = patient.contact;
+
+        // 5. Update the page
+        document.getElementById('patientHeaderTitle').innerText =
+            `Care Journey: ${patient.name}`;
+
+        document.getElementById('patientHeaderSubtext').innerText =
+            `Phone: ${patient.contact} · Rampur SC Entry`;
+
+        // 6. Move to triage
+        markStepCompleted(1);
+        unlockStep(2);
+
+        console.log('[Health Worker] Step 1 completed:', careSession);
+
+    } catch (error) {
+        console.error('[Health Worker] Unexpected error:', error);
+        alert('Something went wrong while saving the patient.');
+    }
+}
 
     // STEP 2 VALIDATION & SUBMIT
     function submitStep2() {
@@ -469,6 +595,13 @@
 
       careSession.selectedProblem = problem;
       careSession.selectedBurnDegree = burnDegree;
+      careSession.urgencyLevel = deriveUrgencyLevel(problem, burnDegree);
+
+      const urgencyBox = document.getElementById('triageUrgencyResult');
+      const display = urgencyDisplay[careSession.urgencyLevel] || urgencyDisplay.routine;
+      urgencyBox.className = `mb-3 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-2 ${display.classes}`;
+      urgencyBox.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4"></i> Triage Result: ${display.label}`;
+      lucide.createIcons();
 
       populateHospitals();
       markStepCompleted(2);
@@ -478,6 +611,13 @@
     // STEP 3 POPULATE & SUBMIT
     async function populateHospitals() {
   const container = document.getElementById('hospitalListContainer');
+  const urgencyBanner = document.getElementById('triageUrgencyBanner');
+
+  if (urgencyBanner && careSession.urgencyLevel) {
+    const display = urgencyDisplay[careSession.urgencyLevel] || urgencyDisplay.routine;
+    urgencyBanner.className = `mb-3 px-3 py-2 rounded-lg text-xs font-semibold ${display.classes}`;
+    urgencyBanner.innerText = `Recommending facilities for ${display.label} care`;
+  }
 
   container.innerHTML = `
     <div class="text-sm text-gray-500 p-3">
@@ -587,7 +727,7 @@ const rule = conditionFacilityRules[problemKey] || conditionFacilityRules["Other
         : 'border-gray-200 hover:border-emerald-300'
     }`;
 
-    div.onclick = () => selectHospitalUI(div, facility.name);
+    div.onclick = () => selectHospitalUI(div, facility.id, facility.name);
 
     div.innerHTML = `
       <div class="flex items-center gap-3">
@@ -620,17 +760,19 @@ const rule = conditionFacilityRules[problemKey] || conditionFacilityRules["Other
 
     if (idx === 0) {
       careSession.selectedHospital = facility.name;
+      careSession.selectedFacilityId = facility.id;
     }
   });
 
   console.log('[Health Worker] Facilities loaded:', facilities);
 }
 
-    function selectHospitalUI(element, hospName) {
+    function selectHospitalUI(element, facilityId, hospName) {
       document.querySelectorAll('#hospitalListContainer input[type="radio"]').forEach(r => r.checked = false);
       const radio = element.querySelector('input[type="radio"]');
       radio.checked = true;
       careSession.selectedHospital = hospName;
+      careSession.selectedFacilityId = facilityId;
     }
 
     function submitStep3() {
@@ -679,6 +821,7 @@ const rule = conditionFacilityRules[problemKey] || conditionFacilityRules["Other
         <div><strong class="text-gray-900">Referral ID:</strong> ${refId}</div>
         <div><strong class="text-gray-900">Patient:</strong> ${careSession.patientName} (${careSession.patientPhone})</div>
         <div><strong class="text-gray-900">Diagnosed Problem:</strong> ${fullProblem}</div>
+        <div><strong class="text-gray-900">Urgency Level:</strong> ${(careSession.urgencyLevel || 'routine').toUpperCase()}</div>
         <div><strong class="text-gray-900">Referred Hospital:</strong> ${careSession.selectedHospital}</div>
         <div><strong class="text-gray-900">Assigned Specialist:</strong> ${careSession.assignedDoctor}</div>
       `;
@@ -728,49 +871,61 @@ const rule = conditionFacilityRules[problemKey] || conditionFacilityRules["Other
 
     try {
         // --------------------------------------------------
-        // 1. FIND EXISTING PATIENT
+        // 1. USE THE PATIENT ALREADY LINKED IN STEP 1
         // --------------------------------------------------
+        // careSession.patientId is the single source of truth for
+        // "who is this care journey for" — it was set the moment the
+        // patient was found or created back in Step 1. Re-searching by
+        // phone here was risky: if the phone didn't match exactly, this
+        // used to silently create a SECOND patient record, breaking the
+        // "one patient, one record" rule. Now we just look up the exact
+        // patient by id.
 
-        let patient = null;
+        if (!careSession.patientId) {
+            throw new Error(
+                'No patient is linked to this care journey. Please complete Step 1 before saving.'
+            );
+        }
 
-        const { data: existingPatient, error: patientSearchError } =
+        const { data: patient, error: patientFetchError } =
             await supabaseClient
                 .from('patients')
                 .select('*')
-                .eq('contact', careSession.patientPhone)
-                .maybeSingle();
+                .eq('id', careSession.patientId)
+                .single();
 
-        if (patientSearchError) {
-            throw patientSearchError;
+        if (patientFetchError) {
+            throw patientFetchError;
         }
 
-        patient = existingPatient;
-
         // --------------------------------------------------
-        // 2. CREATE PATIENT IF NOT FOUND
+        // 2. PERSIST TRIAGE URGENCY ONTO THE PATIENT RECORD
         // --------------------------------------------------
+        // Reuses the existing patients.risk_level column — no schema
+        // change needed. Non-fatal on failure: we still want the
+        // encounter itself to save even if this update has trouble.
 
-        if (!patient) {
-            const patientId = crypto.randomUUID();
+        if (careSession.urgencyLevel) {
+            const riskLevelValue = urgencyToRiskLevel[careSession.urgencyLevel] || 'Green';
 
-            const { data: newPatient, error: patientCreateError } =
+            const { data: riskUpdateData, error: riskUpdateError } =
                 await supabaseClient
                     .from('patients')
-                    .insert([{
-                        id: patientId,
-                        name: careSession.patientName,
-                        contact: careSession.patientPhone,
-                        category: careSession.selectedProblem,
-                        risk_level: 'pending'
-                    }])
-                    .select()
-                    .single();
+                    .update({ risk_level: riskLevelValue })
+                    .eq('id', patient.id)
+                    .select();
 
-            if (patientCreateError) {
-                throw patientCreateError;
+            if (riskUpdateError) {
+                console.warn('[Health Worker] Could not update patient risk_level:', riskUpdateError);
+            } else if (!riskUpdateData || riskUpdateData.length === 0) {
+                // Supabase does NOT return an error when RLS silently
+                // blocks an update — it just matches zero rows. If this
+                // fires, the fix is an RLS policy on patients, not the
+                // JS code.
+                console.warn('[Health Worker] risk_level update matched 0 rows — likely blocked by an RLS policy on patients (no UPDATE policy for this role).');
+            } else {
+                console.log('[Health Worker] Patient risk_level updated:', riskUpdateData[0].risk_level);
             }
-
-            patient = newPatient;
         }
 
         // --------------------------------------------------
@@ -795,7 +950,8 @@ const rule = conditionFacilityRules[problemKey] || conditionFacilityRules["Other
                     tags: [
                         'health-worker',
                         'triage',
-                        careSession.selectedProblem
+                        careSession.selectedProblem,
+                        careSession.urgencyLevel || 'routine'
                     ]
                 }]);
 
@@ -859,6 +1015,256 @@ const rule = conditionFacilityRules[problemKey] || conditionFacilityRules["Other
 
       card.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+
+    // ============================================
+// PATIENT RECORD SEARCH
+// ============================================
+
+const patientSearch = document.getElementById('patientSearch');
+const patientSearchResults = document.getElementById('patientSearchResults');
+
+let patientSearchTimer = null;
+
+if (patientSearch) {
+    patientSearch.addEventListener('input', () => {
+        clearTimeout(patientSearchTimer);
+
+        const query = patientSearch.value.trim();
+
+        if (!query) {
+            patientSearchResults.innerHTML = '';
+            patientSearchResults.classList.add('hidden');
+            return;
+        }
+
+        patientSearchTimer = setTimeout(() => {
+            searchPatients(query);
+        }, 300);
+    });
+}
+
+async function searchPatients(query) {
+    patientSearchResults.classList.remove('hidden');
+
+    patientSearchResults.innerHTML = `
+        <div class="p-4 text-sm text-gray-500">
+            Searching patient records...
+        </div>
+    `;
+
+    const { data, error } = await supabaseClient
+        .from('patients')
+        .select('id, abha_id, name, age, gender, village, contact, category, risk_level')
+        .or(
+            `name.ilike.%${query}%,contact.ilike.%${query}%,abha_id.ilike.%${query}%`
+        )
+        .limit(8);
+
+    if (error) {
+        console.error('[Patient Records] Search failed:', error);
+
+        patientSearchResults.innerHTML = `
+            <div class="p-4 text-sm text-red-600">
+                Could not search patient records.
+            </div>
+        `;
+
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        patientSearchResults.innerHTML = `
+            <div class="p-4 text-sm text-gray-500">
+                No patient records found.
+            </div>
+        `;
+
+        return;
+    }
+
+    patientSearchResults.innerHTML = data.map(patient => `
+        <button
+            type="button"
+            onclick='selectPatient(${JSON.stringify(patient)})'
+            class="w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition"
+        >
+            <div class="font-semibold text-gray-900">
+                ${patient.name}
+            </div>
+
+            <div class="text-xs text-gray-500 mt-1">
+                ${patient.contact || 'No phone'}
+                ${patient.village ? ` · ${patient.village}` : ''}
+            </div>
+
+            <div class="text-xs text-gray-400 mt-1">
+                Patient ID: ${patient.id}
+            </div>
+        </button>
+    `).join('');
+}
+
+function selectPatient(patient) {
+    console.log('[Patient Records] Selected:', patient);
+
+    careSession.patientId = patient.id;
+    careSession.patientName = patient.name;
+    careSession.patientPhone = patient.contact || '';
+
+    const nameInput = document.getElementById('inputPatientName');
+    const phoneInput = document.getElementById('inputPatientPhone');
+
+    if (nameInput) {
+        nameInput.value = patient.name || '';
+    }
+
+    if (phoneInput) {
+        phoneInput.value = patient.contact || '';
+    }
+
+    const headerTitle = document.getElementById('patientHeaderTitle');
+    const headerSubtitle = document.getElementById('patientHeaderSubtitle');
+
+    if (headerTitle) {
+        headerTitle.innerText = `Care Journey: ${patient.name}`;
+    }
+
+    if (headerSubtitle) {
+        headerSubtitle.innerText = `Patient ID: ${patient.id}`;
+    }
+
+    patientSearch.value = patient.name;
+
+    patientSearchResults.innerHTML = '';
+    patientSearchResults.classList.add('hidden');
+
+    console.log('[Patient Records] Patient loaded into Care Journey');
+
+    loadPatientRecords(patient.id);
+
+    async function loadPatientRecords(patientId) {
+    console.log('[Patient Records] Loading records for:', patientId);
+
+    const { data, error } = await supabaseClient
+        .from('encounters')
+        .select('*')
+        .eq('patient_id', patientId)
+        .order('date', { ascending: false });
+
+    if (error) {
+        console.error('[Patient Records] Failed to load encounters:', error);
+        renderPatientRecords([], error.message);
+        return;
+    }
+
+    console.log('[Patient Records] Encounters loaded:', data);
+
+    renderPatientRecords(data || []);
+  }
+}
+
+function renderPatientRecords(records, errorMessage = '') {
+    let panel = document.getElementById('patientRecordsPanel');
+
+    if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'patientRecordsPanel';
+
+        const main = document.querySelector('main');
+
+        if (main) {
+            main.insertBefore(panel, main.firstElementChild);
+        }
+    }
+
+    if (errorMessage) {
+        panel.innerHTML = `
+            <div class="bg-white border border-red-200 rounded-2xl p-6 shadow-sm mb-6">
+                <h3 class="text-lg font-bold text-red-700">Patient Records</h3>
+                <p class="text-sm text-red-600 mt-2">
+                    Could not load patient records.
+                </p>
+            </div>
+        `;
+        return;
+    }
+
+    const patientName = careSession.patientName || 'Patient';
+
+    if (!records.length) {
+        panel.innerHTML = `
+            <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                            Patient Records
+                        </p>
+                        <h3 class="text-xl font-bold text-gray-900 mt-1">
+                            ${patientName}
+                        </h3>
+                    </div>
+
+                    <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold">
+                        No previous visits
+                    </span>
+                </div>
+
+                <div class="mt-5 p-4 rounded-xl bg-gray-50 border border-gray-100">
+                    <p class="text-sm text-gray-500">
+                        No previous encounter records are available for this patient.
+                    </p>
+                </div>
+            </div>
+        `;
+
+        return;
+    }
+
+    panel.innerHTML = `
+        <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-6">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        Patient Records
+                    </p>
+                    <h3 class="text-xl font-bold text-gray-900 mt-1">
+                        ${patientName}
+                    </h3>
+                </div>
+
+                <span class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">
+                    ${records.length} encounter${records.length === 1 ? '' : 's'}
+                </span>
+            </div>
+
+            <div class="space-y-3">
+                ${records.map(record => `
+                    <div class="border border-gray-100 rounded-xl p-4 bg-gray-50">
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-gray-800">
+                                ${record.date || 'Date unavailable'}
+                            </span>
+
+                            <span class="text-xs text-gray-500">
+                                ${record.facility_type || 'Facility'}
+                            </span>
+                        </div>
+
+                        <p class="text-sm text-gray-600 mt-2">
+                            ${record.facility_name || 'Facility not recorded'}
+                        </p>
+
+                        ${record.provider ? `
+                            <p class="text-xs text-gray-500 mt-1">
+                                Provider: ${record.provider}
+                            </p>
+                        ` : ''}
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
   </script>
 </body>
 </html>
