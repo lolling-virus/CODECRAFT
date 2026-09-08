@@ -155,6 +155,24 @@
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Phone Number *</label>
                 <input type="tel" id="inputPatientPhone" placeholder="e.g. 9128475561" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
               </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Age</label>
+                <input type="number" id="inputPatientAge" min="0" max="120" placeholder="e.g. 34" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Gender</label>
+                <select id="inputPatientGender" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                  <option value="">Select gender</option>
+                  <option value="Female">Female</option>
+                  <option value="Male">Male</option>
+                  <option value="Other">Other</option>
+                  <option value="Prefer not to say">Prefer not to say</option>
+                </select>
+              </div>
+              <div class="col-span-2">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Village</label>
+                <input type="text" id="inputPatientVillage" placeholder="e.g. Rampur" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
             </div>
             <p id="step1Error" class="text-xs text-red-500 font-medium mb-3 hidden">Please enter both Patient Name and Phone Number to proceed.</p>
 
@@ -386,6 +404,9 @@
     const careSession = {
       patientName: '',
       patientPhone: '',
+      patientAge: '',
+      patientGender: '',
+      patientVillage: '',
       selectedProblem: '',
       selectedBurnDegree: '',
       selectedHospital: null,
@@ -496,6 +517,10 @@
     async function submitStep1() {
     const name = document.getElementById('inputPatientName').value.trim();
     const phone = document.getElementById('inputPatientPhone').value.trim();
+    const ageInput = document.getElementById('inputPatientAge').value.trim();
+    const gender = document.getElementById('inputPatientGender').value;
+    const village = document.getElementById('inputPatientVillage').value.trim();
+    const age = ageInput ? Number(ageInput) : null;
     const err = document.getElementById('step1Error');
 
     // Validate input
@@ -527,6 +552,29 @@
         if (existingPatient) {
             patient = existingPatient;
 
+            const demographicUpdate = {};
+            if (age !== null) demographicUpdate.age = age;
+            if (gender) demographicUpdate.gender = gender;
+            if (village) demographicUpdate.village = village;
+
+            if (Object.keys(demographicUpdate).length > 0) {
+                const { data: updatedPatient, error: updateError } =
+                    await supabaseClient
+                        .from('patients')
+                        .update(demographicUpdate)
+                        .eq('id', patient.id)
+                        .select('id, name, contact, age, gender, village')
+                        .single();
+
+                if (updateError) {
+                    console.error('[Health Worker] Patient demographics update failed:', updateError);
+                    alert('Patient found, but the new demographic details could not be saved.');
+                    return;
+                }
+
+                patient = updatedPatient;
+            }
+
             console.log('[Health Worker] Existing patient found:', patient);
         }
 
@@ -541,9 +589,12 @@
                     .insert({
                         id: patientId,
                         name: name,
-                        contact: phone
+                        contact: phone,
+                        age: age,
+                        gender: gender || null,
+                        village: village || null
                     })
-                    .select('id, name, contact')
+                    .select('id, name, contact, age, gender, village')
                     .single();
 
             if (insertError) {
@@ -561,6 +612,16 @@
         careSession.patientId = patient.id;
         careSession.patientName = patient.name;
         careSession.patientPhone = patient.contact;
+        careSession.patientAge = patient.age ?? age ?? '';
+        careSession.patientGender = patient.gender || gender || '';
+        careSession.patientVillage = patient.village || village || '';
+
+        document.getElementById('inputPatientAge').value =
+            careSession.patientAge === '' ? '' : careSession.patientAge;
+        document.getElementById('inputPatientGender').value =
+            careSession.patientGender || '';
+        document.getElementById('inputPatientVillage').value =
+            careSession.patientVillage || '';
 
         // 5. Update the page
         document.getElementById('patientHeaderTitle').innerText =
@@ -1110,9 +1171,15 @@ function selectPatient(patient) {
     careSession.patientId = patient.id;
     careSession.patientName = patient.name;
     careSession.patientPhone = patient.contact || '';
+    careSession.patientAge = patient.age ?? '';
+    careSession.patientGender = patient.gender || '';
+    careSession.patientVillage = patient.village || '';
 
     const nameInput = document.getElementById('inputPatientName');
     const phoneInput = document.getElementById('inputPatientPhone');
+    const ageInput = document.getElementById('inputPatientAge');
+    const genderInput = document.getElementById('inputPatientGender');
+    const villageInput = document.getElementById('inputPatientVillage');
 
     if (nameInput) {
         nameInput.value = patient.name || '';
@@ -1120,6 +1187,18 @@ function selectPatient(patient) {
 
     if (phoneInput) {
         phoneInput.value = patient.contact || '';
+    }
+
+    if (ageInput) {
+        ageInput.value = patient.age ?? '';
+    }
+
+    if (genderInput) {
+        genderInput.value = patient.gender || '';
+    }
+
+    if (villageInput) {
+        villageInput.value = patient.village || '';
     }
 
     const headerTitle = document.getElementById('patientHeaderTitle');
@@ -1190,6 +1269,12 @@ function renderPatientRecords(records, errorMessage = '') {
     }
 
     const patientName = careSession.patientName || 'Patient';
+    const patientId = careSession.patientId || 'Not recorded';
+    const age = careSession.patientAge !== '' && careSession.patientAge != null
+        ? careSession.patientAge : 'Not recorded';
+    const gender = careSession.patientGender || 'Not recorded';
+    const village = careSession.patientVillage || 'Not recorded';
+    const phone = careSession.patientPhone || 'Not recorded';
 
     if (!records.length) {
         panel.innerHTML = `
@@ -1207,6 +1292,25 @@ function renderPatientRecords(records, errorMessage = '') {
                     <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold">
                         No previous visits
                     </span>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
+                    <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                        <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Age</p>
+                        <p class="text-sm font-semibold text-gray-800 mt-1">${age}</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                        <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Gender</p>
+                        <p class="text-sm font-semibold text-gray-800 mt-1">${gender}</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                        <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Village</p>
+                        <p class="text-sm font-semibold text-gray-800 mt-1">${village}</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                        <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Phone</p>
+                        <p class="text-sm font-semibold text-gray-800 mt-1">${phone}</p>
+                    </div>
                 </div>
 
                 <div class="mt-5 p-4 rounded-xl bg-gray-50 border border-gray-100">
@@ -1230,11 +1334,31 @@ function renderPatientRecords(records, errorMessage = '') {
                     <h3 class="text-xl font-bold text-gray-900 mt-1">
                         ${patientName}
                     </h3>
+                    <p class="text-sm text-gray-500 mt-1">Patient ID: ${patientId}</p>
                 </div>
 
                 <span class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">
                     ${records.length} encounter${records.length === 1 ? '' : 's'}
                 </span>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Age</p>
+                    <p class="text-sm font-semibold text-gray-800 mt-1">${age}</p>
+                </div>
+                <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Gender</p>
+                    <p class="text-sm font-semibold text-gray-800 mt-1">${gender}</p>
+                </div>
+                <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Village</p>
+                    <p class="text-sm font-semibold text-gray-800 mt-1">${village}</p>
+                </div>
+                <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Phone</p>
+                    <p class="text-sm font-semibold text-gray-800 mt-1">${phone}</p>
+                </div>
             </div>
 
             <div class="space-y-3">
