@@ -961,7 +961,9 @@
             </div>
             <div class="vital-field">
               <label>Facility Name</label>
-              <input type="text" id="enc-facility-name" value="Arogya Mandir Rampur" required>
+              <select id="enc-facility-name" required>
+                 <option value="">Loading facilities...</option>
+              </select>
             </div>
           </div>
 
@@ -1155,6 +1157,7 @@
   <!-- Core JavaScript Modules (Modular ES6 Architecture) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabaseClient.js"></script>
+  <script src="js/facilities.js"></script>
   <script src="js/auth.js"></script>
   <script>
   Auth.requireAuth();

@@ -279,7 +279,13 @@ const App = {
     if (window.HealthRecords) {
     window.HealthRecords.init();
     window.HealthRecords.loadFromSupabase();
-    }
+}
+
+    if (window.Facilities) {
+      Facilities.populateSelect('enc-facility-name', {
+        placeholder: 'Select facility'
+      });
+} 
     if (window.DigitalTriage) window.DigitalTriage.init();
     if (window.Teleconsult) window.Teleconsult.init();
     if (window.ReferralTracker) window.ReferralTracker.init();
@@ -393,7 +399,7 @@ const App = {
     if (tabId === 'dashboard' && window.DistrictDashboard) window.DistrictDashboard.renderKPIs();
   },
 
-  switchRole(role) {
+  async switchRole(role) {
     AppState.currentRole = role;
 
     document.querySelectorAll('.role-tab-btn').forEach(btn => {
@@ -402,19 +408,49 @@ const App = {
 
     const facilityBadge = document.getElementById('facility-tier-badge');
 
-    if (role === 'asha') {
-      if (facilityBadge) facilityBadge.innerHTML = '📍 Sub-Centre (Arogya Mandir Rampur)';
-      this.switchTab('triage');
-    } else if (role === 'mo') {
-      if (facilityBadge) facilityBadge.innerHTML = '🏥 Primary Health Centre (PHC Bithoor)';
-      this.switchTab('teleconsult');
-    } else if (role === 'specialist') {
-      if (facilityBadge) facilityBadge.innerHTML = '🏛️ District Women\'s Hospital (Sitapur)';
-      this.switchTab('teleconsult');
-    } else if (role === 'cmo') {
-      if (facilityBadge) facilityBadge.innerHTML = '📊 District Health Command Hub';
-      this.switchTab('dashboard');
+if (role === 'asha') {
+    if (facilityBadge) {
+        const facilities = await Facilities.getAll();
+        const facility = facilities.find(f => f.facility_type === 'Sub-Centre');
+
+        facilityBadge.innerHTML = facility
+            ? `📍 ${facility.facility_type} (${facility.name})`
+            : '📍 Sub-Centre';
     }
+
+    this.switchTab('triage');
+
+} else if (role === 'mo') {
+    if (facilityBadge) {
+        const facilities = await Facilities.getAll();
+        const facility = facilities.find(f => f.facility_type === 'PHC');
+
+        facilityBadge.innerHTML = facility
+            ? `🏥 ${facility.name} (${facility.facility_type})`
+            : '🏥 Primary Health Centre';
+    }
+
+    this.switchTab('teleconsult');
+
+} else if (role === 'specialist') {
+    if (facilityBadge) {
+        const facilities = await Facilities.getAll();
+        const facility = facilities.find(f => f.facility_type === 'District Hospital');
+
+        facilityBadge.innerHTML = facility
+            ? `🏛️ ${facility.name}`
+            : '🏛️ District Hospital';
+    }
+
+    this.switchTab('teleconsult');
+
+} else if (role === 'cmo') {
+    if (facilityBadge) {
+        facilityBadge.innerHTML = '📊 District Health Command Hub';
+    }
+
+    this.switchTab('dashboard');
+}
 
     if (window.OfflineSync) {
       window.OfflineSync.showToast(`Switched active workspace persona: ${role.toUpperCase()}`, 'info');
