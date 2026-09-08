@@ -303,10 +303,17 @@
               <span class="text-xs text-gray-400 font-semibold uppercase">Step 5 · Referral Desk</span>
               <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Official Referral Slip Generated</h3>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-bold text-gray-900">Official Referral Slip Generated</h3>
+              <button onclick="window.print()" class="text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                <span>Print / Save Slip</span>
+              </button>
+            </div>
             
-            <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4 font-mono text-xs text-gray-700 space-y-1" id="referralSummaryBox">
-              <!-- Dynamically Filled -->
+            <!-- Styled Official Referral Slip Card -->
+            <div class="bg-gradient-to-b from-emerald-50/40 to-white border border-emerald-200 rounded-xl p-5 mb-4 shadow-sm space-y-4" id="referralSummaryBox">
+              <!-- Dynamically Filled in submitStep4() -->
             </div>
 
             <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
@@ -325,20 +332,19 @@
               <span class="text-xs text-gray-400 font-semibold uppercase">Step 6 · Scheduled Care</span>
               <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Next Scheduled Check-Up</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-3">Structured Follow-up Plan</h3>
             
-            <div class="flex items-center gap-4 bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-              <i data-lucide="calendar" class="w-8 h-8 text-blue-600 shrink-0"></i>
-              <div>
-                <div class="text-xs text-blue-700 font-semibold">Calculated Check-up Date</div>
-                <div class="text-lg font-bold text-blue-950" id="nextCheckupDateDisplay">Calculating date...</div>
-                <div class="text-xs text-blue-600 mt-0.5" id="checkupReasonDisplay">Based on clinical severity</div>
-              </div>
+            <!-- Follow-up Plan Display Card -->
+            <div id="followupPlanContainer" class="bg-gradient-to-b from-blue-50/50 to-white border border-blue-200 rounded-xl p-5 mb-4 shadow-sm space-y-4">
+              <!-- Dynamically Filled in submitStep5() -->
             </div>
 
-            <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
+            <div class="border-t border-gray-100 pt-4 flex items-center justify-between">
+              <span id="followupStatusTag" class="text-xs text-blue-700 font-semibold flex items-center gap-1.5">
+                <i data-lucide="clock" class="w-4 h-4"></i> Pending Confirmation
+              </span>
               <button onclick="submitStep6()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
-                <span>Save Schedule & Sync Record</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                <span>Confirm Follow-up Plan & Sync Record</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
               </button>
             </div>
           </div>
@@ -876,17 +882,69 @@ const rule = conditionFacilityRules[problemKey] || conditionFacilityRules["Other
       const refId = 'REF-' + Math.floor(100000 + Math.random() * 900000);
       careSession.referralId = refId;
 
-      const fullProblem = careSession.selectedProblem === 'Burn' ? `Burn (${careSession.selectedBurnDegree})` : careSession.selectedProblem;
+      const fullProblem = careSession.selectedProblem === 'Burn' && careSession.selectedBurnDegree
+        ? `Burn (${careSession.selectedBurnDegree})`
+        : careSession.selectedProblem;
+
+      const urgencyTag = (careSession.urgencyLevel || 'routine').toUpperCase();
+      const urgencyClass = careSession.urgencyLevel === 'emergency' 
+        ? 'bg-red-100 text-red-800 border-red-200' 
+        : careSession.urgencyLevel === 'urgent' 
+          ? 'bg-amber-100 text-amber-800 border-amber-200' 
+          : 'bg-emerald-100 text-emerald-800 border-emerald-200';
 
       document.getElementById('referralSummaryBox').innerHTML = `
-        <div><strong class="text-gray-900">Referral ID:</strong> ${refId}</div>
-        <div><strong class="text-gray-900">Patient:</strong> ${careSession.patientName} (${careSession.patientPhone})</div>
-        <div><strong class="text-gray-900">Diagnosed Problem:</strong> ${fullProblem}</div>
-        <div><strong class="text-gray-900">Urgency Level:</strong> ${(careSession.urgencyLevel || 'routine').toUpperCase()}</div>
-        <div><strong class="text-gray-900">Referred Hospital:</strong> ${careSession.selectedHospital}</div>
-        <div><strong class="text-gray-900">Assigned Specialist:</strong> ${careSession.assignedDoctor}</div>
+        <!-- Slip Header -->
+        <div class="flex items-center justify-between border-b border-emerald-100 pb-3">
+          <div>
+            <div class="text-[10px] font-bold text-emerald-800 tracking-wider uppercase">Government of Maharashtra · Health Department</div>
+            <div class="text-sm font-extrabold text-gray-900">SETU HEALTH OFFICIAL REFERRAL SLIP</div>
+          </div>
+          <span class="text-xs font-mono font-bold text-emerald-900 bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-md">
+            ${refId}
+          </span>
+        </div>
+
+        <!-- Patient Demographics Summary -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <div class="bg-white p-2.5 rounded-lg border border-gray-100">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Patient Name</div>
+            <div class="font-bold text-gray-900 mt-0.5">${careSession.patientName || 'N/A'}</div>
+          </div>
+          <div class="bg-white p-2.5 rounded-lg border border-gray-100">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Age / Gender</div>
+            <div class="font-bold text-gray-900 mt-0.5">${careSession.patientAge || '—'} yrs / ${careSession.patientGender || '—'}</div>
+          </div>
+          <div class="bg-white p-2.5 rounded-lg border border-gray-100">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Village</div>
+            <div class="font-bold text-gray-900 mt-0.5">${careSession.patientVillage || 'Rampur'}</div>
+          </div>
+          <div class="bg-white p-2.5 rounded-lg border border-gray-100">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Contact</div>
+            <div class="font-bold text-gray-900 mt-0.5">${careSession.patientPhone || '—'}</div>
+          </div>
+        </div>
+
+        <!-- Clinical Details & Transfer Destination -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs pt-1">
+          <div class="bg-white p-3 rounded-lg border border-gray-100 space-y-1">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Clinical Priority & Diagnosis</div>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="px-2 py-0.5 text-[10px] font-bold border rounded-full ${urgencyClass}">${urgencyTag}</span>
+              <span class="font-bold text-gray-800">${fullProblem}</span>
+            </div>
+            <div class="text-gray-500 text-[11px] mt-1">Teleconsult Doctor: <span class="font-semibold text-gray-700">${careSession.assignedDoctor || 'Assigned Specialist'}</span></div>
+          </div>
+
+          <div class="bg-white p-3 rounded-lg border border-emerald-200 space-y-1">
+            <div class="text-[10px] font-semibold text-emerald-700 uppercase">Referred Facility</div>
+            <div class="font-bold text-emerald-950 text-sm mt-0.5">${careSession.selectedHospital || 'Rampur PHC'}</div>
+            <div class="text-gray-500 text-[11px]">Origin: <span class="font-semibold text-gray-700">Rampur Sub-Centre (ASHA Portal)</span></div>
+          </div>
+        </div>
       `;
 
+      lucide.createIcons();
       unlockStep(5);
     }
 
@@ -905,15 +963,88 @@ const rule = conditionFacilityRules[problemKey] || conditionFacilityRules["Other
       
       careSession.nextCheckupDate = dateString;
 
-      document.getElementById('nextCheckupDateDisplay').innerText = dateString;
-      document.getElementById('checkupReasonDisplay').innerText = `Scheduled ${daysToAdd} day(s) post triage for ${key}`;
+      const fullProblem = careSession.selectedProblem === 'Burn' && careSession.selectedBurnDegree
+        ? `Burn (${careSession.selectedBurnDegree})`
+        : careSession.selectedProblem;
 
+      document.getElementById('followupPlanContainer').innerHTML = `
+        <!-- Card Header -->
+        <div class="flex items-center justify-between border-b border-blue-100 pb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center font-bold">
+              <i data-lucide="calendar" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="text-[10px] font-bold text-blue-800 tracking-wider uppercase">Setu Health · Care Continuum</div>
+              <div class="text-xs font-bold text-gray-900">SCHEDULED FOLLOW-UP PLAN</div>
+            </div>
+          </div>
+          <span class="text-xs font-semibold text-blue-900 bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-full flex items-center gap-1">
+            <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-blue-700"></i>
+            <span>Calculated (+${daysToAdd} days)</span>
+          </span>
+        </div>
+
+        <!-- Scheduled Date Highlight Banner -->
+        <div class="bg-blue-600 text-white p-3.5 rounded-lg flex items-center justify-between shadow-sm">
+          <div>
+            <div class="text-[10px] uppercase font-semibold text-blue-100 tracking-wide">Next Check-up Date</div>
+            <div class="text-base font-extrabold mt-0.5">${dateString}</div>
+          </div>
+          <div class="text-right border-l border-blue-400/60 pl-4">
+            <div class="text-[10px] uppercase font-semibold text-blue-100">Interval</div>
+            <div class="text-xs font-bold mt-0.5">${daysToAdd} Day(s) Post-Care</div>
+          </div>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <div class="bg-white p-2.5 rounded-lg border border-gray-100">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Patient Name</div>
+            <div class="font-bold text-gray-900 mt-0.5">${careSession.patientName || 'N/A'}</div>
+          </div>
+          <div class="bg-white p-2.5 rounded-lg border border-gray-100">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Patient ID</div>
+            <div class="font-bold text-gray-900 mt-0.5 truncate">${careSession.patientId || 'Pending'}</div>
+          </div>
+          <div class="bg-white p-2.5 rounded-lg border border-gray-100">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Care Reason</div>
+            <div class="font-bold text-gray-900 mt-0.5">${fullProblem}</div>
+          </div>
+          <div class="bg-white p-2.5 rounded-lg border border-gray-100">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Facility</div>
+            <div class="font-bold text-gray-900 mt-0.5 truncate">${careSession.selectedHospital || 'Rampur PHC'}</div>
+          </div>
+        </div>
+
+        <!-- Primary Responsibility -->
+        <div class="bg-white p-3 rounded-lg border border-blue-100 flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2">
+            <i data-lucide="user-check" class="w-4 h-4 text-blue-700"></i>
+            <div>
+              <span class="text-gray-500">Responsible Health Worker:</span>
+              <span class="font-bold text-gray-800 ml-1">Assigned ASHA / ANM Worker</span>
+            </div>
+          </div>
+          <span class="text-[11px] text-blue-800 font-semibold bg-blue-50 px-2 py-0.5 rounded border border-blue-100">Home Visit / Sub-Centre</span>
+        </div>
+      `;
+
+      lucide.createIcons();
       unlockStep(6);
     }
 
     // STEP 6 SUBMIT
     function submitStep6() {
       markStepCompleted(6);
+
+      const statusTag = document.getElementById('followupStatusTag');
+      if (statusTag) {
+        statusTag.className = "text-xs text-emerald-800 font-bold bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1.5";
+        statusTag.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i> ✓ Follow-up scheduled`;
+        lucide.createIcons();
+      }
+
       unlockStep(7);
     }
 
@@ -990,8 +1121,25 @@ const rule = conditionFacilityRules[problemKey] || conditionFacilityRules["Other
         }
 
         // --------------------------------------------------
-        // 3. CREATE ENCOUNTER
+        // 3. CREATE ENCOUNTER WITH REFERRAL METADATA
         // --------------------------------------------------
+
+        const actionText = careSession.referralId && careSession.selectedHospital
+            ? `Referred to ${careSession.selectedHospital} [Ref ID: ${careSession.referralId}]`
+            : careSession.selectedHospital
+                ? `Facility selected: ${careSession.selectedHospital}`
+                : 'Triage completed';
+
+        const encounterTags = [
+            'health-worker',
+            'triage',
+            careSession.selectedProblem,
+            careSession.urgencyLevel || 'routine'
+        ];
+
+        if (careSession.referralId) {
+            encounterTags.push(`ref:${careSession.referralId}`);
+        }
 
         const { error: encounterError } =
             await supabaseClient
@@ -1005,15 +1153,8 @@ const rule = conditionFacilityRules[problemKey] || conditionFacilityRules["Other
                     provider: careSession.assignedDoctor || 'Health Worker',
                     reason: careSession.selectedProblem,
                     findings: `Triage completed for ${careSession.selectedProblem}`,
-                    action_taken: careSession.selectedHospital
-                        ? `Facility selected: ${careSession.selectedHospital}`
-                        : 'Triage completed',
-                    tags: [
-                        'health-worker',
-                        'triage',
-                        careSession.selectedProblem,
-                        careSession.urgencyLevel || 'routine'
-                    ]
+                    action_taken: actionText,
+                    tags: encounterTags
                 }]);
 
         if (encounterError) {
@@ -1374,12 +1515,24 @@ function renderPatientRecords(records, errorMessage = '') {
                             </span>
                         </div>
 
-                        <p class="text-sm text-gray-600 mt-2">
+                        <p class="text-sm font-semibold text-emerald-900 mt-1">
                             ${record.facility_name || 'Facility not recorded'}
                         </p>
 
+                        ${record.reason ? `
+                            <p class="text-xs text-gray-600 mt-1">
+                                <span class="font-medium text-gray-400">Condition:</span> ${record.reason}
+                            </p>
+                        ` : ''}
+
+                        ${record.action_taken ? `
+                            <p class="text-xs font-mono text-emerald-800 bg-emerald-50/80 p-2 rounded-lg mt-2 border border-emerald-100">
+                                <span class="font-sans font-semibold text-emerald-900">Action / Referral:</span> ${record.action_taken}
+                            </p>
+                        ` : ''}
+
                         ${record.provider ? `
-                            <p class="text-xs text-gray-500 mt-1">
+                            <p class="text-[11px] text-gray-400 mt-2">
                                 Provider: ${record.provider}
                             </p>
                         ` : ''}
