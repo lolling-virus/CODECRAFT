@@ -3,1176 +3,1158 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setu Health | Rural Care Pathway Platform</title>
   
-  <!-- Primary SEO Meta Tags -->
-  <title>SwasthyaSetu (स्वास्थ्य सेतु) — Integrated Rural Healthcare Network & Quality Decision Support</title>
-  <meta name="title" content="SwasthyaSetu — Integrated Rural Healthcare Network & Quality Decision Support">
-  <meta name="description" content="Integrated public healthcare access platform: assisted teleconsultation, digital triage, closed-loop referrals, longitudinal ABHA records, essential medicine visibility, and low-connectivity offline resilience.">
-  <meta name="keywords" content="SwasthyaSetu, Rural Health, Assisted Teleconsultation, Digital Triage, Closed-Loop Referral, ABHA EHR, e-Aushadhi, ASHA Frontline, ABDM FHIR">
-  <meta name="theme-color" content="#0d9488">
-
-  <!-- Open Graph / Social -->
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="SwasthyaSetu — Integrated Rural Healthcare Network">
-  <meta property="og:description" content="Strengthening the public health continuum from village Sub-Centres to District Hospitals with clinical decision intelligence.">
-
-  <!-- Fonts: Google Fonts Outfit, Plus Jakarta Sans, JetBrains Mono -->
+  <!-- Feather Icons -->
+  <script src="https://unpkg.com/feather-icons"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Mobile Viewport & PWA Metadata -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="SwasthyaSetu">
-  <link rel="manifest" href="manifest.json">
-
-  <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/mobile.css">
+  <link rel="stylesheet" href="style.css">
 </head>
-<body data-theme="clinical-teal">
+<body>
 
-    <div id="auth-screen" style="
-    position: fixed;
-    inset: 0;
-    z-index: 99999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #070b18;
-">
-    <div style="
-        width: min(420px, 90%);
-        padding: 32px;
-        border-radius: 20px;
-        background: #111827;
-        border: 1px solid rgba(255,255,255,0.12);
-        box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-    ">
-        <h1 style="margin-top:0;">🏥 SwasthyaSetu</h1>
-
-        <p style="opacity:0.7;">
-            Public Healthcare Access Platform
-        </p>
-
-        <label>Email</label>
-        <input
-            id="auth-email"
-            type="email"
-            placeholder="Enter your email"
-            style="width:100%; margin:8px 0 16px; padding:12px; box-sizing:border-box;"
-        >
-
-        <label>Password</label>
-        <input
-            id="auth-password"
-            type="password"
-            placeholder="Enter your password"
-            style="width:100%; margin:8px 0 16px; padding:12px; box-sizing:border-box;"
-        >
-
-        <button
-            id="auth-login-btn"
-            style="width:100%; padding:12px; cursor:pointer;"
-        >
-            Sign In
-        </button>
-
-        <p id="auth-message" style="margin-bottom:0; color:#ff7676;"></p>
-    </div>
-</div>
-
-  <!-- Dynamic Particle Canvas Background -->
-  <canvas id="canvas-bg"></canvas>
-  <div class="ambient-glow ambient-glow-1" aria-hidden="true"></div>
-  <div class="ambient-glow ambient-glow-2" aria-hidden="true"></div>
-
-  <div class="app-wrapper">
+  <!-- ========================================================================
+       SCREEN 1: SPLIT SCREEN SIGN-IN (EXACT MATCH TO SNIPPET)
+       ======================================================================== -->
+  <div id="authScreen">
     
-    <!-- ====================================================================
-         Top Operational HUD: Network Simulator, Facility Tier & Emergency SOS
-         ==================================================================== -->
-    <header class="operational-hud" id="operational-hud">
-      <div class="container hud-inner">
-        <div class="hud-left">
-          <!-- Facility Tier Breadcrumb -->
-          <span class="facility-tier-badge" id="facility-tier-badge">
-            📍 Sub-Centre (Arogya Mandir Rampur)
-          </span>
-
-          <span style="font-size:0.75rem; color:var(--text-muted);">
-            Block: <strong>Bithoor</strong> • District: <strong>Sitapur</strong>
-          </span>
-        </div>
-
-        <div class="hud-right">
-          <!-- Network Mode Simulator -->
-          <div class="network-mode-selector" title="Simulate Real-World Rural Connectivity">
-            <span style="font-size:0.72rem; color:var(--text-muted); margin-right:4px; margin-left:4px;">Network:</span>
-            <button class="net-mode-btn active" data-mode="online-4g" id="net-btn-4g">🟢 4G</button>
-            <button class="net-mode-btn" data-mode="online-2g" id="net-btn-2g">🟡 2G</button>
-            <button class="net-mode-btn" data-mode="offline" id="net-btn-offline">🔴 Offline</button>
+    <!-- LEFT HERO PANEL (Deep Pine Slate #0d2222 with Dot Grid) -->
+    <section class="hero-panel">
+      <div class="hero-header">
+        <div class="brand-wrap">
+          <div class="brand-icon">
+            <!-- Pulse Heartbeat Icon -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
           </div>
-
-          <!-- Offline Sync Drawer Trigger -->
-          <button class="sync-pill" id="sync-trigger-btn" onclick="App.openSyncDrawer()" title="View pending offline sync queue">
-            🔄 Sync (<span class="sync-count" id="sync-pending-count">0</span>)
-          </button>
-
-          <!-- Mobile QR Code Trigger -->
-          <button class="sync-pill" id="mobile-qr-btn" onclick="MobileWeb.openMobileQRModal()" style="background:rgba(45,212,191,0.15); border-color:rgba(45,212,191,0.35); color:#2dd4bf;" title="Scan QR Code to open on Mobile Browser">
-            📱 Open on Phone
-          </button>
-
-          <!-- Multilingual Language Selector -->
-          <select class="lang-select-dropdown" id="lang-select-dropdown" aria-label="Change System Language">
-            <option value="en">English</option>
-            <option value="hi">हिंदी (Hindi)</option>
-            <option value="bn">বাংলা (Bengali)</option>
-            <option value="ta">தமிழ் (Tamil)</option>
-            <option value="te">తెలుగు (Telugu)</option>
-            <option value="mr">मराठी (Marathi)</option>
-          </select>
-
-          <!-- Emergency 108 SOS Trigger -->
-          <button class="emergency-sos-btn" id="emergency-sos-top-btn" title="Trigger Acute Red-Flag Emergency Escalation">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-            <span>EMERGENCY 108</span>
-          </button>
-
-          <!-- Audio Sound Toggle -->
-          <button class="btn-icon" id="sound-toggle-btn" title="Toggle Audio Synthesizer Feedback" aria-label="Audio Feedback">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-          </button>
+          <span class="brand-name">Setu Health</span>
         </div>
       </div>
-    </header>
 
-    <!-- ====================================================================
-         Role Switcher Bar (Frontline ASHA, Medical Officer, Specialist, CMO)
-         ==================================================================== -->
-    <section class="role-bar" id="role-bar">
-      <div class="container role-bar-inner">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <a href="#" class="brand-logo" style="text-decoration:none;">
-            <div class="logo-icon-wrap" style="background:linear-gradient(135deg,#0d9488,#0284c7); border-color:#2dd4bf;">
-              <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20"></path></svg>
-            </div>
-            <div class="brand-title">
-              <span data-i18n="app_title">SwasthyaSetu</span>
-              <span class="hackathon-pill" style="background:rgba(45,212,191,0.2); color:#2dd4bf; border-color:rgba(45,212,191,0.4);">
-                <span class="pulse-dot"></span> Ayushman Bharat Continuum
-              </span>
-            </div>
-          </a>
-        </div>
+      <div class="hero-body">
+        <h1 class="hero-title">Quality care for every village, connected or not.</h1>
+        <p class="hero-subtitle">One platform linking patients, doctors and frontline workers across rural public health systems.</p>
 
-        <!-- Role Selector Buttons -->
-        <div class="role-selector-group" role="tablist" aria-label="Select User Role">
-          <button class="role-tab-btn active" data-role="asha" role="tab">
-            <span>👩‍⚕️ ASHA / ANM (Sub-Centre)</span>
-          </button>
-          <button class="role-tab-btn" data-role="mo" role="tab">
-            <span>🩺 Medical Officer (PHC)</span>
-          </button>
-          <button class="role-tab-btn" data-role="specialist" role="tab">
-            <span>🏛️ District Specialist (DH Hub)</span>
-          </button>
-          <button class="role-tab-btn" data-role="cmo" role="tab">
-            <span>📊 Health Officer (Command)</span>
-          </button>
+        <div class="hero-features">
+          <div class="feature-pill">
+            <div class="feature-icon-circle">
+              <i data-feather="wifi-off" style="width: 18px; height: 18px;"></i>
+            </div>
+            <span>Works offline, syncs when connected</span>
+          </div>
+
+          <div class="feature-pill">
+            <div class="feature-icon-circle">
+              <i data-feather="shield" style="width: 18px; height: 18px;"></i>
+            </div>
+            <span>ABHA-linked, AES-256 encrypted records</span>
+          </div>
+
+          <div class="feature-pill">
+            <div class="feature-icon-circle">
+              <i data-feather="globe" style="width: 18px; height: 18px;"></i>
+            </div>
+            <span>Available in 12 regional languages</span>
+          </div>
         </div>
+      </div>
+
+      <div class="hero-footer">
+        <span>© 2026 Setu Rural Health Mission · ABDM Compliant</span>
+        <a href="javascript:void(0)" onclick="openSupabaseModal()">Database Settings</a>
       </div>
     </section>
 
-    <!-- ====================================================================
-         Main Navigation Tabs (The 8 Pillars)
-         ==================================================================== -->
-    <nav class="module-nav-wrapper" aria-label="Platform Core Modules">
-      <div class="container">
-        <ul class="module-nav-list" role="tablist">
-          <li class="module-nav-item">
-            <a href="#triage" class="module-nav-btn active" data-tab="triage" data-i18n="tab_triage">
-              <span>🩺 Digital Triage & CDSS</span>
-              <span class="module-badge">Live</span>
-            </a>
-          </li>
-          <li class="module-nav-item">
-            <a href="#teleconsult" class="module-nav-btn" data-tab="teleconsult" data-i18n="tab_teleconsult">
-              <span>📹 Assisted Teleconsultation</span>
-            </a>
-          </li>
-          <li class="module-nav-item">
-            <a href="#records" class="module-nav-btn" data-tab="records" data-i18n="tab_records">
-              <span>🪪 Longitudinal Records (ABHA)</span>
-            </a>
-          </li>
-          <li class="module-nav-item">
-            <a href="#referrals" class="module-nav-btn" data-tab="referrals" data-i18n="tab_referrals">
-              <span>🚑 Closed-Loop Referrals</span>
-              <span class="module-badge" style="background:#0284c7; color:#fff;">108</span>
-            </a>
-          </li>
-          <li class="module-nav-item">
-            <a href="#diagnostics" class="module-nav-btn" data-tab="diagnostics" data-i18n="tab_diagnostics">
-              <span>🧪 Diagnostics Network</span>
-            </a>
-          </li>
-          <li class="module-nav-item">
-            <a href="#inventory" class="module-nav-btn" data-tab="inventory" data-i18n="tab_inventory">
-              <span>💊 Medicine Inventory (e-Aushadhi)</span>
-            </a>
-          </li>
-          <li class="module-nav-item">
-            <a href="#registries" class="module-nav-btn" data-tab="registries" data-i18n="tab_registries">
-              <span>📋 High-Risk Registries</span>
-              <span class="module-badge" style="background:#ef4444; color:#fff;">HRP</span>
-            </a>
-          </li>
-          <li class="module-nav-item">
-            <a href="#dashboard" class="module-nav-btn" data-tab="dashboard" data-i18n="tab_dashboard">
-              <span>📊 Command Dashboard</span>
-            </a>
-          </li>
-        </ul>
+    <!-- RIGHT SIGN-IN & ROLE SELECTION PANEL (Matching Snippet) -->
+    <section class="signin-panel">
+      
+      <div class="top-right-actions">
+        <div class="supabase-status-badge" onclick="openSupabaseModal()">
+          <span class="status-dot offline"></span> Demo Offline Mode
+        </div>
+      </div>
+
+      <div class="signin-container">
+        <div class="signin-header">
+          <h1>Sign in</h1>
+          <p>Welcome back. Choose your role to continue.</p>
+        </div>
+
+        <!-- Role Label -->
+        <div class="section-label">I am signing in as</div>
+
+        <!-- 2x2 Role Selector Grid -->
+        <div class="role-grid">
+          
+          <!-- Card 1: Patient -->
+          <div class="role-card" data-role="patient" onclick="selectRole('patient')">
+            <div class="check-icon"><i data-feather="check" style="width:12px; height:12px;"></i></div>
+            <div class="role-icon-box">
+              <i data-feather="user"></i>
+            </div>
+            <div class="role-card-info">
+              <h3>Patient</h3>
+              <p>Access your health records</p>
+            </div>
+          </div>
+
+          <!-- Card 2: Doctor -->
+          <div class="role-card" data-role="doctor" onclick="selectRole('doctor')">
+            <div class="check-icon"><i data-feather="check" style="width:12px; height:12px;"></i></div>
+            <div class="role-icon-box">
+              <i data-feather="activity"></i>
+            </div>
+            <div class="role-card-info">
+              <h3>Doctor</h3>
+              <p>Consult & manage referrals</p>
+            </div>
+          </div>
+
+          <!-- Card 3: Health Worker (Selected by Default) -->
+          <div class="role-card selected" data-role="health_worker" onclick="selectRole('health_worker')">
+            <div class="check-icon"><i data-feather="check" style="width:12px; height:12px;"></i></div>
+            <div class="role-icon-box">
+              <i data-feather="heart"></i>
+            </div>
+            <div class="role-card-info">
+              <h3>Health Worker</h3>
+              <p>ASHA / ANM field access</p>
+            </div>
+          </div>
+
+          <!-- Card 4: Other -->
+          <div class="role-card" data-role="other" onclick="selectRole('other')">
+            <div class="check-icon"><i data-feather="check" style="width:12px; height:12px;"></i></div>
+            <div class="role-icon-box">
+              <i data-feather="more-horizontal"></i>
+            </div>
+            <div class="role-card-info">
+              <h3>Other</h3>
+              <p>Admin, pharmacist, staff</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Sign-in Form -->
+        <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">Mobile / ABHA number</label>
+            <div class="input-with-icon">
+              <i data-feather="phone"></i>
+              <input type="text" id="loginIdentifier" class="input-control" value="98765 43210" placeholder="98765 43210" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label-row">
+              <label class="form-label">PIN / Password</label>
+              <a href="javascript:void(0)" class="form-link" onclick="showToast('OTP sent to registered mobile!')">Forgot?</a>
+            </div>
+            <div class="input-with-icon">
+              <i data-feather="lock"></i>
+              <input type="password" id="loginPassword" class="input-control" value="123456" placeholder="••••••" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary-sign">
+            Sign In <span>→</span>
+          </button>
+        </form>
+
+        <div class="divider">or</div>
+
+        <button type="button" class="btn-outline-bio" onclick="handleLoginSubmit(null)">
+          <i data-feather="fingerprint"></i> Use biometric / OTP
+        </button>
+
+        <!-- No record yet? banner -->
+        <div class="register-card-banner" onclick="showToast('New ABHA registration workflow launched!')">
+          <div class="register-icon">
+            <i data-feather="user-plus" style="width: 16px; height: 16px;"></i>
+          </div>
+          <div class="register-text">
+            <h4>No record yet?</h4>
+            <p>Register a new patient or request staff access →</p>
+          </div>
+        </div>
+
+        <!-- Quick 1-Click Role Switcher for Evaluators -->
+        <div class="quick-demo-strip">
+          <span>Quick Demo Roles:</span>
+          <div class="demo-btn-group">
+            <button class="btn-demo-pill" onclick="selectRole('health_worker'); handleLoginSubmit();">ASHA Worker</button>
+            <button class="btn-demo-pill" onclick="selectRole('doctor'); handleLoginSubmit();">Doctor</button>
+            <button class="btn-demo-pill" onclick="selectRole('patient'); handleLoginSubmit();">Patient</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ========================================================================
+       SCREEN 2: APP PORTAL WITH ROLE-BASED DASHBOARDS & 7-STAGE PATHWAY
+       ======================================================================== -->
+  <div id="portalScreen">
+    
+    <!-- TOP NAVIGATION BAR -->
+    <header class="top-navbar">
+      <div class="navbar-brand-section">
+        <a href="javascript:void(0)" class="brand-mini" onclick="launchPortal()">
+          <div class="brand-mini-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <span>Setu Health</span>
+        </a>
+
+        <!-- Dynamic Role Badge -->
+        <div id="navRolePill" class="role-badge-pill asha">
+          <i data-feather="heart"></i> ASHA / ANM Field Portal
+        </div>
+      </div>
+
+      <!-- Center Quick Switcher for Testing Different Roles -->
+      <div class="navbar-center-tabs">
+        <button class="nav-tab-btn" onclick="switchRoleDirect('health_worker')"><i data-feather="heart"></i> ASHA</button>
+        <button class="nav-tab-btn" onclick="switchRoleDirect('doctor')"><i data-feather="activity"></i> Doctor</button>
+        <button class="nav-tab-btn" onclick="switchRoleDirect('patient')"><i data-feather="user"></i> Patient</button>
+      </div>
+
+      <div class="navbar-right-section">
+        <div class="supabase-status-badge" onclick="openSupabaseModal()" title="Manage Supabase connection">
+          <span class="status-dot offline"></span> Demo Mode
+        </div>
+
+        <div class="user-profile-menu">
+          <div class="user-avatar-circle" id="navUserAvatar">RT</div>
+          <span style="font-size: 13px; font-weight:600;" id="navUserName">Rekha Tai</span>
+        </div>
+
+        <button class="btn-signout" onclick="handleSignOut()">
+          <i data-feather="log-out" style="width:13px; height:13px;"></i> Sign Out
+        </button>
+      </div>
+    </header>
+
+    <!-- 7-STAGE CARE PATHWAY STEPPER (REQUESTED WORKFLOW) -->
+    <!-- "Patient/ASHA identifies problem → triage → finds appropriate facility →
+         appointment/teleconsultation → referral → follow-up → record updated" -->
+    <nav class="pathway-stepper-container">
+      <div class="stepper-track-wrap">
+        
+        <div class="pathway-step-node active" data-step="1" onclick="setPathwayStep(1)">
+          <div class="pathway-step-num">1</div>
+          <div class="pathway-step-label">Identify Problem</div>
+        </div>
+        <div class="pathway-connector-arrow">→</div>
+
+        <div class="pathway-step-node" data-step="2" onclick="setPathwayStep(2)">
+          <div class="pathway-step-num">2</div>
+          <div class="pathway-step-label">Triage</div>
+        </div>
+        <div class="pathway-connector-arrow">→</div>
+
+        <div class="pathway-step-node" data-step="3" onclick="setPathwayStep(3)">
+          <div class="pathway-step-num">3</div>
+          <div class="pathway-step-label">Appropriate Facility</div>
+        </div>
+        <div class="pathway-connector-arrow">→</div>
+
+        <div class="pathway-step-node" data-step="4" onclick="setPathwayStep(4)">
+          <div class="pathway-step-num">4</div>
+          <div class="pathway-step-label">Teleconsultation</div>
+        </div>
+        <div class="pathway-connector-arrow">→</div>
+
+        <div class="pathway-step-node" data-step="5" onclick="setPathwayStep(5)">
+          <div class="pathway-step-num">5</div>
+          <div class="pathway-step-label">Referral</div>
+        </div>
+        <div class="pathway-connector-arrow">→</div>
+
+        <div class="pathway-step-node" data-step="6" onclick="setPathwayStep(6)">
+          <div class="pathway-step-num">6</div>
+          <div class="pathway-step-label">Follow-up</div>
+        </div>
+        <div class="pathway-connector-arrow">→</div>
+
+        <div class="pathway-step-node" data-step="7" onclick="setPathwayStep(7)">
+          <div class="pathway-step-num">7</div>
+          <div class="pathway-step-label">Record Updated</div>
+        </div>
+
       </div>
     </nav>
 
-    <!-- ====================================================================
-         Main Dynamic Content Area
-         ==================================================================== -->
-    <main class="container" style="padding-bottom: 60px;">
+    <!-- MAIN BODY CONTENT -->
+    <main class="portal-content-body">
 
-      <!-- Hero Overview Banner & Spoken Audio Counselor -->
-      <section class="rural-health-banner">
-        <div class="banner-grid">
-          <div>
-            <h1 class="banner-title">
-              <span data-i18n="hero_title">Strengthening Rural Public Healthcare with</span>
-              <span class="highlight" data-i18n="hero_highlight">Integrated Clinical Decision Intelligence</span>
-            </h1>
-            <p class="banner-desc" data-i18n="hero_desc">
-              Bridging the last-mile care continuum between village Sub-Centres (Ayushman Arogya Mandir), Primary Health Centres, and District Hospitals through assisted teleconsultation, closed-loop referrals, and offline-first records.
-            </p>
+      <!-- ====================================================================
+           A. HEALTH WORKER (ASHA / ANM) DASHBOARD
+           ==================================================================== -->
+      <div id="ashaDashboard" class="role-dashboard-view active">
+        
+        <!-- Welcome Banner -->
+        <div class="dash-welcome-card">
+          <div class="dash-welcome-info">
+            <h2>Welcome back, Rekha Tai (ASHA Field Lead)</h2>
+            <p>Rampur Sub-Centre Cluster · 142 Households registered · Syncing via offline-first cache.</p>
           </div>
-          
-          <div class="banner-stats-row">
-            <div class="banner-stat-box">
-              <div class="stat-value teal">▼ 78.5%</div>
-              <div class="stat-lbl" data-i18n="stat_wait_time">Wait Time Reduction</div>
-            </div>
-            <div class="banner-stat-box">
-              <div class="stat-value green">92.4%</div>
-              <div class="stat-lbl" data-i18n="stat_referral_rate">Referral Completion</div>
-            </div>
-            <div class="banner-stat-box">
-              <div class="stat-value amber">98.2%</div>
-              <div class="stat-lbl" data-i18n="stat_stock_rate">Drug Availability</div>
-            </div>
-            <div class="banner-stat-box">
-              <div class="stat-value teal">28,450</div>
-              <div class="stat-lbl" data-i18n="stat_travel_saved">Travel Saved (km)</div>
-            </div>
+          <div class="dash-quick-cta-group">
+            <button class="btn-hero-action" onclick="setPathwayStep(1)">
+              <i data-feather="plus-circle"></i> Screen New Patient
+            </button>
+            <button class="btn-hero-secondary" onclick="openSupabaseModal()">
+              <i data-feather="database"></i> Supabase Sync
+            </button>
           </div>
         </div>
 
-        <!-- Voice Health Literacy Audio Bar -->
-        <div class="voice-literacy-bar">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <div style="font-size:1.6rem;">🔊</div>
+        <!-- KPI Metrics -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-card-top">
+              <div class="kpi-icon-wrap"><i data-feather="users"></i></div>
+              <span class="kpi-trend green">+4 today</span>
+            </div>
+            <div class="kpi-value" id="ashaKpiScreened">18</div>
+            <div class="kpi-label">Patients Screened This Week</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-card-top">
+              <div class="kpi-icon-wrap" style="background:#fee2e2; color:#b91c1c;"><i data-feather="alert-triangle"></i></div>
+              <span class="kpi-trend red">High Priority</span>
+            </div>
+            <div class="kpi-value" id="ashaKpiEmergency">2</div>
+            <div class="kpi-label">Emergency Red Triage Flagged</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-card-top">
+              <div class="kpi-icon-wrap"><i data-feather="send"></i></div>
+              <span class="kpi-trend blue">Tracked</span>
+            </div>
+            <div class="kpi-value" id="ashaKpiReferrals">5</div>
+            <div class="kpi-label">Active Referrals in Transit</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-card-top">
+              <div class="kpi-icon-wrap"><i data-feather="calendar"></i></div>
+              <span class="kpi-trend green">Scheduled</span>
+            </div>
+            <div class="kpi-value" id="ashaKpiFollowup">6 Due</div>
+            <div class="kpi-label">Post-Discharge Home Visits</div>
+          </div>
+        </div>
+
+        <!-- Patient Register Table -->
+        <div class="panel-card" style="margin-bottom: 24px;">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div>
+                <h3>Village Care Register & Pathway Tracker</h3>
+                <p>Click any patient to resume their 7-step care pathway</p>
+              </div>
+            </div>
+            <button class="btn-hero-action" style="font-size:12px; padding:6px 12px;" onclick="setPathwayStep(1)">
+              + Register New Case
+            </button>
+          </div>
+
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Patient Name</th>
+                  <th>ABHA Number</th>
+                  <th>Triage Status</th>
+                  <th>Allocated Facility</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="ashaPatientsTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ====================================================================
+           B. DOCTOR (PHC / CHC MEDICAL OFFICER) DASHBOARD
+           ==================================================================== -->
+      <div id="doctorDashboard" class="role-dashboard-view">
+        
+        <div class="dash-welcome-card" style="background: linear-gradient(135deg, #102624 0%, #153c39 100%);">
+          <div class="dash-welcome-info">
+            <h2>Dr. Anand Verma, MD (Medical Officer)</h2>
+            <p>Beed PHC Cluster & Virtual OPD · 8 Rural Sub-Centres connected · Live e-Sanjeevani Teleconsultation.</p>
+          </div>
+          <div class="dash-quick-cta-group">
+            <button class="btn-hero-action" onclick="setPathwayStep(4); startTeleconsultSimulation();">
+              <i data-feather="video"></i> Open Virtual OPD
+            </button>
+            <button class="btn-hero-secondary" onclick="setPathwayStep(5)">
+              <i data-feather="check-square"></i> Bed Allotment
+            </button>
+          </div>
+        </div>
+
+        <!-- Doctor KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-card-top">
+              <div class="kpi-icon-wrap"><i data-feather="clock"></i></div>
+              <span class="kpi-trend green">Live</span>
+            </div>
+            <div class="kpi-value" id="docKpiQueue">4</div>
+            <div class="kpi-label">Patients Waiting in Tele-OPD</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-card-top">
+              <div class="kpi-icon-wrap" style="background:#fee2e2; color:#b91c1c;"><i data-feather="alert-octagon"></i></div>
+              <span class="kpi-trend red">Urgent Action</span>
+            </div>
+            <div class="kpi-value" id="docKpiEmergency">2</div>
+            <div class="kpi-label">Red Alert Emergencies</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-card-top">
+              <div class="kpi-icon-wrap"><i data-feather="layers"></i></div>
+              <span class="kpi-trend blue">PHC Capacity</span>
+            </div>
+            <div class="kpi-value" id="docKpiBeds">14 / 20</div>
+            <div class="kpi-label">Hospital Beds Available</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-card-top">
+              <div class="kpi-icon-wrap"><i data-feather="file-text"></i></div>
+              <span class="kpi-trend green">Signed</span>
+            </div>
+            <div class="kpi-value" id="docKpiPrescriptions">19</div>
+            <div class="kpi-label">Digital Rx Issued Today</div>
+          </div>
+        </div>
+
+        <!-- Priority Doctor Worklist -->
+        <div class="panel-card" style="margin-bottom: 24px;">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div>
+                <h3>Priority Clinical Triage Worklist (ASHA Referrals)</h3>
+                <p>Sorted by Clinical Risk: Red (Immediate) → Yellow (Urgent) → Green (Routine)</p>
+              </div>
+            </div>
+            <span class="facility-tag" style="background:#def7ec; color:#03543f;">Tele-OPD Active</span>
+          </div>
+
+          <div id="doctorQueueList">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ====================================================================
+           C. PATIENT HEALTH HUB
+           ==================================================================== -->
+      <div id="patientDashboard" class="role-dashboard-view">
+        
+        <div class="dash-welcome-card" style="background: linear-gradient(135deg, #183330 0%, #204b46 100%);">
+          <div class="dash-welcome-info">
+            <h2>Namaste, <span id="patientHubName">Sunita Devi</span></h2>
+            <p>ABHA ID: <span id="patientHubAbha" style="font-family:var(--font-mono); font-weight:700;">91-4421-8930-1122</span> · Rampur Village</p>
+            <p style="font-size:12px; margin-top:4px; color:#d1dedc;">Assigned ASHA Worker: Rekha Tai (+91 98765 43210)</p>
+          </div>
+          <div class="dash-quick-cta-group">
+            <button class="btn-hero-action" onclick="setPathwayStep(4); startTeleconsultSimulation();">
+              <i data-feather="video"></i> Join Doctor Video Call
+            </button>
+            <button class="btn-hero-secondary" onclick="setPathwayStep(7); finalizeHealthRecord();">
+              <i data-feather="download"></i> Download ABHA Card
+            </button>
+          </div>
+        </div>
+
+        <div class="grid-2col" style="margin-bottom: 24px;">
+          
+          <!-- Card 1: My Health Vitals & Triage Status -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title">
+                <h3>My Current Health Status</h3>
+                <p>Recorded by ASHA worker during home visit</p>
+              </div>
+              <span id="patientHubTriageBadge" class="badge-priority emergency">Emergency</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:16px;">
+              <div style="background:#f8faf9; padding:12px; border-radius:8px;">
+                <div style="font-size:11px; color:#6a7e79;">Blood Pressure</div>
+                <div id="patientHubVitalsBP" style="font-size:16px; font-weight:700; font-family:var(--font-mono);">165/105</div>
+              </div>
+              <div style="background:#f8faf9; padding:12px; border-radius:8px;">
+                <div style="font-size:11px; color:#6a7e79;">Oxygen SpO2</div>
+                <div id="patientHubVitalsSpO2" style="font-size:16px; font-weight:700; font-family:var(--font-mono);">96%</div>
+              </div>
+              <div style="background:#f8faf9; padding:12px; border-radius:8px;">
+                <div style="font-size:11px; color:#6a7e79;">Pulse</div>
+                <div id="patientHubVitalsPulse" style="font-size:16px; font-weight:700; font-family:var(--font-mono);">92 bpm</div>
+              </div>
+            </div>
+
+            <p style="font-size:13px; color:#3b4e4a; margin-bottom:12px;">
+              <strong>Allocated Facility:</strong> <span id="patientHubFacilityName">District Civil Hospital</span>
+            </p>
+
+            <button class="btn-hero-action" style="width:100%; justify-content:center;" onclick="setPathwayStep(1)">
+              Report a New Symptom / Problem →
+            </button>
+          </div>
+
+          <!-- Card 2: Digital Referral Pass & QR Code -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title">
+                <h3>My Digital Referral Pass</h3>
+                <p>Show this QR code at hospital OPD / Emergency desk</p>
+              </div>
+              <span class="facility-tag" style="background:#def7ec; color:#03543f;">Valid for Direct Admission</span>
+            </div>
+
+            <div style="display:flex; gap:16px; align-items:center;">
+              <div class="referral-qr-wrap">
+                <!-- SVG Mock QR Code -->
+                <svg width="76" height="76" viewBox="0 0 100 100" fill="#132c2a">
+                  <rect x="5" y="5" width="25" height="25" fill="none" stroke="#132c2a" stroke-width="6"/>
+                  <rect x="12" y="12" width="11" height="11"/>
+                  <rect x="70" y="5" width="25" height="25" fill="none" stroke="#132c2a" stroke-width="6"/>
+                  <rect x="77" y="12" width="11" height="11"/>
+                  <rect x="5" y="70" width="25" height="25" fill="none" stroke="#132c2a" stroke-width="6"/>
+                  <rect x="12" y="77" width="11" height="11"/>
+                  <rect x="38" y="10" width="12" height="12"/>
+                  <rect x="55" y="18" width="8" height="8"/>
+                  <rect x="38" y="38" width="24" height="24"/>
+                  <rect x="70" y="55" width="12" height="12"/>
+                  <rect x="85" y="75" width="8" height="15"/>
+                  <rect x="42" y="72" width="16" height="8"/>
+                </svg>
+              </div>
+
+              <div>
+                <div style="font-size:11px; color:#6a7e79;">Pass Reference ID</div>
+                <div id="patientHubQrCode" style="font-family:var(--font-mono); font-size:15px; font-weight:700; color:#1e7a67;">
+                  REF-SUNITA-9144-EMG
+                </div>
+                <p style="font-size:12px; color:#3b4e4a; margin-top:4px;">108 Ambulance dispatched · Estimated arrival: 14 mins</p>
+                <button class="btn-hero-secondary" style="margin-top:8px; font-size:12px; padding:4px 10px; color:#1e7a67; border-color:#1e7a67;" onclick="setPathwayStep(5)">
+                  Track Ambulance Live →
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ====================================================================
+           7-STAGE CARE PATHWAY WORKFLOW PANELS (INTERACTIVE)
+           ==================================================================== -->
+      
+      <!-- --- STEP 1: IDENTIFY PROBLEM --- -->
+      <section id="stepView_1" class="pathway-section-view panel-card" style="display:block;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="pathway-step-num" style="background:var(--primary-teal); color:#fff;">1</div>
             <div>
-              <div style="font-size:0.75rem; color:#2dd4bf; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">
-                Multilingual Voice Health Counselor (Low Health-Literacy Support)
+              <h3>Step 1: Patient / ASHA Identifies Problem</h3>
+              <p>Capture chief complaints, voice audio notes, and patient demographics in the field</p>
+            </div>
+          </div>
+          <span class="facility-tag">Field Intake</span>
+        </div>
+
+        <form id="problemIntakeForm" onsubmit="handleIdentifyProblemSubmit(event)">
+          <!-- Voice Note Simulator -->
+          <div class="voice-recorder-box">
+            <div class="voice-status-content">
+              <button type="button" id="voiceRecordBtn" class="voice-record-btn" onclick="toggleVoiceRecording()">
+                <i data-feather="mic"></i>
+              </button>
+              <div>
+                <strong style="font-size:13.5px; color:#102422;">Voice Complaint Recorder (Regional Audio)</strong>
+                <p id="voiceStatusText" style="font-size:12px; color:#667b75;">Click mic to record patient voice in regional language (Hindi/Bengali/Marathi)</p>
               </div>
-              <div class="voice-text-preview" id="voice-preview-text">
-                "Maternal Health Guidance: Take one Iron Folic Acid tablet daily after food. If severe headache occurs, call 108 immediately."
+            </div>
+
+            <div id="voiceWaveBox" class="voice-waves" style="display:none;">
+              <span class="voice-bar"></span>
+              <span class="voice-bar"></span>
+              <span class="voice-bar"></span>
+              <span class="voice-bar"></span>
+              <span class="voice-bar"></span>
+            </div>
+          </div>
+
+          <div class="grid-form">
+            <div>
+              <label class="input-label">Patient Full Name *</label>
+              <input type="text" id="step1_name" class="form-input" placeholder="e.g. Anandi Devi" value="Meena Kumari" required>
+            </div>
+
+            <div>
+              <label class="input-label">Age & Gender *</label>
+              <div style="display:flex; gap:8px;">
+                <input type="number" id="step1_age" class="form-input" placeholder="Age" value="28" style="width:40%;" required>
+                <select id="step1_gender" class="form-select" style="width:60%;">
+                  <option value="Female">Female</option>
+                  <option value="Male">Male</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
+            </div>
+
+            <div>
+              <label class="input-label">Village / Habitation *</label>
+              <input type="text" id="step1_village" class="form-input" value="Rampur Gram Panchayat" required>
+            </div>
+
+            <div>
+              <label class="input-label">ABHA ID (Ayushman Bharat Health Account)</label>
+              <input type="text" id="step1_abha" class="form-input" placeholder="91-XXXX-XXXX-XXXX" value="91-5540-8821-4455">
+            </div>
+
+            <div class="full-width">
+              <label class="input-label">Chief Symptoms & Problem Description *</label>
+              <textarea id="step1_complaints" class="form-textarea" rows="3" placeholder="Describe symptoms, duration, and severity..." required>High grade fever with shivering for 3 days, acute vomiting, and severe dehydration.</textarea>
+            </div>
+
+            <div class="full-width" style="display:flex; align-items:center; gap:8px;">
+              <input type="checkbox" id="step1_pregnant" style="width:16px; height:16px;">
+              <label for="step1_pregnant" style="font-size:13px; font-weight:600; color:#182e2b;">Is patient currently pregnant? (Triggers high-risk maternal protocols)</label>
+            </div>
+          </div>
+
+          <div style="margin-top: 20px; display:flex; justify-content:flex-end; gap:12px;">
+            <button type="submit" class="btn-hero-action">
+              Save & Proceed to Step 2: Triage →
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- --- STEP 2: TRIAGE EVALUATOR --- -->
+      <section id="stepView_2" class="pathway-section-view panel-card" style="display:none;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="pathway-step-num" style="background:var(--primary-teal); color:#fff;">2</div>
+            <div>
+              <h3>Step 2: Clinical Triage & Risk Stratification</h3>
+              <p id="step2_patientNameDisplay">Evaluating Patient Vitals · National Health Mission Triage Guidelines</p>
+            </div>
+          </div>
+          <span id="triageScoreBadge" class="badge-priority emergency">Emergency (Risk Score: 9/10)</span>
+        </div>
+
+        <div class="grid-form">
+          <div>
+            <label class="input-label">Blood Pressure (Systolic / Diastolic mmHg)</label>
+            <div style="display:flex; gap:8px;">
+              <input type="number" id="vitals_bpsys" class="form-input" value="165" placeholder="Systolic" oninput="calculateTriageScore()">
+              <input type="number" id="vitals_bpdia" class="form-input" value="105" placeholder="Diastolic" oninput="calculateTriageScore()">
+            </div>
+          </div>
+
+          <div>
+            <label class="input-label">Pulse Rate (BPM)</label>
+            <input type="number" id="vitals_pulse" class="form-input" value="98" oninput="calculateTriageScore()">
+          </div>
+
+          <div>
+            <label class="input-label">Pulse Oximeter SpO2 (%)</label>
+            <input type="number" id="vitals_spo2" class="form-input" value="95" oninput="calculateTriageScore()">
+          </div>
+
+          <div>
+            <label class="input-label">Temperature (°F)</label>
+            <input type="number" step="0.1" id="vitals_temp" class="form-input" value="101.4" oninput="calculateTriageScore()">
+          </div>
+
+          <div>
+            <label class="input-label">Random Blood Glucose (mg/dL)</label>
+            <input type="number" id="vitals_glucose" class="form-input" value="120" oninput="calculateTriageScore()">
+          </div>
+
+          <div>
+            <label class="input-label">Identified Clinical Danger Signs</label>
+            <select id="vitals_dangerSigns" class="form-select" onchange="calculateTriageScore()">
+              <option value="none">None observed</option>
+              <option value="moderate">Moderate (Persistent vomiting, inability to drink)</option>
+              <option value="severe" selected>Severe (Chest pain, severe hypertension, altered sensorium, convulsions)</option>
+            </select>
+          </div>
+
+          <div class="full-width" style="background:#f4f8f6; padding:16px; border-radius:8px; border:1px solid #d4deda;">
+            <h4 style="font-size:13px; margin-bottom:4px; color:#182e2b;">Clinical Decision Recommendation:</h4>
+            <p id="triageRecommendation" style="font-size:13px; color:#3b4e4a;">
+              <strong style="color:#b91c1c;">Immediate referral to CHC / District Hospital required!</strong> Dispatch 108 Ambulance and alert emergency bed.
+            </p>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px; display:flex; justify-content:space-between; align-items:center;">
+          <button type="button" class="btn-hero-secondary" onclick="setPathwayStep(1)">← Back to Intake</button>
+          <button type="button" class="btn-hero-action" onclick="handleTriageConfirm()">
+            Confirm Triage & Find Facility →
+          </button>
+        </div>
+      </section>
+
+      <!-- --- STEP 3: FINDS APPROPRIATE FACILITY --- -->
+      <section id="stepView_3" class="pathway-section-view panel-card" style="display:none;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="pathway-step-num" style="background:var(--primary-teal); color:#fff;">3</div>
+            <div>
+              <h3>Step 3: Appropriate Healthcare Facility Locator</h3>
+              <p>Locate the nearest capable public health centre matching triage urgency</p>
             </div>
           </div>
           <div style="display:flex; gap:8px;">
-            <button class="voice-play-btn" onclick="VoiceLiteracy.speakTopic('maternal_care')">
-              <span>▶ Listen Guidance</span>
-            </button>
-            <button class="btn btn-secondary btn-sm" onclick="VoiceLiteracy.stop()" title="Stop audio">
-              <span>⏹ Stop</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           MODULE 1: DIGITAL TRIAGE & CDSS
-           ==================================================================== -->
-      <section class="app-module-section" id="section-triage">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
-          <div>
-            <h2 style="font-family:var(--font-display); font-size:1.5rem; color:var(--text-primary);">
-              Frontline Digital Triage & Clinical Decision Support (CDSS)
-            </h2>
-            <p style="font-size:0.85rem; color:var(--text-secondary);">
-              Protocol-guided risk stratification based on MoHFW Ayushman Bharat & WHO IMNCI standards.
-            </p>
-          </div>
-
-          <!-- Demo Clinical Presets -->
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:0.78rem; color:var(--text-muted);">Quick Case Scenario:</span>
-            <select class="lang-select-dropdown" id="triage-preset-selector">
-              <option value="maternal_preeclampsia">Case 1: Severe Preeclampsia (Maternal RED)</option>
-              <option value="pediatric_sam_pneumonia">Case 2: Child Pneumonia & SAM (Pediatric RED)</option>
-              <option value="ncd_uncontrolled_htn">Case 3: Uncontrolled Diabetic Crisis (YELLOW)</option>
-              <option value="routine_wellness">Case 4: Routine Post-Partum ANC (GREEN)</option>
+            <select id="facilityFilterSelect" class="form-select" style="width:160px; font-size:12px;">
+              <option value="all">All Facility Tiers</option>
+              <option value="Sub-Centre">Sub-Centres (AAM)</option>
+              <option value="PHC">Primary Health Centres</option>
+              <option value="CHC">Community Health Centres</option>
+              <option value="District Hospital">District Hospitals</option>
             </select>
           </div>
         </div>
 
-        <div class="triage-container">
-          <!-- Triage Assessment Form -->
-          <div class="triage-form-card">
-            <form id="triage-evaluation-form">
-              <div style="display:grid; grid-template-columns: 1.4fr 0.8fr 1fr; gap:12px; margin-bottom:12px;">
-                <div class="vital-field">
-                  <label>Patient Full Name</label>
-                  <input type="text" id="triage-patient-name" value="Sunita Devi">
-                </div>
-                <div class="vital-field">
-                  <label>Age (Years / Mo)</label>
-                  <input type="number" id="triage-patient-age" value="28">
-                </div>
-                <div class="vital-field">
-                  <label>Clinical Cohort</label>
-                  <input type="text" id="triage-patient-category" value="Maternal (32w)">
-                </div>
-              </div>
+        <div id="facilityResultsList">
+          <!-- Dynamically populated facility cards -->
+        </div>
 
-              <div style="font-size:0.78rem; font-weight:700; color:#2dd4bf; text-transform:uppercase; letter-spacing:0.05em; margin-top:14px;">
-                Objective Vital Signs (Point-of-Care)
-              </div>
+        <div style="margin-top: 20px; display:flex; justify-content:space-between; align-items:center;">
+          <button type="button" class="btn-hero-secondary" onclick="setPathwayStep(2)">← Back to Triage</button>
+          <button type="button" class="btn-hero-action" onclick="setPathwayStep(4)">
+            Proceed to Teleconsultation / Booking →
+          </button>
+        </div>
+      </section>
 
-              <div class="vital-input-grid">
-                <div class="vital-field">
-                  <label>Systolic BP <span class="vital-unit">mmHg</span></label>
-                  <input type="number" id="vitals-bp-sys" value="168">
-                </div>
-                <div class="vital-field">
-                  <label>Diastolic BP <span class="vital-unit">mmHg</span></label>
-                  <input type="number" id="vitals-bp-dia" value="108">
-                </div>
-                <div class="vital-field">
-                  <label>Heart Pulse <span class="vital-unit">bpm</span></label>
-                  <input type="number" id="vitals-pulse" value="98">
-                </div>
-                <div class="vital-field">
-                  <label>SpO2 Saturation <span class="vital-unit">%</span></label>
-                  <input type="number" id="vitals-spo2" value="97">
-                </div>
-                <div class="vital-field">
-                  <label>Body Temp <span class="vital-unit">°F</span></label>
-                  <input type="number" step="0.1" id="vitals-temp" value="98.6">
-                </div>
-                <div class="vital-field">
-                  <label>Respiratory Rate <span class="vital-unit">/min</span></label>
-                  <input type="number" id="vitals-resp" value="22">
-                </div>
-                <div class="vital-field">
-                  <label>Blood Sugar (POC) <span class="vital-unit">mg/dL</span></label>
-                  <input type="number" id="vitals-glucose" value="110">
-                </div>
-                <div class="vital-field">
-                  <label>Hemoglobin (POC) <span class="vital-unit">g/dL</span></label>
-                  <input type="number" step="0.1" id="vitals-hb" value="8.2">
-                </div>
-              </div>
-
-              <!-- High-Risk Red Flags -->
-              <div class="danger-flags-group">
-                <div class="danger-flags-title">
-                  ⚠️ Acute Danger Signs & Red-Flag Checklist
-                </div>
-                <div class="checkbox-pill-grid">
-                  <label class="check-pill">
-                    <input type="checkbox" id="flag-headache">
-                    <span>Severe persistent headache</span>
-                  </label>
-                  <label class="check-pill">
-                    <input type="checkbox" id="flag-vision">
-                    <span>Blurred / double vision</span>
-                  </label>
-                  <label class="check-pill">
-                    <input type="checkbox" id="flag-bleeding">
-                    <span>Active vaginal / vascular bleeding</span>
-                  </label>
-                  <label class="check-pill">
-                    <input type="checkbox" id="flag-chest-pain">
-                    <span>Crushing chest pain radiating to arm</span>
-                  </label>
-                  <label class="check-pill">
-                    <input type="checkbox" id="flag-breathing">
-                    <span>Acute severe breathlessness</span>
-                  </label>
-                  <label class="check-pill">
-                    <input type="checkbox" id="flag-child-indrawing">
-                    <span>Child subcostal chest indrawing / stridor</span>
-                  </label>
-                </div>
-              </div>
-            </form>
-          </div>
-
-          <!-- Computed Triage Score & Protocol Output -->
-          <div class="triage-result-card">
+      <!-- --- STEP 4: APPOINTMENT / TELECONSULTATION --- -->
+      <section id="stepView_4" class="pathway-section-view panel-card" style="display:none;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="pathway-step-num" style="background:var(--primary-teal); color:#fff;">4</div>
             <div>
-              <div class="triage-score-display red" id="triage-score-box">
-                <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; opacity:0.8;">Computed Triage Status</div>
-                <div class="triage-level-tag" id="triage-badge-tag">RED PRIORITY</div>
-                <div class="triage-action-rec" id="triage-rec-text">
-                  CRITICAL EMERGENCY: Immediate 108 Ambulance Dispatch, Frontline Stabilization, and District Hospital Red-Alert.
-                </div>
-              </div>
-
-              <div class="clinical-guidance-box">
-                <div class="guidance-title">🔍 Identified Clinical Triggers</div>
-                <ul class="guidance-list" id="triage-reasons-list">
-                  <li>Critical Hypertensive Crisis (168/108 mmHg) - Severe Preeclampsia Risk</li>
-                  <li>Moderate Microcytic Anemia (Hb 8.2 g/dL)</li>
-                  <li>Neurological danger symptom (headache / visual disturbance)</li>
-                </ul>
-              </div>
-
-              <div class="clinical-guidance-box">
-                <div class="guidance-title">📋 Frontline Care Protocol</div>
-                <ul class="guidance-list" id="triage-protocols-list">
-                  <li>Administer oral Labetalol 100mg under tele-specialist guidance</li>
-                  <li>Prepare Magnesium Sulfate loading dose if obstetric convulsions occur</li>
-                  <li>Keep patient in left lateral tilt, monitor fetal heart sounds continuously</li>
-                </ul>
-              </div>
-            </div>
-
-            <!-- Action Triggers -->
-            <div style="display:flex; flex-direction:column; gap:10px; margin-top:16px;">
-              <button class="btn btn-primary" id="triage-tele-action-btn" onclick="DigitalTriage.launchAssistedTeleconsultFromTriage()">
-                <span>📹 Connect Assisted Teleconsultation with District Specialist</span>
-              </button>
-              
-              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <button class="emergency-sos-btn" id="triage-sos-action-btn" onclick="DigitalTriage.dispatchEmergency108()" style="justify-content:center; padding:10px;">
-                  <span>🚨 Dispatch 108 Ambulance</span>
-                </button>
-                <button class="btn btn-secondary" onclick="DigitalTriage.speakTriage()">
-                  <span>🔊 Speak Audio Guidance</span>
-                </button>
-              </div>
+              <h3>Step 4: Appointment & Live Teleconsultation</h3>
+              <p>e-Sanjeevani Tele-OPD linking patient, ASHA worker and PHC Medical Officer</p>
             </div>
           </div>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           MODULE 2: ASSISTED TELECONSULTATION SUITE
-           ==================================================================== -->
-      <section class="app-module-section" id="section-teleconsult" style="display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
-          <div>
-            <h2 style="font-family:var(--font-display); font-size:1.5rem; color:var(--text-primary);">
-              Assisted Teleconsultation Suite (Virtual OPD Hub)
-            </h2>
-            <p style="font-size:0.85rem; color:var(--text-secondary);">
-              Connecting Sub-Centre frontline workers directly to District Hospital specialists with live vitals & digital prescriptions.
-            </p>
-          </div>
-
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:0.78rem; color:var(--text-muted);">Consulting Specialist:</span>
-            <select class="lang-select-dropdown" id="tele-specialist-select">
-              <option>Dr. Ananya Roy, MD (Obstetrics & Gynecology) — Sitapur DH</option>
-              <option>Dr. R. K. Saxena, MD (Internal Medicine) — CHC Bilhaur</option>
-              <option>Dr. Meenakshi Sundaram (Pediatrics / SAM Hub)</option>
-            </select>
-          </div>
+          <span class="facility-tag" style="background:#e0f2fe; color:#0369a1;">Encrypted WebRTC Channel</span>
         </div>
 
-        <div class="teleconsult-suite">
-          <!-- Video Screen & Live Vitals Overlay -->
-          <div class="video-consult-feed">
-            <div class="video-header-overlay">
-              <div class="call-timer-badge">
-                <span class="live-indicator-dot"></span>
-                <span id="tele-call-status">CONNECTED (ENCRYPTED)</span> • <span id="tele-call-timer">04:18</span>
-              </div>
-              <div style="background:rgba(0,0,0,0.6); padding:4px 10px; border-radius:12px; font-size:0.75rem; color:#2dd4bf;">
-                ABDM Encrypted Health Tunnel
-              </div>
-            </div>
-
-            <!-- Picture-in-Picture Village Worker Feed -->
-            <div class="pip-village-feed">
-              <div style="font-size:1.6rem;">👩‍⚕️</div>
-              <span>ASHA: Kiran Bala</span>
-              <span style="font-size:0.6rem; color:#34d399;">● Live Rampur</span>
-            </div>
-
-            <!-- Main Speaker Video (Doctor) -->
-            <div class="video-main-speaker">
-              <div class="doctor-avatar-circle">AR</div>
-              <div class="speaker-details-pill">
-                <div class="speaker-name">Dr. Ananya Roy, MD</div>
-                <div class="speaker-role">Senior Consultant Gynecologist • Sitapur Women's Hospital</div>
-              </div>
-            </div>
-
-            <!-- Real-time Vitals & ECG Waveform Overlay -->
-            <div class="video-vitals-overlay">
-              <div class="live-vital-mini">
-                <div>
-                  <div class="live-vital-val" id="tele-live-bp">154/98</div>
-                  <div class="live-vital-label">NIBP (mmHg)</div>
-                </div>
-              </div>
-
-              <div class="live-vital-mini">
-                <div>
-                  <div class="live-vital-val" id="tele-live-pulse" style="color:#38bdf8;">94 bpm</div>
-                  <div class="live-vital-label">Heart Rate</div>
-                </div>
-              </div>
-
-              <div class="live-vital-mini">
-                <div>
-                  <div class="live-vital-val" id="tele-live-spo2" style="color:#34d399;">97%</div>
-                  <div class="live-vital-label">SpO2 (Pulse Ox)</div>
-                </div>
-              </div>
-
-              <!-- Animated ECG Monitor Canvas -->
-              <div class="ecg-canvas-wrap" title="Live ECG Stream from Connected Wireless Monitor">
-                <canvas id="tele-ecg-canvas" class="ecg-canvas"></canvas>
-              </div>
-
-              <!-- Digital Stethoscope Audio Simulation Button -->
-              <button class="call-ctrl-btn" id="steth-toggle-btn" onclick="Teleconsult.toggleStethoscope()" title="Toggle Digital Stethoscope Audio Stream">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .2.3"></path><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"></path><circle cx="20" cy="10" r="2"></circle></svg>
-              </button>
-            </div>
-
-            <!-- Video Call Navigation Controls -->
-            <div class="video-call-controls">
-              <button class="call-ctrl-btn" title="Mute Microphone">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-              </button>
-              <button class="call-ctrl-btn" title="Toggle Camera">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
-              </button>
-              <button class="call-ctrl-btn end-call" id="tele-end-btn" onclick="Teleconsult.endCall()" title="End Teleconsultation">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"></path><line x1="23" y1="1" x2="1" y2="23"></line></svg>
-              </button>
-              <button class="btn btn-primary btn-sm" id="tele-start-btn" style="display:none;" onclick="Teleconsult.startCall()">
-                <span>Re-connect Consult</span>
-              </button>
-            </div>
+        <!-- Lobby state before starting call -->
+        <div id="teleconsultLobby" style="text-align:center; padding:32px 16px; background:#f8faf9; border-radius:12px; border:1px dashed #cfded8;">
+          <div style="width:64px; height:64px; border-radius:50%; background:#e0f2f1; color:#1e7a67; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+            <i data-feather="video" style="width:32px; height:32px;"></i>
           </div>
-
-          <!-- Digital Prescription Pad -->
-          <div class="digital-rx-card">
-            <div class="rx-header">
-              <div>
-                <div class="rx-symbol">℞</div>
-                <strong style="color:var(--text-primary); font-size:0.95rem;">Digital e-Prescription</strong>
-              </div>
-              <div class="rx-meta-info" style="text-align:right;">
-                <div>Dr. Ananya Roy, MD</div>
-                <div style="color:var(--text-muted);">MCI Reg #74192</div>
-              </div>
-            </div>
-
-            <!-- List of prescribed medicines -->
-            <div class="rx-drugs-list" id="tele-rx-drugs-container">
-              <!-- Dynamically populated -->
-            </div>
-
-            <!-- Quick Drug Adder Form -->
-            <div style="background:rgba(15,23,42,0.7); padding:10px; border-radius:8px; margin-bottom:14px; border:1px solid rgba(255,255,255,0.06);">
-              <div style="font-size:0.75rem; color:#2dd4bf; font-weight:700; margin-bottom:6px;">Add EDL Medication</div>
-              <div style="display:grid; grid-template-columns:1.5fr 1fr 1fr; gap:6px; margin-bottom:6px;">
-                <input type="text" id="rx-new-drug-name" placeholder="Drug (e.g. Labetalol 100mg)" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:6px; border-radius:4px; font-size:0.75rem;">
-                <input type="text" id="rx-new-dosage" placeholder="Dosage (1 tab BD)" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:6px; border-radius:4px; font-size:0.75rem;">
-                <input type="text" id="rx-new-duration" placeholder="Duration (14 days)" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:6px; border-radius:4px; font-size:0.75rem;">
-              </div>
-              <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:center;" onclick="Teleconsult.addDrugToRx()">
-                <span>➕ Add to Prescription</span>
-              </button>
-            </div>
-
-            <div class="rx-footer">
-              <div class="rx-doctor-sign">
-                <span class="verified-sign-badge">✓ Digitally Signed & Encrypted</span>
-                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Timestamp: 2026-09-05 20:45 IST</div>
-              </div>
-              <button class="btn btn-primary btn-sm" onclick="Teleconsult.dispatchPrescriptionToDispensary()">
-                <span>Transmit to PHC Dispensary</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           MODULE 3: LONGITUDINAL RECORDS (ABHA)
-           ==================================================================== -->
-      <section class="app-module-section" id="section-records" style="display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
-          <div>
-            <h2 style="font-family:var(--font-display); font-size:1.5rem; color:var(--text-primary);">
-              Longitudinal Patient Health Records (ABHA / ABDM Interoperable EHR)
-            </h2>
-            <p style="font-size:0.85rem; color:var(--text-secondary);">
-              Unified electronic health records across Sub-Centres, PHCs, CHCs, and District Hospitals with FHIR R4 export.
-            </p>
-          </div>
-
-          <!-- Patient Profile Switcher -->
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:0.78rem; color:var(--text-muted);">Select Active Patient:</span>
-            <select class="lang-select-dropdown" id="records-patient-selector" onchange="HealthRecords.selectPatient(this.value)">
-              <option value="P101">Sunita Devi (28y) — High-Risk Pregnancy (ABHA: 91-4521-8832-1094)</option>
-              <option value="P102">Ramesh Patel (54y) — Diabetes & Stage-2 HTN (ABHA: 91-2298-1144-8721)</option>
-              <option value="P103">Baby Aarav (9m) — Severe Acute Malnutrition (ABHA: 91-7782-9901-4432)</option>
-              <option value="P104">Priya Sharma (32y) — Post-Partum Care PNC (ABHA: 91-6654-3321-9988)</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Dynamic Container for Selected Patient Record -->
-        <div id="record-profile-content">
-          <!-- Populated by records.js -->
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           MODULE 4: CLOSED-LOOP REFERRALS
-           ==================================================================== -->
-      <section class="app-module-section" id="section-referrals" style="display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
-          <div>
-            <h2 style="font-family:var(--font-display); font-size:1.5rem; color:var(--text-primary);">
-              Closed-Loop Referral & Emergency Transit Pipeline
-            </h2>
-            <p style="font-size:0.85rem; color:var(--text-secondary);">
-              Direct e-referral with real-time bed board, 108 ambulance dispatch, and counter-referral loop-back to village ASHA workers.
-            </p>
-          </div>
-        </div>
-
-        <!-- Real-Time Hospital Bed Availability Board -->
-        <div style="margin-bottom:18px;">
-          <div style="font-size:0.82rem; font-weight:700; color:#2dd4bf; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">
-            🏥 Live Facility Bed & Specialist Capacity (District Network)
-          </div>
-          <div class="hospital-beds-matrix" id="hospital-beds-matrix-container">
-            <!-- Populated by referrals.js -->
-          </div>
-        </div>
-
-        <!-- Referral Pipeline & Active Cases -->
-        <div id="referrals-pipeline-container">
-          <!-- Populated by referrals.js -->
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           MODULE 5: DIAGNOSTICS NETWORK
-           ==================================================================== -->
-      <section class="app-module-section" id="section-diagnostics" style="display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
-          <div>
-            <h2 style="font-family:var(--font-display); font-size:1.5rem; color:var(--text-primary);">
-              Hub-and-Spoke Diagnostic Lab Network
-            </h2>
-            <p style="font-size:0.85rem; color:var(--text-secondary);">
-              Sample collection at Sub-Centres, barcode tracking, cold-chain courier routes, and critical-value alert dispatch.
-            </p>
-          </div>
-          <button class="btn btn-primary btn-sm" onclick="DiagnosticLab.orderNewTest('LAB-CBC', 'Sunita Devi')">
-            <span>🧪 Collect POC Blood Specimen</span>
+          <h3 style="font-size:18px; margin-bottom:6px;">Ready to connect with on-duty Doctor?</h3>
+          <p style="font-size:13.5px; color:#6a7e79; max-width:440px; margin:0 auto 20px;">
+            Dr. Anand Verma, MD (Medical Officer) is currently available at Beed PHC Cluster. Audio and video feeds are ready.
+          </p>
+          <button class="btn-hero-action" style="margin:0 auto; padding:12px 24px; font-size:14.5px;" onclick="startTeleconsultSimulation()">
+            <i data-feather="phone-call"></i> Start Teleconsultation Call
           </button>
         </div>
 
-        <div class="diagnostic-hub-grid">
-          <div>
-            <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary); margin-bottom:12px;">
-              Essential Diagnostics Catalog
+        <!-- Active Video Suite -->
+        <div id="teleconsultActiveRoom" class="video-teleconsult-stage" style="display:none;">
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="status-dot"></span>
+              <span style="font-size:13px; font-weight:600;">e-Sanjeevani Live Call</span>
             </div>
-            <div id="lab-catalog-container">
-              <!-- Populated by diagnostics.js -->
+            <div id="teleconsultTimerDisplay" style="font-family:var(--font-mono); font-size:14px; color:#4ade80;">00:00</div>
+          </div>
+
+          <div class="video-screens-grid">
+            <!-- Doctor Screen -->
+            <div class="video-screen-box">
+              <div style="text-align:center;">
+                <div class="avatar" style="width:60px; height:60px; font-size:20px; margin:0 auto 8px; background:#1e7a67; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center;">AV</div>
+                <div style="font-size:14px; font-weight:700;">Dr. Anand Verma, MD</div>
+                <div style="font-size:11px; color:#8faea8;">PHC Medical Officer</div>
+              </div>
+              <div class="video-person-tag">Doctor (Beed PHC)</div>
+            </div>
+
+            <!-- Patient / ASHA Screen -->
+            <div class="video-screen-box">
+              <div style="text-align:center;">
+                <div class="avatar" style="width:48px; height:48px; font-size:16px; margin:0 auto 8px; background:#2a524e; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center;">RT</div>
+                <div style="font-size:13px; font-weight:700;">Rekha Tai (ASHA)</div>
+                <div style="font-size:10.5px; color:#8faea8;">Field with Patient</div>
+              </div>
+              <div class="video-person-tag">ASHA + Patient</div>
             </div>
           </div>
 
-          <div>
-            <div style="font-size:0.85rem; font-weight:700; color:#2dd4bf; margin-bottom:12px;">
-              Active Specimen Pipeline & Digital Lab Reports
-            </div>
-            <div id="lab-orders-container">
-              <!-- Populated by diagnostics.js -->
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           MODULE 6: MEDICINE INVENTORY (e-AUSHADHI)
-           ==================================================================== -->
-      <section class="app-module-section" id="section-inventory" style="display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
-          <div>
-            <h2 style="font-family:var(--font-display); font-size:1.5rem; color:var(--text-primary);">
-              Essential Medicine Availability & Stock-Out Prevention (e-Aushadhi)
-            </h2>
-            <p style="font-size:0.85rem; color:var(--text-secondary);">
-              Real-time visibility into Sub-Centre and PHC dispensaries with predictive burn-rate alarms and inter-facility transfers.
-            </p>
-          </div>
-        </div>
-
-        <div class="drug-inventory-table-wrap">
-          <table class="drug-table">
-            <thead>
-              <tr>
-                <th>Drug Formulation</th>
-                <th>Category</th>
-                <th>Sub-Centre Stock</th>
-                <th>PHC Hub Stock</th>
-                <th>Burn-Rate Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="inventory-table-body">
-              <!-- Populated by inventory.js -->
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           MODULE 7: HIGH-RISK REGISTRIES
-           ==================================================================== -->
-      <section class="app-module-section" id="section-registries" style="display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
-          <div>
-            <h2 style="font-family:var(--font-display); font-size:1.5rem; color:var(--text-primary);">
-              High-Risk Patient Registries & ASHA Frontline Worklist
-            </h2>
-            <p style="font-size:0.85rem; color:var(--text-secondary);">
-              Automated cohort tracking for High-Risk Pregnancies (HRP), Non-Communicable Diseases (NCD), and Child Malnutrition (SAM).
-            </p>
-          </div>
-
-          <div class="registry-filter-tabs">
-            <button class="btn btn-secondary btn-sm registry-tab-btn active" data-filter="hrp" onclick="PatientRegistries.setFilter('hrp')">
-              <span>🤰 High-Risk Maternal (HRP)</span>
+          <!-- Video Controls -->
+          <div class="video-controls-bar">
+            <button class="btn-media-control" id="btnMuteAudio" onclick="toggleTeleMute()">
+              <i data-feather="mic"></i>
             </button>
-            <button class="btn btn-secondary btn-sm registry-tab-btn" data-filter="ncd" onclick="PatientRegistries.setFilter('ncd')">
-              <span>🫀 Chronic NCD (HTN / DM)</span>
+            <button class="btn-media-control" onclick="showToast('Camera flipped')">
+              <i data-feather="camera"></i>
             </button>
-            <button class="btn btn-secondary btn-sm registry-tab-btn" data-filter="child" onclick="PatientRegistries.setFilter('child')">
-              <span>👶 Pediatric SAM & Immunization</span>
+            <button class="btn-media-control end-call" onclick="endTeleconsultSimulation()">
+              <i data-feather="phone-off"></i>
             </button>
           </div>
-        </div>
 
-        <div class="registry-card-grid" id="registry-cards-container">
-          <!-- Populated by registries.js -->
-        </div>
-      </section>
-
-      <!-- ====================================================================
-           MODULE 8: DISTRICT COMMAND DASHBOARD
-           ==================================================================== -->
-      <section class="app-module-section" id="section-dashboard" style="display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
-          <div>
-            <h2 style="font-family:var(--font-display); font-size:1.5rem; color:var(--text-primary);">
-              District Health Command & Quality Monitoring Dashboard
-            </h2>
-            <p style="font-size:0.85rem; color:var(--text-secondary);">
-              Real-time monitoring of referral closure rates, wait time reductions, travel distance savings, and facility quality KPIs.
-            </p>
-          </div>
-          <div style="font-size:0.8rem; color:#2dd4bf; font-weight:700;">
-            ● Data Refreshed: Live District Sync
-          </div>
-        </div>
-
-        <!-- Aggregated Top KPIs -->
-        <div class="dashboard-kpi-row" id="dashboard-kpis-container">
-          <!-- Populated by dashboard.js -->
-        </div>
-
-        <!-- Charts & Analytics Split -->
-        <div class="charts-split-grid">
-          <div class="chart-card-box">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <h4 style="font-size:1rem; font-weight:700; color:var(--text-primary);">
-                Monthly Teleconsultation & Referral Closure Growth
-              </h4>
-              <div style="display:flex; gap:12px; font-size:0.75rem;">
-                <span style="color:#2dd4bf;">■ Teleconsultations</span>
-                <span style="color:#38bdf8;">■ Referrals Closed</span>
+          <!-- Doctor Prescription & Clinical Notes in Teleconsult -->
+          <div style="background:#132825; padding:14px; border-radius:8px; margin-top:8px;">
+            <h4 style="font-size:13px; color:#22d3ee; margin-bottom:6px;">Doctor's Digital Prescription Pad</h4>
+            <div class="grid-form">
+              <div>
+                <label class="input-label" style="color:#d1dedc;">Clinical Diagnosis</label>
+                <input type="text" class="form-input" value="Suspected Pre-Eclampsia / Acute Hypertensive Crisis in Pregnancy" style="background:#0b1918; color:#fff; border-color:#2a504a;">
+              </div>
+              <div>
+                <label class="input-label" style="color:#d1dedc;">Immediate Rx Advice</label>
+                <input type="text" class="form-input" value="Labetalol 100mg stat, Strict Left-Lateral Position, High flow O2" style="background:#0b1918; color:#fff; border-color:#2a504a;">
               </div>
             </div>
-            <div class="chart-svg-container" id="dashboard-chart-svg">
-              <!-- Populated by dashboard.js -->
+          </div>
+
+        </div>
+
+        <div style="margin-top: 20px; display:flex; justify-content:space-between; align-items:center;">
+          <button type="button" class="btn-hero-secondary" onclick="setPathwayStep(3)">← Back to Facilities</button>
+          <button type="button" class="btn-hero-action" onclick="setPathwayStep(5)">
+            Proceed to Step 5: Referral →
+          </button>
+        </div>
+      </section>
+
+      <!-- --- STEP 5: CLOSED-LOOP REFERRAL --- -->
+      <section id="stepView_5" class="pathway-section-view panel-card" style="display:none;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="pathway-step-num" style="background:var(--primary-teal); color:#fff;">5</div>
+            <div>
+              <h3>Step 5: Closed-Loop Referral & Transport</h3>
+              <p>GPS ambulance dispatch, pre-arrival bed allocation, and verifiable ABHA referral slip</p>
+            </div>
+          </div>
+          <span class="facility-tag" style="background:#def7ec; color:#03543f;">108 GPS Integrated</span>
+        </div>
+
+        <div class="referral-ticket-box">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+            <div>
+              <div style="font-size:11px; text-transform:uppercase; color:#6a7e79; font-weight:700;">Official Electronic Referral Pass</div>
+              <h3 style="font-size:18px; color:#0f2424; margin-top:2px;" id="referralDisplayCode">SETU-REF-894102</h3>
+              <p style="font-size:12.5px; color:#3b4e4a;">Rampur Sub-Centre → District Civil Hospital · Pre-Eclampsia Emergency</p>
+            </div>
+            
+            <div class="referral-qr-wrap">
+              <svg width="76" height="76" viewBox="0 0 100 100" fill="#132c2a">
+                <rect x="5" y="5" width="25" height="25" fill="none" stroke="#132c2a" stroke-width="6"/>
+                <rect x="12" y="12" width="11" height="11"/>
+                <rect x="70" y="5" width="25" height="25" fill="none" stroke="#132c2a" stroke-width="6"/>
+                <rect x="77" y="12" width="11" height="11"/>
+                <rect x="5" y="70" width="25" height="25" fill="none" stroke="#132c2a" stroke-width="6"/>
+                <rect x="12" y="77" width="11" height="11"/>
+                <rect x="38" y="10" width="12" height="12"/>
+                <rect x="55" y="18" width="8" height="8"/>
+                <rect x="38" y="38" width="24" height="24"/>
+                <rect x="70" y="55" width="12" height="12"/>
+                <rect x="85" y="75" width="8" height="15"/>
+                <rect x="42" y="72" width="16" height="8"/>
+              </svg>
             </div>
           </div>
 
-          <!-- Public Health Facility Quality Matrix -->
-          <div class="chart-card-box">
-            <h4 style="font-size:1rem; font-weight:700; color:var(--text-primary); margin-bottom:12px;">
-              Sub-Centre & PHC Quality Matrix
-            </h4>
-            <div style="overflow-x:auto;">
-              <table class="drug-table">
-                <thead>
-                  <tr>
-                    <th>Facility</th>
-                    <th>Tier</th>
-                    <th>Teleconsults</th>
-                    <th>Referrals</th>
-                    <th>Stock</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody id="dashboard-facilities-tbody">
-                  <!-- Populated by dashboard.js -->
-                </tbody>
-              </table>
+          <!-- Ambulance Live Status -->
+          <div style="background:#ffffff; border:1px solid #d4deda; border-radius:8px; padding:14px; margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <i data-feather="navigation" style="color:#10b981;"></i>
+                <strong style="font-size:13.5px;">108 Rural Ambulance (MH-20-CZ-9912)</strong>
+              </div>
+              <span style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:#10b981;">ETA: 14 mins</span>
             </div>
+
+            <div class="ambulance-tracker-line">
+              <div class="ambulance-progress-fill"></div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; font-size:11.5px; color:#6a7e79;">
+              <span>Dispatched from Base</span>
+              <span style="color:#0f2424; font-weight:600;">En-Route to Village</span>
+              <span>Patient Boarded</span>
+              <span>Admitted at Hospital</span>
+            </div>
+          </div>
+
+          <!-- Hospital Bed Notification -->
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:12.5px; color:#03543f; background:#def7ec; padding:10px 14px; border-radius:6px;">
+            <span><i data-feather="check-circle" style="width:14px; height:14px; vertical-align:middle;"></i> Pre-arrival Emergency Bed <strong>ICU-04</strong> held at District Civil Hospital</span>
+            <strong>Doctor Notified</strong>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px; display:flex; justify-content:space-between; align-items:center;">
+          <button type="button" class="btn-hero-secondary" onclick="setPathwayStep(4)">← Back to Teleconsult</button>
+          <button type="button" class="btn-hero-action" onclick="generateReferralSlip()">
+            Confirm Referral & Proceed to Follow-up →
+          </button>
+        </div>
+      </section>
+
+      <!-- --- STEP 6: FOLLOW-UP TRACKER --- -->
+      <section id="stepView_6" class="pathway-section-view panel-card" style="display:none;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="pathway-step-num" style="background:var(--primary-teal); color:#fff;">6</div>
+            <div>
+              <h3>Step 6: Follow-up & Community Continuity of Care</h3>
+              <p>Post-referral recovery tracking, ASHA home visits, and medication adherence</p>
+            </div>
+          </div>
+          <span class="facility-tag">Field Diary</span>
+        </div>
+
+        <form id="followUpForm" onsubmit="scheduleFollowUp(event)">
+          <div class="grid-form">
+            <div>
+              <label class="input-label">Scheduled Home Visit Date *</label>
+              <input type="date" id="followUpDate" class="form-input" value="2026-09-12" required>
+            </div>
+
+            <div>
+              <label class="input-label">Assigned Frontline Worker</label>
+              <input type="text" class="form-input" value="Rekha Tai (ASHA) / Rampur Cluster" readonly style="background:#f4f8f6;">
+            </div>
+
+            <div>
+              <label class="input-label">Visit Type</label>
+              <select class="form-select">
+                <option value="post_referral">Post-Referral Checkup (High Risk)</option>
+                <option value="maternal_pnc">Post-Natal Care (PNC) Visit</option>
+                <option value="ncd_compliance">Hypertension & Diabetes Follow-up</option>
+                <option value="routine">Routine Immunization & Growth Check</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="input-label">Automated Reminders to Patient</label>
+              <select class="form-select">
+                <option value="sms_ivrs">SMS & IVRS Voice Call in Hindi / Bengali</option>
+                <option value="sms_only">SMS Only</option>
+                <option value="asha_direct">ASHA Direct In-Person Call</option>
+              </select>
+            </div>
+
+            <div class="full-width">
+              <label class="input-label">Clinical Observations & Recovery Goals</label>
+              <textarea id="followUpNotes" class="form-textarea" rows="3" placeholder="Check BP twice daily, verify compliance with anti-hypertensives, watch for visual disturbances or edema.">Check BP twice daily, verify compliance with anti-hypertensives, watch for visual disturbances or edema.</textarea>
+            </div>
+          </div>
+
+          <div style="margin-top: 20px; display:flex; justify-content:space-between; align-items:center;">
+            <button type="button" class="btn-hero-secondary" onclick="setPathwayStep(5)">← Back to Referral</button>
+            <button type="submit" class="btn-hero-action">
+              Save Follow-up & Proceed to Step 7: Record Updated →
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- --- STEP 7: RECORD UPDATED --- -->
+      <section id="stepView_7" class="pathway-section-view panel-card" style="display:none;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="pathway-step-num" style="background:#10b981; color:#fff;">✓</div>
+            <div>
+              <h3>Step 7: Electronic Health Record (EHR) Updated</h3>
+              <p id="recordSyncTimestamp">Synced to ABDM & ABHA Locker · Cryptographically Sealed</p>
+            </div>
+          </div>
+          <span class="badge-priority routine">Care Cycle Complete</span>
+        </div>
+
+        <div style="background:#f8faf9; border:1.5px solid #d4deda; border-radius:12px; padding:24px; margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2ece8; padding-bottom:14px; margin-bottom:14px;">
+            <div>
+              <h4 style="font-size:16px; color:#0f2424;" id="recordPatientNameDisplay">Sunita Devi</h4>
+              <p style="font-size:12px; color:#6a7e79;">ABHA: <span id="recordAbhaIdDisplay" style="font-family:var(--font-mono); font-weight:700;">91-4421-8930-1122</span></p>
+            </div>
+            <div style="text-align:right;">
+              <span class="facility-tag" style="background:#def7ec; color:#03543f;">ABDM Verified</span>
+            </div>
+          </div>
+
+          <div class="grid-2col">
+            <div>
+              <div style="font-size:11px; text-transform:uppercase; color:#6a7e79; font-weight:700;">Final Diagnosis & Triage</div>
+              <div style="font-size:13.5px; font-weight:600; color:#0f2424; margin-top:2px;" id="recordDiagnosisDisplay">Pre-Eclampsia / Severe Gestational Hypertension</div>
+            </div>
+            <div>
+              <div style="font-size:11px; text-transform:uppercase; color:#6a7e79; font-weight:700;">Admitted / Treated At</div>
+              <div style="font-size:13.5px; font-weight:600; color:#0f2424; margin-top:2px;" id="recordFacilityDisplay">District Civil Hospital</div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px; padding-top:14px; border-top:1px dashed #d4deda; font-size:12.5px; color:#3b4e4a;">
+            <strong>Pathway Audit Summary:</strong>
+            Problem Identified by ASHA → Emergency Triage Score 9/10 → Teleconsultation completed with Dr. Anand Verma → 108 Ambulance dispatched → ICU-04 allocated → 7-day home follow-up scheduled → Synced to Supabase database table <code>health_records</code>.
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <button type="button" class="btn-hero-secondary" onclick="setPathwayStep(6)">← Back to Follow-up</button>
+          <div style="display:flex; gap:10px;">
+            <button type="button" class="btn-hero-secondary" onclick="window.print()">
+              <i data-feather="printer"></i> Print Care Slip
+            </button>
+            <button type="button" class="btn-hero-action" onclick="finalizeHealthRecord()">
+              <i data-feather="check-circle"></i> Sync to Supabase & Complete
+            </button>
           </div>
         </div>
       </section>
 
     </main>
 
-    <!-- ====================================================================
-         MODALS SYSTEM
-         ==================================================================== -->
-    
-    <!-- 1. Emergency 108 Red-Flag Escalation Modal -->
-    <div class="swasthya-modal-backdrop" id="emergency-sos-modal">
-      <div class="emergency-modal-content">
-        <div class="sos-alert-header">
-          <div class="sos-alert-icon">
-            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-          </div>
-          <div>
-            <h3 style="font-size:1.3rem; font-weight:800; color:#ef4444; margin-bottom:2px;">
-              CRITICAL EMERGENCY (108 RED-FLAG PROTOCOL)
-            </h3>
-            <div style="font-size:0.8rem; color:var(--text-secondary);">
-              Automated GPS Dispatch & Receiving Hospital Pre-Alert Activated
-            </div>
-          </div>
+  </div>
+
+  <!-- ========================================================================
+       SUPABASE CONFIGURATION & SCHEMA MODAL
+       ======================================================================== -->
+  <div id="supabaseConfigModal" class="modal-overlay">
+    <div class="modal-card-box">
+      <div class="modal-header-row">
+        <div>
+          <h3 style="font-size:17px; font-weight:700; color:#0f2424;">Connect Supabase Database</h3>
+          <p style="font-size:12px; color:#6a7e79;">Attach your live Supabase project to persist the 7-stage pathway tables</p>
+        </div>
+        <button class="modal-close-icon" onclick="closeSupabaseModal()">
+          <i data-feather="x"></i>
+        </button>
+      </div>
+
+      <form id="supabaseSettingsForm" onsubmit="handleSupabaseFormSave(event)">
+        <div class="form-group">
+          <label class="form-label">Supabase Project URL</label>
+          <input type="text" id="supabaseUrlInput" class="input-control" style="padding-left:14px;" placeholder="https://xyzcompany.supabase.co">
         </div>
 
-        <div style="background:rgba(0,0,0,0.4); padding:12px 16px; border-radius:8px; margin-bottom:16px; font-size:0.85rem;">
-          <div>📍 <strong>Dispatch Location:</strong> Sub-Centre Rampur (GPS: 26.8467° N, 80.9462° E)</div>
-          <div>🚑 <strong>Assigned Unit:</strong> 108 Advanced Life Support (Vehicle #UP-32-EG-4421)</div>
-          <div>⏱️ <strong>Estimated Ambulance Arrival:</strong> 14 minutes</div>
+        <div class="form-group">
+          <label class="form-label">Supabase Public Anon Key</label>
+          <input type="text" id="supabaseKeyInput" class="input-control" style="padding-left:14px;" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
         </div>
 
-        <div class="protocol-checklist">
-          <strong style="color:#fca5a5; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.05em;">
-            Mandatory Frontline Stabilization Checklist:
-          </strong>
-          <div class="protocol-item" style="margin-top:8px;">
-            <input type="checkbox" checked>
-            <span>Maintain clear open airway and place in left lateral position (prevent aspiration)</span>
-          </div>
-          <div class="protocol-item">
-            <input type="checkbox" checked>
-            <span>Start high-flow supplemental oxygen (4-6 L/min via mask)</span>
-          </div>
-          <div class="protocol-item">
-            <input type="checkbox" checked>
-            <span>Secure wide-bore IV line (18G) with Normal Saline at keep-vein-open rate</span>
-          </div>
-          <div class="protocol-item">
-            <input type="checkbox">
-            <span>Keep Magnesium Sulfate / Labetalol ready under tele-specialist direction</span>
-          </div>
+        <div style="margin: 16px 0;">
+          <label class="form-label" style="display:flex; justify-content:space-between;">
+            <span>Pre-built SQL Schema for your Supabase project</span>
+            <a href="javascript:void(0)" class="form-link" onclick="navigator.clipboard.writeText(document.getElementById('schemaPreview').innerText); showToast('SQL schema copied to clipboard!');">Copy SQL</a>
+          </label>
+          <pre class="code-snippet-box" id="schemaPreview">
+-- Run this in your Supabase SQL Editor:
+create table if not exists public.patients (
+  id uuid primary key default gen_random_uuid(),
+  abha_id varchar(50) unique not null,
+  full_name varchar(150) not null,
+  age integer not null,
+  gender varchar(20) not null,
+  village varchar(100) not null
+);
+
+create table if not exists public.triage_assessments (
+  id uuid primary key default gen_random_uuid(),
+  patient_id uuid references public.patients(id),
+  urgency_level varchar(20) not null,
+  systolic_bp integer,
+  diastolic_bp integer,
+  pulse_rate integer,
+  spo2_percentage integer
+);
+
+create table if not exists public.facilities (
+  id uuid primary key default gen_random_uuid(),
+  name varchar(150) not null,
+  facility_type varchar(50) not null,
+  distance_km numeric(4,1)
+);
+
+create table if not exists public.appointments (
+  id uuid primary key default gen_random_uuid(),
+  patient_id uuid references public.patients(id),
+  doctor_name varchar(150),
+  status varchar(30)
+);
+
+create table if not exists public.referrals (
+  id uuid primary key default gen_random_uuid(),
+  patient_id uuid references public.patients(id),
+  qr_reference_code varchar(100) not null,
+  ambulance_status varchar(30)
+);
+
+create table if not exists public.follow_ups (
+  id uuid primary key default gen_random_uuid(),
+  patient_id uuid references public.patients(id),
+  visit_date date not null
+);
+
+create table if not exists public.health_records (
+  id uuid primary key default gen_random_uuid(),
+  patient_id uuid references public.patients(id),
+  final_diagnosis text not null
+);
+          </pre>
         </div>
 
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-          <button class="btn btn-secondary" data-modal-close>Acknowledge & Close</button>
-          <button class="emergency-sos-btn" onclick="VoiceLiteracy.speakTopic('triage_red')">
-            <span>🔊 Speak Protocol in Regional Language</span>
+          <button type="button" class="btn-hero-secondary" onclick="closeSupabaseModal()">Cancel</button>
+          <button type="submit" class="btn-hero-action">
+            Save & Connect to Supabase
           </button>
         </div>
-      </div>
-    </div>
-
-    <!-- 2. Offline Sync Queue Drawer Modal -->
-    <div class="swasthya-modal-backdrop" id="sync-drawer-modal">
-      <div class="swasthya-modal-card">
-        <div class="modal-header-bar">
-          <h3 style="font-size:1.15rem; font-weight:700; color:var(--text-primary);">
-            Offline Resilience & Data Reconciliation Queue
-          </h3>
-          <button class="modal-close-x" data-modal-close>&times;</button>
-        </div>
-        <p style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:14px;">
-          All clinical records entered in low-connectivity or offline modes are encrypted and cached in local storage. Once network connection is restored, transactions sync automatically with the District Health Registry.
-        </p>
-
-        <div id="sync-transactions-list" style="max-height:280px; overflow-y:auto; margin-bottom:16px;">
-          <!-- Dynamically populated -->
-        </div>
-
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <button class="btn btn-secondary btn-sm" data-modal-close>Close</button>
-          <button class="btn btn-primary btn-sm" onclick="App.manualTriggerSync()">
-            <span>🔄 Trigger Immediate Cloud Reconciliation</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. New Encounter Modal -->
-    <div class="swasthya-modal-backdrop" id="new-encounter-modal">
-      <div class="swasthya-modal-card">
-        <div class="modal-header-bar">
-          <h3 style="font-size:1.15rem; font-weight:700; color:#2dd4bf;">
-            ➕ Add Clinical Encounter to ABHA Record
-          </h3>
-          <button class="modal-close-x" onclick="HealthRecords.closeNewEncounterModal()">&times;</button>
-        </div>
-        <form onsubmit="HealthRecords.submitNewEncounter(event)">
-          <div style="display:grid; grid-template-columns:1fr 1.2fr; gap:12px; margin-bottom:12px;">
-            <div class="vital-field">
-              <label>Facility Tier</label>
-              <select id="enc-facility-type" style="width:100%; background:transparent; border:none; color:#fff; font-size:0.85rem; outline:none;">
-                <option value="Sub-Centre" style="background:#0c1326;">Sub-Centre (Arogya Mandir)</option>
-                <option value="Primary Health Centre" style="background:#0c1326;">Primary Health Centre (PHC)</option>
-                <option value="Community Health Centre" style="background:#0c1326;">Community Health Centre (CHC)</option>
-                <option value="District Hospital" style="background:#0c1326;">District Hospital (DH)</option>
-              </select>
-            </div>
-            <div class="vital-field">
-              <label>Facility Name</label>
-              <select id="enc-facility-name" required>
-                 <option value="">Loading facilities...</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="vital-field" style="margin-bottom:12px;">
-            <label>Healthcare Provider Name & Role</label>
-            <input type="text" id="enc-provider" value="Kiran Bala (ASHA) / Anita Singh (ANM)" required>
-          </div>
-
-          <div class="vital-field" style="margin-bottom:12px;">
-            <label>Chief Clinical Reason / Complaint</label>
-            <input type="text" id="enc-reason" value="Follow-up Blood Pressure Monitoring & Urine Check" required>
-          </div>
-
-          <div class="vital-field" style="margin-bottom:12px;">
-            <label>Examination Findings</label>
-            <input type="text" id="enc-findings" value="BP recorded 148/92 mmHg, fetal heart sound normal, no pedal edema today.">
-          </div>
-
-          <div class="vital-field" style="margin-bottom:16px;">
-            <label>Clinical Action & Plan</label>
-            <input type="text" id="enc-action" value="Continue oral Labetalol 100mg BD. Counseled on low sodium diet.">
-          </div>
-
-          <div style="display:flex; justify-content:flex-end; gap:10px;">
-            <button type="button" class="btn btn-secondary btn-sm" onclick="HealthRecords.closeNewEncounterModal()">Cancel</button>
-            <button type="submit" class="btn btn-primary btn-sm">Save Encounter</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- 4. New e-Referral Modal -->
-    <div class="swasthya-modal-backdrop" id="new-referral-modal">
-      <div class="swasthya-modal-card">
-        <div class="modal-header-bar">
-          <h3 style="font-size:1.15rem; font-weight:700; color:#38bdf8;">
-            🚑 Create Emergency e-Referral Order
-          </h3>
-          <button class="modal-close-x" onclick="ReferralTracker.closeNewReferralModal()">&times;</button>
-        </div>
-        <form onsubmit="ReferralTracker.submitNewReferral(event)">
-          <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:12px; margin-bottom:12px;">
-            <div class="vital-field">
-              <label>Patient Name</label>
-              <input type="text" id="new-ref-name" value="Sunita Devi" required>
-            </div>
-            <div class="vital-field">
-              <label>Triage Priority</label>
-              <select id="new-ref-priority" style="width:100%; background:transparent; border:none; color:#fff; font-size:0.85rem; outline:none;">
-                <option value="Emergency (Red)" style="background:#0c1326;">🚨 Emergency (Red)</option>
-                <option value="Urgent (Yellow)" style="background:#0c1326;">⚠️ Urgent (Yellow)</option>
-                <option value="Routine Elective" style="background:#0c1326;">Routine Elective</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="vital-field" style="margin-bottom:12px;">
-            <label>Destination Facility</label>
-            <select id="new-ref-facility" style="width:100%; background:transparent; border:none; color:#fff; font-size:0.85rem; outline:none;">
-              <option value="Sitapur District Women's Hospital" style="background:#0c1326;">Sitapur District Women's Hospital (14 Beds Free)</option>
-              <option value="CHC Bilhaur First Referral Unit" style="background:#0c1326;">CHC Bilhaur First Referral Unit (6 Beds Free)</option>
-              <option value="District Civil Hospital Sitapur" style="background:#0c1326;">District Civil Hospital Sitapur (32 Beds Free)</option>
-            </select>
-          </div>
-
-          <div class="vital-field" style="margin-bottom:16px;">
-            <label>Clinical Indication & Stabilization Notes</label>
-            <input type="text" id="new-ref-indication" value="Severe Preeclampsia (BP 168/108) with pedal edema and headache" required>
-          </div>
-
-          <div style="display:flex; justify-content:flex-end; gap:10px;">
-            <button type="button" class="btn btn-secondary btn-sm" onclick="ReferralTracker.closeNewReferralModal()">Cancel</button>
-            <button type="submit" class="btn btn-primary btn-sm">Dispatch e-Referral & 108</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- ====================================================================
-         Footer: Standards Compliance & Acknowledgments
-         ==================================================================== -->
-    <footer style="border-top: 1px solid rgba(255,255,255,0.06); padding: 30px 0; font-size: 0.8rem; color: var(--text-muted); background: rgba(6,10,20,0.85);">
-      <div class="container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
-        <div>
-          <strong style="color:var(--text-primary); font-size:0.9rem;">SwasthyaSetu (स्वास्थ्य सेतु)</strong>
-          <div>National Rural Public Healthcare Integration Framework</div>
-        </div>
-        <div style="display:flex; gap:16px; flex-wrap:wrap; font-size:0.75rem;">
-          <span>✓ Ayushman Bharat Digital Mission (ABDM)</span>
-          <span>✓ HL7 FHIR R4 Interoperability</span>
-          <span>✓ RMNCH+A & NP-NCD Compliant</span>
-          <span>✓ Offline-First Mobile PWA</span>
-        </div>
-      </div>
-    </footer>
-
-  </div>
-
-  <!-- ====================================================================
-       Mobile Ergonomic Bottom Navigation Dock (Visible on Mobile Screens)
-       ==================================================================== -->
-  <nav class="mobile-bottom-dock" aria-label="Mobile Bottom Navigation">
-    <button class="dock-item active" data-tab="triage">
-      <span class="dock-icon">🩺</span>
-      <span>Triage</span>
-    </button>
-    <button class="dock-item" data-tab="teleconsult">
-      <span class="dock-icon">📹</span>
-      <span>Consult</span>
-    </button>
-    <button class="dock-item" data-tab="records">
-      <span class="dock-icon">🪪</span>
-      <span>ABHA</span>
-    </button>
-    <button class="dock-item" data-tab="referrals">
-      <span class="dock-icon">🚑</span>
-      <span>Referral</span>
-    </button>
-    <button class="dock-item" id="dock-more-btn">
-      <span class="dock-icon">☰</span>
-      <span>More</span>
-    </button>
-  </nav>
-
-  <!-- Mobile Sliding Drawer for More Pillars -->
-  <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop">
-    <div class="mobile-drawer-content">
-      <div class="drawer-drag-handle"></div>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-        <strong style="color:var(--text-primary); font-size:1.1rem;">Public Healthcare Services</strong>
-        <button class="modal-close-x" onclick="MobileWeb.closeMobileDrawer()">&times;</button>
-      </div>
-      <div class="drawer-grid">
-        <button class="drawer-card-btn" data-tab="diagnostics">
-          <span class="drawer-card-icon">🧪</span>
-          <span>Lab Diagnostics</span>
-        </button>
-        <button class="drawer-card-btn" data-tab="inventory">
-          <span class="drawer-card-icon">💊</span>
-          <span>Medicine Stock</span>
-        </button>
-        <button class="drawer-card-btn" data-tab="registries">
-          <span class="drawer-card-icon">📋</span>
-          <span>High-Risk Cohorts</span>
-        </button>
-        <button class="drawer-card-btn" data-tab="dashboard">
-          <span class="drawer-card-icon">📊</span>
-          <span>Health Command</span>
-        </button>
-        <button class="drawer-card-btn" onclick="MobileWeb.openMobileQRModal()" style="grid-column: span 2; background:rgba(45,212,191,0.15); border-color:#2dd4bf; color:#2dd4bf;">
-          <span class="drawer-card-icon">📱</span>
-          <span>Scan QR Code to Open on Phone</span>
-        </button>
-      </div>
+      </form>
     </div>
   </div>
 
-  <!-- Mobile QR Code Modal -->
-  <div class="swasthya-modal-backdrop" id="mobile-qr-modal">
-    <div class="swasthya-modal-card" style="max-width:440px; text-align:center;">
-      <div class="modal-header-bar">
-        <h3 style="font-size:1.1rem; font-weight:700; color:#2dd4bf;">
-          📱 Access on Mobile Web Browser
-        </h3>
-        <button class="modal-close-x" onclick="MobileWeb.closeMobileQRModal()">&times;</button>
-      </div>
-
-      <p style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:14px;">
-        Connect your smartphone or tablet to the same Wi-Fi network and scan this QR code or enter the local URL:
-      </p>
-
-      <div class="qr-code-svg-wrap" id="mobile-qr-code-display">
-        <!-- Dynamic QR code injected by mobile.js -->
-      </div>
-
-      <div class="network-url-pill" id="mobile-network-url">
-        <span>🌐 http://192.168.0.176:8085</span>
-      </div>
-
-      <div style="display:flex; justify-content:center; gap:10px; margin-top:14px;">
-        <button class="btn btn-secondary btn-sm" onclick="MobileWeb.copyMobileUrl()">
-          <span>📋 Copy URL</span>
-        </button>
-        <button class="btn btn-primary btn-sm" onclick="MobileWeb.closeMobileQRModal()">
-          <span>Done</span>
-        </button>
-      </div>
-    </div>
+  <!-- Toast Notification -->
+  <div id="toastNotification" class="toast-notice">
+    Action completed successfully!
   </div>
 
-  <!-- Core JavaScript Modules (Modular ES6 Architecture) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabaseClient.js"></script>
-  <script src="js/facilities.js"></script>
-  <script src="js/auth.js"></script>
-  <script>
-  Auth.requireAuth();
-  </script>
-  <script src="js/offlineSync.js"></script>
-  <script src="js/voiceLiteracy.js"></script>
-  <script src="js/records.js"></script>
-  <script src="js/triage.js"></script>
-  <script src="js/teleconsult.js"></script>
-  <script src="js/referrals.js"></script>
-  <script src="js/diagnostics.js"></script>
-  <script src="js/inventory.js"></script>
-  <script src="js/registries.js"></script>
-  <script src="js/dashboard.js"></script>
-  <script src="js/app.js"></script>
-  <script src="js/mobile.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
