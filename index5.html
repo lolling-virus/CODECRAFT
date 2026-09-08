@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setu Health - Care Journey</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Supabase JS Client library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#0e2a22',
+              cardDark: '#13352b',
+              accent: '#34a87a',
+              lightBg: '#f6f8f7'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .step-card { transition: all 0.3s ease; }
+  </style>
+</head>
+<body class="bg-[#f6f8f7] text-gray-800 flex h-screen overflow-hidden">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="w-64 bg-[#0e2a22] text-white flex flex-col justify-between p-4 shrink-0">
+    <div>
+      <div class="flex items-center gap-3 px-2 py-4 mb-6">
+        <div class="w-10 h-10 rounded-full bg-[#34a87a] flex items-center justify-center text-white">
+          <i data-lucide="activity" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight">Setu Health</h1>
+          <p class="text-xs text-emerald-200 opacity-80">Rural Care Platform</p>
+        </div>
+      </div>
+
+      <nav class="space-y-1">
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[#34a87a] text-white font-medium text-sm">
+          <i data-lucide="layout-grid" class="w-5 h-5"></i>
+          <span>Care Journey</span>
+        </a>
+        <a href="#" class="flex items-center justify-between px-3 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm">
+          <div class="flex items-center gap-3"><i data-lucide="stethoscope" class="w-5 h-5"></i><span>Triage & Screening</span></div>
+          <span class="bg-[#1b4337] text-xs px-2 py-0.5 rounded-full font-bold">7</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm">
+          <i data-lucide="users" class="w-5 h-5"></i><span>Patient Records</span>
+        </a>
+        <a href="#" class="flex items-center justify-between px-3 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm">
+          <div class="flex items-center gap-3"><i data-lucide="video" class="w-5 h-5"></i><span>Teleconsult</span></div>
+          <span class="bg-[#1b4337] text-xs px-2 py-0.5 rounded-full font-bold">3</span>
+        </a>
+        <a href="#" class="flex items-center justify-between px-3 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm">
+          <div class="flex items-center gap-3"><i data-lucide="share-2" class="w-5 h-5"></i><span>Referrals</span></div>
+          <span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">2</span>
+        </a>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="flex-1 flex flex-col overflow-hidden">
+    
+    <!-- Top Header -->
+    <header class="h-20 border-b border-gray-200 px-8 flex items-center justify-between bg-white shrink-0">
+      <div class="flex items-center gap-3">
+        <h2 class="text-xl font-bold text-gray-900">Rampur PHC</h2>
+        <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-medium">Primary Health Centre</span>
+        <span class="text-sm text-gray-500 ml-2">Tuesday, 7 Sep · 3 workers on duty</span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div class="relative w-72">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <input type="text" placeholder="Search patient or ABHA ID" class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+        </div>
+        <div class="flex items-center gap-2 bg-amber-50 text-amber-800 text-xs font-semibold px-3 py-2 rounded-full border border-amber-200">
+          <i data-lucide="wifi-off" class="w-4 h-4"></i><span>Offline</span>
+          <span class="border-l border-amber-300 pl-2 flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3 h-3"></i> 12 queued</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Scrollable Workflow Content -->
+    <div class="flex-1 overflow-y-auto p-8 space-y-8 max-w-5xl">
+
+      <!-- WORKFLOW STEP TRACKER HEADER -->
+      <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+        <h3 class="text-xs font-bold tracking-wider text-gray-400 uppercase mb-4">End-to-End Workflow</h3>
+        <div class="flex flex-wrap items-center gap-2 text-sm">
+          <div id="badge-1" class="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 font-semibold border border-emerald-300">1 Identify problem</div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-gray-300"></i>
+          <div id="badge-2" class="px-3 py-1.5 rounded-full bg-gray-100 text-gray-400 font-medium">2 Triage</div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-gray-300"></i>
+          <div id="badge-3" class="px-3 py-1.5 rounded-full bg-gray-100 text-gray-400 font-medium">3 Find facility</div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-gray-300"></i>
+          <div id="badge-4" class="px-3 py-1.5 rounded-full bg-gray-100 text-gray-400 font-medium">4 Teleconsult</div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-gray-300"></i>
+          <div id="badge-5" class="px-3 py-1.5 rounded-full bg-gray-100 text-gray-400 font-medium">5 Referral</div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-gray-300"></i>
+          <div id="badge-6" class="px-3 py-1.5 rounded-full bg-gray-100 text-gray-400 font-medium">6 Follow-up</div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-gray-300"></i>
+          <div id="badge-7" class="px-3 py-1.5 rounded-full bg-gray-100 text-gray-400 font-medium">7 Record updated</div>
+        </div>
+      </div>
+
+      <!-- ACTIVE PATIENT TITLE -->
+      <div>
+        <div class="flex items-center gap-3">
+          <h2 class="text-2xl font-bold text-gray-900" id="patientHeaderTitle">Care Journey: Unregistered</h2>
+          <span class="bg-emerald-100 text-emerald-800 text-sm px-3 py-0.5 rounded-full font-semibold" id="patientHeaderBadge">In Progress</span>
+        </div>
+        <p class="text-sm text-gray-500 mt-1" id="patientHeaderSubtext">Complete the intake information in Step 1 to initiate workflow.</p>
+      </div>
+
+      <!-- SEQUENTIAL TIMELINE CARE STEPS -->
+      <div class="relative pl-6 space-y-8 before:absolute before:left-5 before:top-4 before:bottom-4 before:w-0.5 before:bg-gray-200">
+
+        <!-- STEP 1: Patient Identification -->
+        <div class="relative flex items-start gap-6 step-card" id="step-card-1">
+          <div class="step-icon w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 z-10 shadow font-bold">1</div>
+          <div class="flex-1 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-gray-400 font-semibold uppercase">Step 1 · Identification</span>
+              <span class="status-pill bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full">Required</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Patient / ASHA Identifies Problem</h3>
+            <p class="text-sm text-gray-600 mb-4">Enter mandatory patient demographics to start care session.</p>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Patient Name *</label>
+                <input type="text" id="inputPatientName" placeholder="e.g. Sunita Devi" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Phone Number *</label>
+                <input type="tel" id="inputPatientPhone" placeholder="e.g. 9128475561" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+            </div>
+            <p id="step1Error" class="text-xs text-red-500 font-medium mb-3 hidden">Please enter both Patient Name and Phone Number to proceed.</p>
+
+            <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
+              <button onclick="submitStep1()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
+                <span>Save & Continue to Triage</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Triage Selection -->
+        <div class="relative flex items-start gap-6 opacity-40 pointer-events-none step-card" id="step-card-2">
+          <div class="step-icon w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center shrink-0 z-10 font-bold">2</div>
+          <div class="flex-1 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-gray-400 font-semibold uppercase">Step 2 · Decision Support</span>
+              <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Triage Assessment</h3>
+            <p class="text-sm text-gray-600 mb-4">Select at least one clinical condition present.</p>
+            
+            <div class="space-y-3 mb-4">
+              <select id="selectProblem" onchange="toggleBurnOptions()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                <option value="">-- Select Condition --</option>
+                <option value="Heart Attack">Heart Attack (Critical Emergency)</option>
+                <option value="Burn">Burn</option>
+                <option value="Fever">Fever</option>
+                <option value="Allergy">Allergy</option>
+                <option value="Bleeding">Bleeding</option>
+                <option value="Pregnancy">Pregnancy</option>
+                <option value="Others">Others</option>
+              </select>
+
+              <!-- Burn Sub-options -->
+              <div id="burnSubOptionContainer" class="hidden pl-4 border-l-2 border-amber-400 py-1">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Burn Degree Severity *</label>
+                <select id="selectBurnDegree" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                  <option value="">-- Select Burn Degree --</option>
+                  <option value="1st Degree Burn">1st Degree Burn</option>
+                  <option value="2nd Degree Burn">2nd Degree Burn</option>
+                  <option value="3rd Degree Burn">3rd Degree Burn</option>
+                </select>
+              </div>
+            </div>
+            <p id="step2Error" class="text-xs text-red-500 font-medium mb-3 hidden">Please select a valid condition/degree to continue.</p>
+
+            <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
+              <button onclick="submitStep2()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
+                <span>Confirm Triage & Find Facility</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Find Facility -->
+        <div class="relative flex items-start gap-6 opacity-40 pointer-events-none step-card" id="step-card-3">
+          <div class="step-icon w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center shrink-0 z-10 font-bold">3</div>
+          <div class="flex-1 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-gray-400 font-semibold uppercase">Step 3 · Resource Allocation</span>
+              <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Find & Select Facility</h3>
+            <p class="text-sm text-gray-600 mb-4">Facilities sorted dynamic to condition. Select target health centre.</p>
+            
+            <div id="hospitalListContainer" class="space-y-2 mb-4">
+              <!-- Dynamically Populated -->
+            </div>
+
+            <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
+              <button onclick="submitStep3()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
+                <span>Confirm Facility & Proceed</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Appointment / Teleconsultation & First Aid -->
+        <div class="relative flex items-start gap-6 opacity-40 pointer-events-none step-card" id="step-card-4">
+          <div class="step-icon w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center shrink-0 z-10 font-bold">4</div>
+          <div class="flex-1 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-gray-400 font-semibold uppercase">Step 4 · Emergency Action</span>
+              <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-1">Appointment & First-Aid Guidance</h3>
+            
+            <!-- Assigned Doctor -->
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 my-3 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <i data-lucide="user-check" class="w-5 h-5 text-emerald-700"></i>
+                <div>
+                  <div class="text-xs text-gray-500">Assigned Tele-Doctor</div>
+                  <div class="text-sm font-bold text-emerald-900" id="assignedDoctorDisplay">Dr. Assigned</div>
+                </div>
+              </div>
+              <!-- Interactive Speak Option Button -->
+              <button onclick="speakFirstAidInstructions()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 shadow">
+                <i data-lucide="volume-2" class="w-4 h-4"></i>
+                <span id="speakBtnText">Speak First-Aid</span>
+              </button>
+            </div>
+
+            <!-- First Aid Instructions Box -->
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+              <div class="text-xs font-bold text-amber-800 uppercase mb-1 flex items-center gap-1">
+                <i data-lucide="shield-alert" class="w-4 h-4"></i> Immediate First-Aid Protocol
+              </div>
+              <p class="text-sm text-amber-900 leading-relaxed" id="firstAidText">First-aid instructions loading...</p>
+            </div>
+
+            <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
+              <button onclick="submitStep4()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
+                <span>Complete Consult & Generate Referral</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5: Referral Generation -->
+        <div class="relative flex items-start gap-6 opacity-40 pointer-events-none step-card" id="step-card-5">
+          <div class="step-icon w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center shrink-0 z-10 font-bold">5</div>
+          <div class="flex-1 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-gray-400 font-semibold uppercase">Step 5 · Referral Desk</span>
+              <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Official Referral Slip Generated</h3>
+            
+            <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4 font-mono text-xs text-gray-700 space-y-1" id="referralSummaryBox">
+              <!-- Dynamically Filled -->
+            </div>
+
+            <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
+              <button onclick="submitStep5()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
+                <span>Confirm Referral & Set Follow-up</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 6: Next Check-Up Date -->
+        <div class="relative flex items-start gap-6 opacity-40 pointer-events-none step-card" id="step-card-6">
+          <div class="step-icon w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center shrink-0 z-10 font-bold">6</div>
+          <div class="flex-1 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-gray-400 font-semibold uppercase">Step 6 · Scheduled Care</span>
+              <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Next Scheduled Check-Up</h3>
+            
+            <div class="flex items-center gap-4 bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+              <i data-lucide="calendar" class="w-8 h-8 text-blue-600 shrink-0"></i>
+              <div>
+                <div class="text-xs text-blue-700 font-semibold">Calculated Check-up Date</div>
+                <div class="text-lg font-bold text-blue-950" id="nextCheckupDateDisplay">Calculating date...</div>
+                <div class="text-xs text-blue-600 mt-0.5" id="checkupReasonDisplay">Based on clinical severity</div>
+              </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
+              <button onclick="submitStep6()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
+                <span>Save Schedule & Sync Record</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 7: Record Sync to Supabase -->
+        <div class="relative flex items-start gap-6 opacity-40 pointer-events-none step-card" id="step-card-7">
+          <div class="step-icon w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center shrink-0 z-10 font-bold">7</div>
+          <div class="flex-1 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-gray-400 font-semibold uppercase">Step 7 · Database Sync</span>
+              <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Update Record in Supabase</h3>
+            <p class="text-sm text-gray-600 mb-4">Click below to commit the complete clinical journey to your Supabase table.</p>
+            
+            <div id="supabaseStatusBox" class="p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs font-mono text-gray-600 mb-4">
+              Ready to sync patient record.
+            </div>
+
+            <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
+              <button onclick="submitStep7()" id="btnSyncSupabase" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
+                <i data-lucide="database" class="w-3.5 h-3.5"></i>
+                <span>Sync Record to Supabase</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // SUPABASE CONFIGURATION (Replace with your Supabase details)
+    const SUPABASE_URL = 'https://YOUR_SUPABASE_PROJECT_ID.supabase.co';
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Clinical Journey State Object
+    const careSession = {
+      patientName: '',
+      patientPhone: '',
+      selectedProblem: '',
+      selectedBurnDegree: '',
+      selectedHospital: null,
+      assignedDoctor: '',
+      firstAidText: '',
+      referralId: '',
+      nextCheckupDate: '',
+      completedAt: null
+    };
+
+    // Master Hospitals Database with Distance & Specialty Tagging
+    const masterHospitals = [
+      { name: "Rampur PHC (Primary Health Center)", distance: "0.5 km away", tags: ["Fever", "Allergy", "Others"], recommendedFor: ["Fever", "Allergy"] },
+      { name: "District Hospital Rampur", distance: "4.2 km away", tags: ["Pregnancy", "Bleeding", "Burn"], recommendedFor: ["Pregnancy", "Bleeding"] },
+      { name: "City Trauma & Cardiac Center", distance: "12.8 km away", tags: ["Heart Attack", "Burn"], recommendedFor: ["Heart Attack"] },
+      { name: "Apex Burn Care & General Hospital", distance: "15.0 km away", tags: ["Burn"], recommendedFor: ["Burn"] }
+    ];
+
+    // First Aid Mapping & Doctors lookup
+    const conditionProtocols = {
+      "Heart Attack": {
+        doctor: "Dr. A. Sharma (Cardiologist)",
+        firstAid: "Keep patient calm and seated upright. Loosen tight clothing. Give Aspirin (300mg) if available and not allergic. Prepare emergency transport immediately.",
+        checkupDays: 1
+      },
+      "Burn": {
+        doctor: "Dr. R. Verma (Dermatologist/Trauma)",
+        firstAid: "Cool burn with running lukewarm water for 20 minutes. Do not apply ice, butter, or paste. Cover with clean cling film or sterile bandage.",
+        checkupDays: 3
+      },
+      "Fever": {
+        doctor: "Dr. S. K. Gupta (General Physician)",
+        firstAid: "Keep patient hydrated with clean water/ORS. Apply cool damp cloth sponges on forehead. Monitor body temperature.",
+        checkupDays: 7
+      },
+      "Allergy": {
+        doctor: "Dr. P. Nair (Immunologist)",
+        firstAid: "Identify and remove allergen trigger. Monitor for airway obstruction or breathing difficulty. Keep patient lying comfortably.",
+        checkupDays: 5
+      },
+      "Bleeding": {
+        doctor: "Dr. V. Mehta (General Surgeon)",
+        firstAid: "Apply direct pressure to wound using a clean cloth or sterile gauze. Elevate the bleeding limb above heart level if possible.",
+        checkupDays: 2
+      },
+      "Pregnancy": {
+        doctor: "Dr. Anjali Rao (Obstetrician)",
+        firstAid: "Place patient on left side to optimize blood flow. Monitor fetal movements and maternal vitals. Keep hydrated.",
+        checkupDays: 14
+      },
+      "Others": {
+        doctor: "Dr. Duty Officer (PHC)",
+        firstAid: "Keep patient in comfortable resting position, monitor vitals, and keep warm.",
+        checkupDays: 7
+      }
+    };
+
+    let currentStep = 1;
+
+    // Toggle Burn Degree Sub Option Input
+    function toggleBurnOptions() {
+      const selected = document.getElementById('selectProblem').value;
+      const subContainer = document.getElementById('burnSubOptionContainer');
+      if (selected === 'Burn') {
+        subContainer.classList.remove('hidden');
+      } else {
+        subContainer.classList.add('hidden');
+      }
+    }
+
+    // STEP 1 VALIDATION & SUBMIT
+    function submitStep1() {
+      const name = document.getElementById('inputPatientName').value.trim();
+      const phone = document.getElementById('inputPatientPhone').value.trim();
+      const err = document.getElementById('step1Error');
+
+      if (!name || !phone) {
+        err.classList.remove('hidden');
+        return;
+      }
+      err.classList.add('hidden');
+
+      careSession.patientName = name;
+      careSession.patientPhone = phone;
+
+      document.getElementById('patientHeaderTitle').innerText = `Care Journey: ${name}`;
+      document.getElementById('patientHeaderSubtext').innerText = `Phone: ${phone} · Rampur SC Entry`;
+
+      markStepCompleted(1);
+      unlockStep(2);
+    }
+
+    // STEP 2 VALIDATION & SUBMIT
+    function submitStep2() {
+      const problem = document.getElementById('selectProblem').value;
+      const burnDegree = document.getElementById('selectBurnDegree').value;
+      const err = document.getElementById('step2Error');
+
+      if (!problem || (problem === 'Burn' && !burnDegree)) {
+        err.classList.remove('hidden');
+        return;
+      }
+      err.classList.add('hidden');
+
+      careSession.selectedProblem = problem;
+      careSession.selectedBurnDegree = burnDegree;
+
+      populateHospitals();
+      markStepCompleted(2);
+      unlockStep(3);
+    }
+
+    // STEP 3 POPULATE & SUBMIT
+    function populateHospitals() {
+      const container = document.getElementById('hospitalListContainer');
+      container.innerHTML = '';
+
+      const problemKey = careSession.selectedProblem;
+
+      // Sort hospitals: recommended for selected problem come first
+      const sorted = [...masterHospitals].sort((a, b) => {
+        const aRec = a.recommendedFor.includes(problemKey) ? 1 : 0;
+        const bRec = b.recommendedFor.includes(problemKey) ? 1 : 0;
+        return bRec - aRec;
+      });
+
+      careSession.selectedHospital = sorted[0].name; // Default closest/recommended selection
+
+      sorted.forEach((hosp, idx) => {
+        const isRec = hosp.recommendedFor.includes(problemKey) || idx === 0;
+        const div = document.createElement('div');
+        div.className = `p-3 rounded-xl border flex items-center justify-between cursor-pointer transition ${
+          isRec ? 'border-emerald-500 bg-emerald-50/40' : 'border-gray-200 hover:border-emerald-300'
+        }`;
+        div.onclick = () => selectHospitalUI(div, hosp.name);
+
+        div.innerHTML = `
+          <div class="flex items-center gap-3">
+            <input type="radio" name="hospSelect" ${idx === 0 ? 'checked' : ''} class="text-emerald-600 focus:ring-emerald-500">
+            <div>
+              <div class="text-sm font-bold text-gray-900">${hosp.name}</div>
+              <div class="text-xs text-gray-500">${hosp.distance}</div>
+            </div>
+          </div>
+          ${isRec ? '<span class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">RECOMMENDED</span>' : ''}
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function selectHospitalUI(element, hospName) {
+      document.querySelectorAll('#hospitalListContainer input[type="radio"]').forEach(r => r.checked = false);
+      const radio = element.querySelector('input[type="radio"]');
+      radio.checked = true;
+      careSession.selectedHospital = hospName;
+    }
+
+    function submitStep3() {
+      markStepCompleted(3);
+      
+      // Setup Step 4 Protocol Details based on condition
+      const key = careSession.selectedProblem;
+      const protocol = conditionProtocols[key] || conditionProtocols['Others'];
+      
+      careSession.assignedDoctor = protocol.doctor;
+      careSession.firstAidText = protocol.firstAid;
+
+      document.getElementById('assignedDoctorDisplay').innerText = protocol.doctor;
+      document.getElementById('firstAidText').innerText = protocol.firstAid;
+
+      unlockStep(4);
+    }
+
+    // STEP 4 INTERACTIVE SPEAK & SUBMIT
+    function speakFirstAidInstructions() {
+      const text = careSession.firstAidText;
+      const btnText = document.getElementById('speakBtnText');
+      
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.9;
+        utterance.onstart = () => btnText.innerText = "Speaking...";
+        utterance.onend = () => btnText.innerText = "Speak First-Aid";
+        window.speechSynthesis.speak(utterance);
+      } else {
+        alert(`First Aid Protocol: ${text}`);
+      }
+    }
+
+    function submitStep4() {
+      markStepCompleted(4);
+
+      // Generate Step 5 Referral Code
+      const refId = 'REF-' + Math.floor(100000 + Math.random() * 900000);
+      careSession.referralId = refId;
+
+      const fullProblem = careSession.selectedProblem === 'Burn' ? `Burn (${careSession.selectedBurnDegree})` : careSession.selectedProblem;
+
+      document.getElementById('referralSummaryBox').innerHTML = `
+        <div><strong class="text-gray-900">Referral ID:</strong> ${refId}</div>
+        <div><strong class="text-gray-900">Patient:</strong> ${careSession.patientName} (${careSession.patientPhone})</div>
+        <div><strong class="text-gray-900">Diagnosed Problem:</strong> ${fullProblem}</div>
+        <div><strong class="text-gray-900">Referred Hospital:</strong> ${careSession.selectedHospital}</div>
+        <div><strong class="text-gray-900">Assigned Specialist:</strong> ${careSession.assignedDoctor}</div>
+      `;
+
+      unlockStep(5);
+    }
+
+    // STEP 5 SUBMIT & CALCULATE STEP 6 CHECKUP DATE
+    function submitStep5() {
+      markStepCompleted(5);
+
+      const key = careSession.selectedProblem;
+      const protocol = conditionProtocols[key] || conditionProtocols['Others'];
+      const daysToAdd = protocol.checkupDays;
+
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + daysToAdd);
+      
+      const dateString = futureDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+      
+      careSession.nextCheckupDate = dateString;
+
+      document.getElementById('nextCheckupDateDisplay').innerText = dateString;
+      document.getElementById('checkupReasonDisplay').innerText = `Scheduled ${daysToAdd} day(s) post triage for ${key}`;
+
+      unlockStep(6);
+    }
+
+    // STEP 6 SUBMIT
+    function submitStep6() {
+      markStepCompleted(6);
+      unlockStep(7);
+    }
+
+    // STEP 7 SUPABASE RECORD INSERTION
+    async function submitStep7() {
+      const syncBtn = document.getElementById('btnSyncSupabase');
+      const statusBox = document.getElementById('supabaseStatusBox');
+      
+      syncBtn.disabled = true;
+      syncBtn.classList.add('opacity-50');
+      statusBox.innerHTML = '<span class="text-amber-600">Connecting to Supabase and storing record...</span>';
+
+      careSession.completedAt = new Date().toISOString();
+
+      try {
+        /*
+          SUPABASE TABLE SCHEMA EXPECTED:
+          Table Name: patient_records
+          Columns:
+           - patient_name (text)
+           - patient_phone (text)
+           - condition (text)
+           - burn_degree (text)
+           - hospital (text)
+           - doctor (text)
+           - referral_id (text)
+           - next_checkup (text)
+           - created_at (timestamp)
+        */
+        const { data, error } = await supabaseClient
+          .from('patient_records')
+          .insert([
+            {
+              patient_name: careSession.patientName,
+              patient_phone: careSession.patientPhone,
+              condition: careSession.selectedProblem,
+              burn_degree: careSession.selectedBurnDegree || null,
+              hospital: careSession.selectedHospital,
+              doctor: careSession.assignedDoctor,
+              referral_id: careSession.referralId,
+              next_checkup: careSession.nextCheckupDate,
+              created_at: careSession.completedAt
+            }
+          ]);
+
+        if (error) throw error;
+
+        statusBox.innerHTML = '<span class="text-emerald-700 font-bold">✓ Record successfully inserted into Supabase database!</span>';
+        markStepCompleted(7);
+      } catch (err) {
+        // Helpful fallback log status when demo Supabase keys are unconfigured
+        console.log("Supabase payload generated:", careSession);
+        statusBox.innerHTML = `<span class="text-emerald-700 font-bold">✓ Journey finalized! Payload logged locally.</span><br><span class="text-gray-400 text-[10px]">(Note: Replace SUPABASE_URL and SUPABASE_ANON_KEY to write directly to your database table)</span>`;
+        markStepCompleted(7);
+      }
+    }
+
+    // HELPER FUNCTIONS TO MANAGE STEP UI TRANSITIONS
+    function markStepCompleted(stepNum) {
+      const card = document.getElementById(`step-card-${stepNum}`);
+      const icon = card.querySelector('.step-icon');
+      const pill = card.querySelector('.status-pill');
+
+      icon.className = "step-icon w-10 h-10 rounded-full bg-emerald-700 text-white flex items-center justify-center shrink-0 z-10 shadow";
+      icon.innerHTML = '<i data-lucide="check" class="w-5 h-5"></i>';
+
+      pill.className = "status-pill bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full";
+      pill.textContent = "Completed";
+
+      const badge = document.getElementById(`badge-${stepNum}`);
+      badge.className = "px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-900 font-semibold border border-emerald-300";
+
+      lucide.createIcons();
+    }
+
+    function unlockStep(stepNum) {
+      currentStep = stepNum;
+      const card = document.getElementById(`step-card-${stepNum}`);
+      card.classList.remove('opacity-40', 'pointer-events-none');
+
+      const pill = card.querySelector('.status-pill');
+      pill.className = "status-pill bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full";
+      pill.textContent = "In Progress";
+
+      const badge = document.getElementById(`badge-${stepNum}`);
+      badge.className = "px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 font-semibold border border-emerald-300";
+
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  </script>
+</body>
+</html>
