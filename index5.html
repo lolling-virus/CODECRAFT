@@ -50,25 +50,26 @@
         </div>
       </div>
 
-      <nav class="space-y-1">
-        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[#34a87a] text-white font-medium text-sm">
+      <nav class="space-y-1" id="sidebarNav">
+        <a href="#" id="nav-care-journey" onclick="navigateToSection(event, 'care-journey')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[#34a87a] text-white font-medium text-sm transition">
           <i data-lucide="layout-grid" class="w-5 h-5"></i>
-          <span>Care Journey</span>
+          <span data-i18n="nav_care">Care Journey</span>
         </a>
-        <a href="#" class="flex items-center justify-between px-3 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm">
-          <div class="flex items-center gap-3"><i data-lucide="stethoscope" class="w-5 h-5"></i><span>Triage & Screening</span></div>
-          <span class="bg-[#1b4337] text-xs px-2 py-0.5 rounded-full font-bold">7</span>
+        <a href="#" id="nav-triage" onclick="navigateToSection(event, 'triage')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm transition">
+          <i data-lucide="stethoscope" class="w-5 h-5"></i>
+          <span data-i18n="nav_triage">Triage & Screening</span>
         </a>
-        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm">
-          <i data-lucide="users" class="w-5 h-5"></i><span>Patient Records</span>
+        <a href="#" id="nav-records" onclick="navigateToSection(event, 'records')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm transition">
+          <i data-lucide="users" class="w-5 h-5"></i>
+          <span data-i18n="nav_records">Patient Records</span>
         </a>
-        <a href="#" class="flex items-center justify-between px-3 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm">
-          <div class="flex items-center gap-3"><i data-lucide="video" class="w-5 h-5"></i><span>Teleconsult</span></div>
-          <span class="bg-[#1b4337] text-xs px-2 py-0.5 rounded-full font-bold">3</span>
+        <a href="#" id="nav-teleconsult" onclick="navigateToSection(event, 'teleconsult')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm transition">
+          <i data-lucide="video" class="w-5 h-5"></i>
+          <span data-i18n="nav_teleconsult">Teleconsult</span>
         </a>
-        <a href="#" class="flex items-center justify-between px-3 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm">
-          <div class="flex items-center gap-3"><i data-lucide="share-2" class="w-5 h-5"></i><span>Referrals</span></div>
-          <span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">2</span>
+        <a href="#" id="nav-referrals" onclick="navigateToSection(event, 'referrals')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm transition">
+          <i data-lucide="share-2" class="w-5 h-5"></i>
+          <span data-i18n="nav_referrals">Referrals</span>
         </a>
       </nav>
     </div>
@@ -86,13 +87,30 @@
       </div>
 
       <div class="flex items-center gap-4">
+        <!-- Patient Search Bar -->
         <div class="relative w-72">
           <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
           <input id="patientSearch" type="text" placeholder="Search patient or ABHA ID" class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
           <div id="patientSearchResults"
-           class="hidden absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-50    overflow-hidden">
+           class="hidden absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
           </div>
         </div>
+
+        <!-- Native Offline Language Translator Dropdown -->
+        <div class="relative flex items-center">
+          <i data-lucide="globe" class="w-4 h-4 absolute left-3 text-emerald-600 pointer-events-none"></i>
+          <select id="languageSelector" onchange="changeLanguage(this.value)" class="pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-full text-xs font-semibold text-gray-700 hover:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-sm transition appearance-none">
+            <option value="en">English (Default)</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+            <option value="mr">मराठी (Marathi)</option>
+            <option value="bn">বাংলা (Bengali)</option>
+            <option value="ur">اردو (Urdu)</option>
+            <option value="te">తెలుగు (Telugu)</option>
+          </select>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5 absolute right-3 text-gray-400 pointer-events-none"></i>
+        </div>
+
+        <!-- Offline Status Badge -->
         <div class="flex items-center gap-2 bg-amber-50 text-amber-800 text-xs font-semibold px-3 py-2 rounded-full border border-amber-200">
           <i data-lucide="wifi-off" class="w-4 h-4"></i><span>Offline</span>
           <span class="border-l border-amber-300 pl-2 flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3 h-3"></i> 12 queued</span>
@@ -143,7 +161,7 @@
               <span class="text-xs text-gray-400 font-semibold uppercase">Step 1 · Identification</span>
               <span class="status-pill bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full">Required</span>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Patient / ASHA Identifies Problem</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-2" data-i18n="step1_title">Patient / ASHA Identifies Problem</h3>
             <p class="text-sm text-gray-600 mb-4">Enter mandatory patient demographics to start care session.</p>
             
             <div class="grid grid-cols-2 gap-4 mb-4">
@@ -178,7 +196,8 @@
 
             <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
               <button onclick="submitStep1()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
-                <span>Save & Continue to Triage</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+               <span data-i18n="btn_step1">Save & Continue to Triage</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
               </button>
             </div>
           </div>
@@ -192,7 +211,7 @@
               <span class="text-xs text-gray-400 font-semibold uppercase">Step 2 · Decision Support</span>
               <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Triage Assessment</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-2" data-i18n="step2_title">Triage Assessment</h3>
             <p class="text-sm text-gray-600 mb-4">Select at least one clinical condition present.</p>
             
             <div class="space-y-3 mb-4">
@@ -223,8 +242,8 @@
 
             <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
               <button onclick="submitStep2()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
-                <span>Confirm Triage & Find Facility</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-              </button>
+  <span data-i18n="btn_step2">Confirm Triage & Find Facility</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+</button>
             </div>
           </div>
         </div>
@@ -237,7 +256,7 @@
               <span class="text-xs text-gray-400 font-semibold uppercase">Step 3 · Resource Allocation</span>
               <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Find & Select Facility</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-2" data-i18n="step3_title">Find & Select Facility</h3>
             <p class="text-sm text-gray-600 mb-4">Facilities sorted dynamic to condition. Select target health centre.</p>
             <div id="triageUrgencyBanner" class="hidden mb-3 px-3 py-2 rounded-lg text-xs font-semibold"></div>
 
@@ -247,8 +266,8 @@
 
             <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
               <button onclick="submitStep3()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
-                <span>Confirm Facility & Proceed</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-              </button>
+  <span data-i18n="btn_step3">Confirm Facility & Proceed</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+</button>
             </div>
           </div>
         </div>
@@ -261,7 +280,7 @@
               <span class="text-xs text-gray-400 font-semibold uppercase">Step 4 · Emergency Action</span>
               <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-1">Appointment & First-Aid Guidance</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-1" data-i18n="step4_title">Appointment & First-Aid Guidance</h3>
             
             <!-- Assigned Doctor -->
             <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 my-3 flex items-center justify-between">
@@ -274,9 +293,9 @@
               </div>
               <!-- Interactive Speak Option Button -->
               <button onclick="speakFirstAidInstructions()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 shadow">
-                <i data-lucide="volume-2" class="w-4 h-4"></i>
-                <span id="speakBtnText">Speak First-Aid</span>
-              </button>
+  <i data-lucide="volume-2" class="w-4 h-4"></i>
+  <span id="speakBtnText" data-i18n="btn_speak">Speak First-Aid</span>
+</button>
             </div>
 
             <!-- First Aid Instructions Box -->
@@ -289,8 +308,8 @@
 
             <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
               <button onclick="submitStep4()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
-                <span>Complete Consult & Generate Referral</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-              </button>
+  <span data-i18n="btn_step4">Complete Consult & Generate Referral</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+</button>
             </div>
           </div>
         </div>
@@ -304,11 +323,11 @@
               <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
             </div>
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-bold text-gray-900">Official Referral Slip Generated</h3>
+              <h3 class="text-lg font-bold text-gray-900" data-i18n="step5_title">Official Referral Slip Generated</h3>
               <button onclick="window.print()" class="text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
-                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-                <span>Print / Save Slip</span>
-              </button>
+  <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+  <span data-i18n="btn_print">Print / Save Slip</span>
+</button>
             </div>
             
             <!-- Styled Official Referral Slip Card -->
@@ -318,8 +337,8 @@
 
             <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
               <button onclick="submitStep5()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
-                <span>Confirm Referral & Set Follow-up</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-              </button>
+  <span data-i18n="btn_step5">Confirm Referral & Set Follow-up</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+</button>
             </div>
           </div>
         </div>
@@ -332,7 +351,7 @@
               <span class="text-xs text-gray-400 font-semibold uppercase">Step 6 · Scheduled Care</span>
               <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-3">Structured Follow-up Plan</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-3" data-i18n="step6_title">Structured Follow-up Plan</h3>
             
             <!-- Follow-up Plan Display Card -->
             <div id="followupPlanContainer" class="bg-gradient-to-b from-blue-50/50 to-white border border-blue-200 rounded-xl p-5 mb-4 shadow-sm space-y-4">
@@ -344,8 +363,8 @@
                 <i data-lucide="clock" class="w-4 h-4"></i> Pending Confirmation
               </span>
               <button onclick="submitStep6()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
-                <span>Confirm Follow-up Plan & Sync Record</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-              </button>
+  <span data-i18n="btn_step6">Confirm Follow-up Plan & Sync Record</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+</button>
             </div>
           </div>
         </div>
@@ -358,7 +377,7 @@
               <span class="text-xs text-gray-400 font-semibold uppercase">Step 7 · Database Sync</span>
               <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Update Record in Supabase</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-2" data-i18n="step7_title">Update Record in Supabase</h3>
             <p class="text-sm text-gray-600 mb-4">Click below to commit the complete clinical journey to your Supabase table.</p>
             
             <div id="supabaseStatusBox" class="p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs font-mono text-gray-600 mb-4">
@@ -367,9 +386,9 @@
 
             <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
               <button onclick="submitStep7()" id="btnSyncSupabase" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
-                <i data-lucide="database" class="w-3.5 h-3.5"></i>
-                <span>Sync Record to Supabase</span>
-              </button>
+  <i data-lucide="database" class="w-3.5 h-3.5"></i>
+  <span data-i18n="btn_step7">Sync Record to Supabase</span>
+</button>
             </div>
           </div>
         </div>
@@ -1542,6 +1561,241 @@ function renderPatientRecords(records, errorMessage = '') {
         </div>
     `;
 }
+
+function navigateToSection(event, target) {
+      if (event) event.preventDefault();
+
+      let elementToScroll = null;
+
+      switch (target) {
+        case 'care-journey':
+          elementToScroll = document.getElementById('step-card-1') || document.getElementById('patientHeaderTitle');
+          break;
+        case 'triage':
+          elementToScroll = document.getElementById('step-card-2');
+          break;
+        case 'records':
+          elementToScroll = document.getElementById('patientRecordsPanel') || document.getElementById('patientHeaderTitle');
+          break;
+        case 'teleconsult':
+          elementToScroll = document.getElementById('step-card-4');
+          break;
+        case 'referrals':
+          elementToScroll = document.getElementById('step-card-5');
+          break;
+      }
+
+      if (elementToScroll) {
+        elementToScroll.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      const navIds = {
+        'care-journey': 'nav-care-journey',
+        'triage': 'nav-triage',
+        'records': 'nav-records',
+        'teleconsult': 'nav-teleconsult',
+        'referrals': 'nav-referrals'
+      };
+
+      Object.entries(navIds).forEach(([key, id]) => {
+        const link = document.getElementById(id);
+        if (!link) return;
+
+        if (key === target) {
+          link.className = "flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[#34a87a] text-white font-medium text-sm transition";
+        } else {
+          link.className = "flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm transition";
+        }
+      });
+    }
+
+    // ============================================
+    // MULTILINGUAL TRANSLATION SYSTEM
+    // ============================================
+
+    let currentLanguage = 'en';
+
+    const translations = {
+      en: {
+        nav_care: "Care Journey",
+        nav_triage: "Triage & Screening",
+        nav_records: "Patient Records",
+        nav_teleconsult: "Teleconsult",
+        nav_referrals: "Referrals",
+        step1_title: "Patient / ASHA Identifies Problem",
+        btn_step1: "Save & Continue to Triage",
+        step2_title: "Triage Assessment",
+        btn_step2: "Confirm Triage & Find Facility",
+        step3_title: "Find & Select Facility",
+        btn_step3: "Confirm Facility & Proceed",
+        step4_title: "Appointment & First-Aid Guidance",
+        btn_speak: "Speak First-Aid",
+        btn_step4: "Complete Consult & Generate Referral",
+        step5_title: "Official Referral Slip Generated",
+        btn_print: "Print / Save Slip",
+        btn_step5: "Confirm Referral & Set Follow-up",
+        step6_title: "Structured Follow-up Plan",
+        btn_step6: "Confirm Follow-up Plan & Sync Record",
+        step7_title: "Update Record in Supabase",
+        btn_step7: "Sync Record to Supabase"
+      },
+      hi: {
+        nav_care: "देखभाल यात्रा",
+        nav_triage: "ट्रियाज और जांच",
+        nav_records: "रोगी रिकॉर्ड्स",
+        nav_teleconsult: "टेली-परामर्श",
+        nav_referrals: "रेफरल सूची",
+        step1_title: "रोगी / आशा समस्या की पहचान",
+        btn_step1: "सहेजें और ट्रियाज पर जाएं",
+        step2_title: "ट्रियाज आकलन",
+        btn_step2: "पुष्टि करें और सुविधा खोजें",
+        step3_title: "सुविधा खोजें और चुनें",
+        btn_step3: "सुविधा की पुष्टि करें और आगे बढ़ें",
+        step4_title: "अपॉइंटमेंट और प्राथमिक उपचार मार्गदर्शिका",
+        btn_speak: "प्राथमिक उपचार सुनें",
+        btn_step4: "परामर्श पूरा करें और रेफरल बनाएं",
+        step5_title: "आधिकारिक रेफरल पर्ची तैयार की गई",
+        btn_print: "पर्ची प्रिंट / सहेजें",
+        btn_step5: "रेफरल की पुष्टि करें और फॉलो-अप तय करें",
+        step6_title: "संरचित फॉलो-अप योजना",
+        btn_step6: "फॉलो-अप योजना की पुष्टि करें और सिंक करें",
+        step7_title: "सुपाबेस में रिकॉर्ड अपडेट करें",
+        btn_step7: "सुपाबेस में रिकॉर्ड सिंक करें"
+      },
+      mr: {
+        nav_care: "काळजी प्रवास",
+        nav_triage: "ट triage आणि तपासणी",
+        nav_records: "रुग्ण नोंदी",
+        nav_teleconsult: "टेली-सल्ला",
+        nav_referrals: "संदर्भ यादी",
+        step1_title: "रुग्ण / आशा आरोग्य सेविका अडचण ओळखते",
+        btn_step1: "जतन करा आणि पुढे जा",
+        step2_title: "ट triage मूल्यमापन",
+        btn_step2: "निश्चित करा आणि केंद्र शोधा",
+        step3_title: "आरोग्य केंद्र शोधा आणि निवडा",
+        btn_step3: "केंद्र निश्चित करा आणि पुढे जा",
+        step4_title: "अपॉइंटमेंट आणि प्रथमोपचार मार्गदर्शन",
+        btn_speak: "प्रथमोपचार ऐका",
+        btn_step4: "सल्ला पूर्ण करा आणि रेफरल बनवा",
+        step5_title: "अधिकृत रेफरल स्लिप तयार झाली",
+        btn_print: "स्लिप प्रिंट करा / जतन करा",
+        btn_step5: "रेफरल निश्चित करा आणि पाठपुरावा ठरवा",
+        step6_title: "संरचित पाठपुरावा योजना",
+        btn_step6: "पाठपुरावा योजना निश्चित करा आणि सिंक करा",
+        step7_title: "सुपाबेस मध्ये नोंद अद्यतनित करा",
+        btn_step7: "सुपाबेस मध्ये नोंद सिंक करा"
+      },
+      bn: {
+        nav_care: "চিকিৎসা যাত্রা",
+        nav_triage: "ট্রায়াজ ও পরীক্ষা",
+        nav_records: "রোগীর রেকর্ড",
+        nav_teleconsult: "টেলি-পরামর্শ",
+        nav_referrals: "রেফারেল তালিকা",
+        step1_title: "রোগী / আশা স্বাস্থ্য কর্মী সমস্যা সনাক্তকরণ",
+        btn_step1: "সংরক্ষণ করুন ও ট্রায়াজে যান",
+        step2_title: "ট্রায়াজ মূল্যায়ন",
+        btn_step2: "নিশ্চিত করুন ও হাসপাতাল খুঁজুন",
+        step3_title: "হাসপাতাল খুঁজুন ও নির্বাচন করুন",
+        btn_step3: "হাসপাতাল নিশ্চিত করুন ও এগিয়ে যান",
+        step4_title: "অ্যাপয়েন্টমেন্ট ও প্রাথমিক চিকিৎসা নির্দেশিকা",
+        btn_speak: "প্রাথমিক চিকিৎসা শুনুন",
+        btn_step4: "পরামর্শ সম্পন্ন করুন ও রেফারেল তৈরি করুন",
+        step5_title: "অফিসিয়াল রেফারেল স্লিপ তৈরি হয়েছে",
+        btn_print: "স্লিপ প্রিন্ট / সেভ করুন",
+        btn_step5: "রেফারেল নিশ্চিত করুন ও ফলো-আপ সেট করুন",
+        step6_title: "পরিকল্পিত ফলো-আপ পরিকল্পনা",
+        btn_step6: "ফলো-আপ প্ল্যান নিশ্চিত করুন ও সিঙ্ক করুন",
+        step7_title: "সুপাবেসে রেকর্ড আপডেট করুন",
+        btn_step7: "সুপাবেসে রেকর্ড সিঙ্ক করুন"
+      },
+      ur: {
+        nav_care: "کیئر کا سفر",
+        nav_triage: "ٹرائیج اور اسکریننگ",
+        nav_records: "مریض کے ریکارڈ",
+        nav_teleconsult: "ٹیلی کنسلٹ",
+        nav_referrals: "ریفرلز",
+        step1_title: "مریض / آشا کی خرابی کی شناخت",
+        btn_step1: "محفوظ کریں اور آگے بڑھیں",
+        step2_title: "ٹرائیج کا اندازہ",
+        btn_step2: "تصدیق کریں اور سہولت تلاش کریں",
+        step3_title: "سہولت تلاش کریں اور منتخب کریں",
+        btn_step3: "سہولت کی تصدیق کریں اور آگے بڑھیں",
+        step4_title: "اپوائنٹمنٹ اور ابتدائی طبی امداد",
+        btn_speak: "ابتدائی طبی امداد سنیں",
+        btn_step4: "مشورہ مکمل کریں اور ریفرل بنائیں",
+        step5_title: "سرکاری ریفرل سلپ تیار ہے",
+        btn_print: "پرنٹ کریں / محفوظ کریں",
+        btn_step5: "ریفرل کی تصدیق کریں اور فالو اپ طے کریں",
+        step6_title: "منظم فالو اپ منصوبہ",
+        btn_step6: "منصوبے کی تصدیق کریں اور سنک کریں",
+        step7_title: "سپابیس میں ریکارڈ اپ ڈیٹ کریں",
+        btn_step7: "سپابیس میں سنک کریں"
+      },
+      te: {
+        nav_care: "సంరక్షణ ప్రయాణం",
+        nav_triage: "ట్రయేజ్ & స్క్రీనింగ్",
+        nav_records: "పేషెంట్ రికార్డులు",
+        nav_teleconsult: "టెలికన్సల్ట్",
+        nav_referrals: "రెఫరల్స్",
+        step1_title: "పేషెంట్ / ఆశా సమస్య గుర్తింపు",
+        btn_step1: "సేవ్ చేసి ముందడుగు వేయండి",
+        step2_title: "ట్రయేజ్ అంచనా",
+        btn_step2: "సమర్థించి ఆసుపత్రిని వెతకండి",
+        step3_title: "ఆసుపత్రిని ఎంచుకోండి",
+        btn_step3: "ఆసుపత్రిని ఖరారు చేయండి",
+        step4_title: "అపాయింట్‌మెంట్ & ప్రథమ చికిత్స మార్గదర్శకత్వం",
+        btn_speak: "ప్రథమ చికిత్స వినండి",
+        btn_step4: "సంప్రదింపు పూర్తి చేసి రెఫరల్ సృష్టించండి",
+        step5_title: "అధికారిక రెఫరల్ స్లిప్ సృష్టించబడింది",
+        btn_print: "స్లిప్ ప్రింట్ చేయండి",
+        btn_step5: "రెఫరల్ ఖరారు చేసి ఫాలో-అప్ సెట్ చేయండి",
+        step6_title: "నిర్మాణాత్మక ఫాలో-అప్ ప్లాన్",
+        btn_step6: "ఫాలో-అప్ ప్లాన్ ఖరారు చేసి సింక్ చేయండి",
+        step7_title: "సుపాబేస్‌లో రికార్డు నవీకరించండి",
+        btn_step7: "రికార్డు సింక్ చేయండి"
+      }
+    };
+
+    const regionalFirstAidProtocols = {
+      "Heart Attack": {
+        en: "Keep patient calm and seated upright. Loosen tight clothing. Give Aspirin if available. Prepare emergency transport immediately.",
+        hi: "मरीज को शांत रखें और सीधा बैठाएं। तंग कपड़े ढीले करें। एस्पिरिन दें यदि उपलब्ध हो। तुरंत आपातकालीन परिवहन की व्यवस्था करें।",
+        mr: "रुग्णाला शांत ठेवा आणि सरळ बसवा. घट्ट कपडे सैल करा. उपलब्ध असल्यास एस्पिरिन द्या. तातडीने रुग्णवाहिका आणा.",
+        bn: "রোগীকে শান্ত রাখুন এবং সোজা করে বসিয়ে রাখুন। টাইট পোশাক ঢিলে করে দিন। জরুরী পরিবহনের ব্যবস্থা করুন।",
+        ur: "مریض کو پرسکون رکھیں اور سیدھا بٹھائیں۔ تنگ کپڑے ڈھیلے کریں۔ فوری طور پر ہنگامی گاڑی کا انتظام کریں۔",
+        te: "రోగిని ప్రశాంతంగా ఉంచండి మరియు నేరుగా కూర్చోబెట్టండి. బిగుతుగా ఉన్న దుస్తులను వదులు చేయండి. అత్యవసర రవాణాను సిద్ధం చేయండి."
+      },
+      "Burn": {
+        en: "Cool burn with running lukewarm water for 20 minutes. Do not apply ice or butter. Cover with clean cling film or sterile bandage.",
+        hi: "जलने के स्थान पर 20 मिनट तक बहता पानी डालें। बर्फ या घी न लगाएं। साफ कपड़े से ढकें।",
+        mr: "जळलेल्या भागावर २० मिनिटे वाहते पाणी टाका. बर्फ किंवा तूप लावू नका. स्वच्छ कापडाने झाका.",
+        bn: "পোড়া স্থানে ২০ মিনিট ধরে জল ঢালুন। বরফ বা ঘি দেবেন না। পরিষ্কার কাপড় দিয়ে ঢেকে দিন।",
+        ur: "جلی ہوئی جگہ پر 20 منٹ تک بہتا ہوا پانی ڈالیں۔ برف یا گھی نہ لگائیں۔ صاف کپڑے سے ڈھانپیں۔",
+        te: "కాలిన గాయంపై 20 నిమిషాల పాటు ప్రవహించే నీటిని పోయండి. మంచు లేదా వెన్న రాయవద్దు. శుభ్రమైన గుడ్డతో కప్పండి."
+      },
+      "Fever": {
+        en: "Keep patient hydrated with clean water/ORS. Apply cool damp cloth sponges on forehead. Monitor body temperature.",
+        hi: "मरीज को ओआरएस और साफ पानी पिलाएं। माथे पर ठंडे पानी की पट्टियां रखें। तापमान मापते रहें।",
+        mr: "रुग्णाला ओआरएस आणि स्वच्छ पाणी द्या. कपाळावर थंड पाण्याच्या पट्या ठेवा. तापमान मोजा.",
+        bn: "রোগীকে প্রচুর জল ও ওআরএস খাওয়ান। কপালে ঠান্ডা জলের পট্টি দিন। গায়ের তাপমাত্রা মাপুন।",
+        ur: "مریض کو صاف پانی یا او آر ایس پلائیں۔ پیشانی پر ٹھنڈے پانی کی پٹیاں رکھیں۔ بخار چیک کرتے رہیں۔",
+        te: "రోగికి ఓఆర్‌ఎస్ మరియు మంచి నీరు ఇవ్వండి. నుదుటిపై చల్లని నీటి పట్టీలను ఉంచండి. ఉష్ణోగ్రతను గమనించండి."
+      }
+    };
+
+    function changeLanguage(langKey) {
+      currentLanguage = langKey;
+      const dict = translations[langKey] || translations.en;
+
+      document.querySelectorAll('[data-i18n]').forEach(elem => {
+        const key = elem.getAttribute('data-i18n');
+        if (dict[key]) {
+          elem.innerText = dict[key];
+        }
+      });
+
+      console.log('[Multilingual] Language switched to:', langKey);
+    }
   </script>
 </body>
 </html>
