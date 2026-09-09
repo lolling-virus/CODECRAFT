@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setu Health - Care Journey</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Supabase JS Client library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#0e2a22',
+              cardDark: '#13352b',
+              accent: '#34a87a',
+              lightBg: '#f6f8f7'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .step-card { transition: all 0.3s ease; }
+    /* Google Translate styles */
+    .goog-te-banner-frame.skiptranslate, .goog-te-banner-frame { display: none !important; }
+    body { top: 0px !important; }
+    #google_translate_element { display: none !important; }
+    .goog-tooltip { display: none !important; }
+    .goog-tooltip:hover { display: none !important; }
+    .goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }
+    font { background-color: transparent !important; box-shadow: none !important; }
+    .goog-te-gadget { display: none !important; }
+    .skiptranslate > iframe { display: none !important; }
+  </style>
+</head>
+<body class="bg-[#f6f8f7] text-gray-800 flex h-screen overflow-hidden">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="w-64 bg-[#0e2a22] text-white flex flex-col justify-between p-4 shrink-0">
+    <div>
+      <div class="flex items-center gap-3 px-2 py-4 mb-6">
+        <div class="w-10 h-10 rounded-full bg-[#34a87a] flex items-center justify-center text-white">
+          <i data-lucide="activity" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight">Setu Health</h1>
+          <p class="text-xs text-emerald-200 opacity-80">Rural Care Platform</p>
+        </div>
+      </div>
+
+      <nav class="space-y-1">
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[#34a87a] text-white font-medium text-sm">
+          <i data-lucide="layout-grid" class="w-5 h-5"></i>
+          <span>Care Journey</span>
+        </a>
+        <a href="#" class="flex items-center justify-between px-3 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm">
+          <div class="flex items-center gap-3"><i data-lucide="stethoscope" class="w-5 h-5"></i><span>Triage & Screening</span></div>
+          <span class="bg-[#1b4337] text-xs px-2 py-0.5 rounded-full font-bold">7</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm">
+          <i data-lucide="users" class="w-5 h-5"></i><span>Patient Records</span>
+        </a>
+        <a href="#" class="flex items-center justify-between px-3 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm">
+          <div class="flex items-center gap-3"><i data-lucide="video" class="w-5 h-5"></i><span>Teleconsult</span></div>
+          <span class="bg-[#1b4337] text-xs px-2 py-0.5 rounded-full font-bold">3</span>
+        </a>
+        <a href="#" class="flex items-center justify-between px-3 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm">
+          <div class="flex items-center gap-3"><i data-lucide="share-2" class="w-5 h-5"></i><span>Referrals</span></div>
+          <span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">2</span>
+        </a>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="flex-1 flex flex-col overflow-hidden">
+    
+    <!-- Top Header -->
+    <header class="h-20 border-b border-gray-200 px-8 flex items-center justify-between bg-white shrink-0">
+      <div class="flex items-center gap-3">
+        <h2 class="text-xl font-bold text-gray-900">Rampur PHC</h2>
+        <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-medium">Primary Health Centre</span>
+        <span class="text-sm text-gray-500 ml-2">Tuesday, 7 Sep · 3 workers on duty</span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <!-- Language Selector Dropdown -->
+        <div class="relative flex items-center">
+          <i data-lucide="globe" class="w-4 h-4 absolute left-3 text-emerald-600 pointer-events-none"></i>
+          <select id="languageSelector" onchange="translatePage(this.value)" class="pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-full text-xs font-semibold text-gray-700 hover:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-sm transition appearance-none">
+            <option value="en">English (Default)</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+            <option value="bn">বাংলা (Bengali)</option>
+            <option value="ur">اردو (Urdu)</option>
+            <option value="te">తెలుగు (Telugu)</option>
+          </select>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5 absolute right-3 text-gray-400 pointer-events-none"></i>
+        </div>
+
+        <div class="relative w-72">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <input id="patientSearch" type="text" placeholder="Search patient or ABHA ID" class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          <div id="patientSearchResults"
+           class="hidden absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-50    overflow-hidden">
+          </div>
+        </div>
+        <div class="flex items-center gap-2 bg-amber-50 text-amber-800 text-xs font-semibold px-3 py-2 rounded-full border border-amber-200">
+          <i data-lucide="wifi-off" class="w-4 h-4"></i><span>Offline</span>
+          <span class="border-l border-amber-300 pl-2 flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3 h-3"></i> 12 queued</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Scrollable Workflow Content -->
+    <div class="flex-1 overflow-y-auto p-8 space-y-8 max-w-5xl">
+
+      <!-- WORKFLOW STEP TRACKER HEADER -->
+      <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+        <h3 class="text-xs font-bold tracking-wider text-gray-400 uppercase mb-4">End-to-End Workflow</h3>
+        <div class="flex flex-wrap items-center gap-2 text-sm">
+          <div id="badge-1" class="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 font-semibold border border-emerald-300">1 Identify problem</div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-gray-300"></i>
+          <div id="badge-2" class="px-3 py-1.5 rounded-full bg-gray-100 text-gray-400 font-medium">2 Triage</div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-gray-300"></i>
+          <div id="badge-3" class="px-3 py-1.5 rounded-full bg-gray-100 text-gray-400 font-medium">3 Find facility</div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-gray-300"></i>
+          <div id="badge-4" class="px-3 py-1.5 rounded-full bg-gray-100 text-gray-400 font-medium">4 Teleconsult</div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-gray-300"></i>
+          <div id="badge-5" class="px-3 py-1.5 rounded-full bg-gray-100 text-gray-400 font-medium">5 Referral</div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-gray-300"></i>
+          <div id="badge-6" class="px-3 py-1.5 rounded-full bg-gray-100 text-gray-400 font-medium">6 Follow-up</div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-gray-300"></i>
+          <div id="badge-7" class="px-3 py-1.5 rounded-full bg-gray-100 text-gray-400 font-medium">7 Record updated</div>
+        </div>
+      </div>
+
+      <!-- ACTIVE PATIENT TITLE -->
+      <div>
+        <div class="flex items-center gap-3">
+          <h2 class="text-2xl font-bold text-gray-900" id="patientHeaderTitle">Care Journey: Unregistered</h2>
+          <span class="bg-emerald-100 text-emerald-800 text-sm px-3 py-0.5 rounded-full font-semibold" id="patientHeaderBadge">In Progress</span>
+        </div>
+        <p class="text-sm text-gray-500 mt-1" id="patientHeaderSubtext">Complete the intake information in Step 1 to initiate workflow.</p>
+      </div>
+
+      <!-- SEQUENTIAL TIMELINE CARE STEPS -->
+      <div class="relative pl-6 space-y-8 before:absolute before:left-5 before:top-4 before:bottom-4 before:w-0.5 before:bg-gray-200">
+
+        <!-- STEP 1: Patient Identification -->
+        <div class="relative flex items-start gap-6 step-card" id="step-card-1">
+          <div class="step-icon w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 z-10 shadow font-bold">1</div>
+          <div class="flex-1 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-gray-400 font-semibold uppercase">Step 1 · Identification</span>
+              <span class="status-pill bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full">Required</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Patient / ASHA Identifies Problem</h3>
+            <p class="text-sm text-gray-600 mb-4">Enter mandatory patient demographics to start care session.</p>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Patient Name *</label>
+                <input type="text" id="inputPatientName" placeholder="e.g. Sunita Devi" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Phone Number *</label>
+                <input type="tel" id="inputPatientPhone" placeholder="e.g. 9128475561" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Age</label>
+                <input type="number" id="inputPatientAge" min="0" max="120" placeholder="e.g. 34" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Gender</label>
+                <select id="inputPatientGender" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                  <option value="">Select gender</option>
+                  <option value="Female">Female</option>
+                  <option value="Male">Male</option>
+                  <option value="Other">Other</option>
+                  <option value="Prefer not to say">Prefer not to say</option>
+                </select>
+              </div>
+              <div class="col-span-2">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Village</label>
+                <input type="text" id="inputPatientVillage" placeholder="e.g. Rampur" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+            </div>
+            <p id="step1Error" class="text-xs text-red-500 font-medium mb-3 hidden">Please enter both Patient Name and Phone Number to proceed.</p>
+
+            <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
+              <button onclick="submitStep1()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
+                <span>Save & Continue to Triage</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Triage Selection -->
+        <div class="relative flex items-start gap-6 opacity-40 pointer-events-none step-card" id="step-card-2">
+          <div class="step-icon w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center shrink-0 z-10 font-bold">2</div>
+          <div class="flex-1 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-gray-400 font-semibold uppercase">Step 2 · Decision Support</span>
+              <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Triage Assessment</h3>
+            <p class="text-sm text-gray-600 mb-4">Select at least one clinical condition present.</p>
+            
+            <div class="space-y-3 mb-4">
+              <select id="selectProblem" onchange="toggleBurnOptions()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                <option value="">-- Select Condition --</option>
+                <option value="Heart Attack">Heart Attack (Critical Emergency)</option>
+                <option value="Burn">Burn</option>
+                <option value="Fever">Fever</option>
+                <option value="Allergy">Allergy</option>
+                <option value="Bleeding">Bleeding</option>
+                <option value="Pregnancy">Pregnancy</option>
+                <option value="Others">Others</option>
+              </select>
+
+              <!-- Burn Sub-options -->
+              <div id="burnSubOptionContainer" class="hidden pl-4 border-l-2 border-amber-400 py-1">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Burn Degree Severity *</label>
+                <select id="selectBurnDegree" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                  <option value="">-- Select Burn Degree --</option>
+                  <option value="1st Degree Burn">1st Degree Burn</option>
+                  <option value="2nd Degree Burn">2nd Degree Burn</option>
+                  <option value="3rd Degree Burn">3rd Degree Burn</option>
+                </select>
+              </div>
+            </div>
+            <p id="step2Error" class="text-xs text-red-500 font-medium mb-3 hidden">Please select a valid condition/degree to continue.</p>
+            <div id="triageUrgencyResult" class="hidden mb-3 px-3 py-2 rounded-lg text-xs font-bold items-center gap-2"></div>
+
+            <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
+              <button onclick="submitStep2()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
+                <span>Confirm Triage & Find Facility</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Find Facility -->
+        <div class="relative flex items-start gap-6 opacity-40 pointer-events-none step-card" id="step-card-3">
+          <div class="step-icon w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center shrink-0 z-10 font-bold">3</div>
+          <div class="flex-1 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-gray-400 font-semibold uppercase">Step 3 · Resource Allocation</span>
+              <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Find & Select Facility</h3>
+            <p class="text-sm text-gray-600 mb-4">Facilities sorted dynamic to condition. Select target health centre.</p>
+            <div id="triageUrgencyBanner" class="hidden mb-3 px-3 py-2 rounded-lg text-xs font-semibold"></div>
+
+            <div id="hospitalListContainer" class="space-y-2 mb-4">
+              <!-- Dynamically Populated -->
+            </div>
+
+            <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
+              <button onclick="submitStep3()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
+                <span>Confirm Facility & Proceed</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Appointment / Teleconsultation & First Aid -->
+        <div class="relative flex items-start gap-6 opacity-40 pointer-events-none step-card" id="step-card-4">
+          <div class="step-icon w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center shrink-0 z-10 font-bold">4</div>
+          <div class="flex-1 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-gray-400 font-semibold uppercase">Step 4 · Emergency Action</span>
+              <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-1">Appointment & First-Aid Guidance</h3>
+            
+            <!-- Assigned Doctor -->
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 my-3 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <i data-lucide="user-check" class="w-5 h-5 text-emerald-700"></i>
+                <div>
+                  <div class="text-xs text-gray-500">Assigned Tele-Doctor</div>
+                  <div class="text-sm font-bold text-emerald-900" id="assignedDoctorDisplay">Dr. Assigned</div>
+                </div>
+              </div>
+              <!-- Interactive Speak Option Button -->
+              <button onclick="speakFirstAidInstructions()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 shadow">
+                <i data-lucide="volume-2" class="w-4 h-4"></i>
+                <span id="speakBtnText">Speak First-Aid</span>
+              </button>
+            </div>
+
+            <!-- First Aid Instructions Box -->
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+              <div class="text-xs font-bold text-amber-800 uppercase mb-1 flex items-center gap-1">
+                <i data-lucide="shield-alert" class="w-4 h-4"></i> Immediate First-Aid Protocol
+              </div>
+              <p class="text-sm text-amber-900 leading-relaxed" id="firstAidText">First-aid instructions loading...</p>
+            </div>
+
+            <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
+              <button onclick="submitStep4()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
+                <span>Complete Consult & Generate Referral</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5: Referral Generation -->
+        <div class="relative flex items-start gap-6 opacity-40 pointer-events-none step-card" id="step-card-5">
+          <div class="step-icon w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center shrink-0 z-10 font-bold">5</div>
+          <div class="flex-1 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-gray-400 font-semibold uppercase">Step 5 · Referral Desk</span>
+              <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
+            </div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-bold text-gray-900">Official Referral Slip Generated</h3>
+              <button onclick="window.print()" class="text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                <span>Print / Save Slip</span>
+              </button>
+            </div>
+            
+            <!-- Styled Official Referral Slip Card -->
+            <div class="bg-gradient-to-b from-emerald-50/40 to-white border border-emerald-200 rounded-xl p-5 mb-4 shadow-sm space-y-4" id="referralSummaryBox">
+              <!-- Dynamically Filled in submitStep4() -->
+            </div>
+
+            <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
+              <button onclick="submitStep5()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
+                <span>Confirm Referral & Set Follow-up</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 6: Next Check-Up Date -->
+        <div class="relative flex items-start gap-6 opacity-40 pointer-events-none step-card" id="step-card-6">
+          <div class="step-icon w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center shrink-0 z-10 font-bold">6</div>
+          <div class="flex-1 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-gray-400 font-semibold uppercase">Step 6 · Scheduled Care</span>
+              <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-3">Structured Follow-up Plan</h3>
+            
+            <!-- Follow-up Plan Display Card -->
+            <div id="followupPlanContainer" class="bg-gradient-to-b from-blue-50/50 to-white border border-blue-200 rounded-xl p-5 mb-4 shadow-sm space-y-4">
+              <!-- Dynamically Filled in submitStep5() -->
+            </div>
+
+            <div class="border-t border-gray-100 pt-4 flex items-center justify-between">
+              <span id="followupStatusTag" class="text-xs text-blue-700 font-semibold flex items-center gap-1.5">
+                <i data-lucide="clock" class="w-4 h-4"></i> Pending Confirmation
+              </span>
+              <button onclick="submitStep6()" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
+                <span>Confirm Follow-up Plan & Sync Record</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 7: Record Sync to Supabase -->
+        <div class="relative flex items-start gap-6 opacity-40 pointer-events-none step-card" id="step-card-7">
+          <div class="step-icon w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center shrink-0 z-10 font-bold">7</div>
+          <div class="flex-1 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-gray-400 font-semibold uppercase">Step 7 · Database Sync</span>
+              <span class="status-pill bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Locked</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Update Record in Supabase</h3>
+            <p class="text-sm text-gray-600 mb-4">Click below to commit the complete clinical journey to your Supabase table.</p>
+            
+            <div id="supabaseStatusBox" class="p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs font-mono text-gray-600 mb-4">
+              Ready to sync patient record.
+            </div>
+
+            <div class="border-t border-gray-100 pt-4 flex items-center justify-end">
+              <button onclick="submitStep7()" id="btnSyncSupabase" class="bg-[#34a87a] hover:bg-emerald-600 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1">
+                <i data-lucide="database" class="w-3.5 h-3.5"></i>
+                <span>Sync Record to Supabase</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    document.addEventListener('DOMContentLoaded', async () => {
+    const user = await Auth.getCurrentUser();
+
+    if (!user) {
+        window.location.href = 'index2.html';
+        return;
+    }
+
+    // The database role is the source of truth for who can access the
+    // Health Worker dashboard — being logged in is not enough on its
+    // own. Any authenticated user without the asha_anm role gets sent
+    // back, regardless of what a UI role-card might have shown them.
+    const profile = await Auth.getProfile();
+
+    if (!profile || profile.role !== 'asha_anm') {
+        console.warn('[Health Worker] Access denied — role is not asha_anm:', profile ? profile.role : 'no profile found');
+        window.location.href = 'index2.html';
+        return;
+    }
+
+    console.log('[Health Worker] Authenticated:', user.email, '· Role:', profile.role);
+});
+
+
+    // Clinical Journey State Object
+    const careSession = {
+      patientName: '',
+      patientPhone: '',
+      patientAge: '',
+      patientGender: '',
+      patientVillage: '',
+      selectedProblem: '',
+      selectedBurnDegree: '',
+      selectedHospital: null,
+      selectedFacilityId: null,
+      urgencyLevel: '',
+      assignedDoctor: '',
+      firstAidText: '',
+      referralId: '',
+      nextCheckupDate: '',
+      completedAt: null
+    };
+
+
+    // Master Hospitals Database with Distance & Specialty Tagging
+
+    // First Aid Mapping & Doctors lookup
+    const conditionProtocols = {
+      "Heart Attack": {
+        doctor: "Dr. A. Sharma (Cardiologist)",
+        firstAid: "Keep patient calm and seated upright. Loosen tight clothing. Give Aspirin (300mg) if available and not allergic. Prepare emergency transport immediately.",
+        checkupDays: 1
+      },
+      "Burn": {
+        doctor: "Dr. R. Verma (Dermatologist/Trauma)",
+        firstAid: "Cool burn with running lukewarm water for 20 minutes. Do not apply ice, butter, or paste. Cover with clean cling film or sterile bandage.",
+        checkupDays: 3
+      },
+      "Fever": {
+        doctor: "Dr. S. K. Gupta (General Physician)",
+        firstAid: "Keep patient hydrated with clean water/ORS. Apply cool damp cloth sponges on forehead. Monitor body temperature.",
+        checkupDays: 7
+      },
+      "Allergy": {
+        doctor: "Dr. P. Nair (Immunologist)",
+        firstAid: "Identify and remove allergen trigger. Monitor for airway obstruction or breathing difficulty. Keep patient lying comfortably.",
+        checkupDays: 5
+      },
+      "Bleeding": {
+        doctor: "Dr. V. Mehta (General Surgeon)",
+        firstAid: "Apply direct pressure to wound using a clean cloth or sterile gauze. Elevate the bleeding limb above heart level if possible.",
+        checkupDays: 2
+      },
+      "Pregnancy": {
+        doctor: "Dr. Anjali Rao (Obstetrician)",
+        firstAid: "Place patient on left side to optimize blood flow. Monitor fetal movements and maternal vitals. Keep hydrated.",
+        checkupDays: 14
+      },
+      "Others": {
+        doctor: "Dr. Duty Officer (PHC)",
+        firstAid: "Keep patient in comfortable resting position, monitor vitals, and keep warm.",
+        checkupDays: 7
+      }
+    };
+
+    // Urgency Categorization — administrative triage/routing support only.
+    // This is NOT a medical diagnosis; it just buckets the existing
+    // conditions into emergency/urgent/routine so facility recommendation,
+    // referral, and record-keeping can prioritize accordingly.
+    const urgencyRules = {
+      "Heart Attack": () => "emergency",
+      "Bleeding": () => "emergency",
+      "Burn": (burnDegree) => {
+        if (burnDegree === "3rd Degree Burn") return "emergency";
+        if (burnDegree === "2nd Degree Burn") return "urgent";
+        return "routine"; // 1st degree or unspecified
+      },
+      "Allergy": () => "urgent",
+      "Pregnancy": () => "urgent",
+      "Fever": () => "routine",
+      "Others": () => "routine"
+    };
+
+    function deriveUrgencyLevel(problem, burnDegree) {
+      const rule = urgencyRules[problem] || urgencyRules["Others"];
+      return rule(burnDegree);
+    }
+
+    const urgencyDisplay = {
+      emergency: { label: "EMERGENCY", classes: "bg-red-100 text-red-800 border border-red-300" },
+      urgent:    { label: "URGENT",    classes: "bg-amber-100 text-amber-800 border border-amber-300" },
+      routine:   { label: "ROUTINE",   classes: "bg-emerald-100 text-emerald-800 border border-emerald-300" }
+    };
+
+    // patients.risk_level has a CHECK constraint that only allows
+    // 'Red' / 'Yellow' / 'Green' — this maps our internal urgency
+    // categories to that exact vocabulary for database writes only.
+    // UI labels (EMERGENCY/URGENT/ROUTINE) are unaffected.
+    const urgencyToRiskLevel = {
+      emergency: 'Red',
+      urgent: 'Yellow',
+      routine: 'Green'
+    };
+
+    let currentStep = 1;
+
+    // Toggle Burn Degree Sub Option Input
+    function toggleBurnOptions() {
+      const selected = document.getElementById('selectProblem').value;
+      const subContainer = document.getElementById('burnSubOptionContainer');
+      if (selected === 'Burn') {
+        subContainer.classList.remove('hidden');
+      } else {
+        subContainer.classList.add('hidden');
+      }
+    }
+
+    // STEP 1 VALIDATION & SUBMIT
+    async function submitStep1() {
+    const name = document.getElementById('inputPatientName').value.trim();
+    const phone = document.getElementById('inputPatientPhone').value.trim();
+    const ageInput = document.getElementById('inputPatientAge').value.trim();
+    const gender = document.getElementById('inputPatientGender').value;
+    const village = document.getElementById('inputPatientVillage').value.trim();
+    const age = ageInput ? Number(ageInput) : null;
+    const err = document.getElementById('step1Error');
+
+    // Validate input
+    if (!name || !phone) {
+        err.classList.remove('hidden');
+        return;
+    }
+
+    err.classList.add('hidden');
+
+    try {
+        // 1. Look for an existing patient using their phone number
+        const { data: existingPatient, error: searchError } =
+            await supabaseClient
+                .from('patients')
+                .select('id, name, contact')
+                .eq('contact', phone)
+                .maybeSingle();
+
+        if (searchError) {
+            console.error('[Health Worker] Patient search failed:', searchError);
+            alert('Could not search patient records. Please try again.');
+            return;
+        }
+
+        let patient;
+
+        // 2. Use existing patient if found
+        if (existingPatient) {
+            patient = existingPatient;
+
+            const demographicUpdate = {};
+            if (age !== null) demographicUpdate.age = age;
+            if (gender) demographicUpdate.gender = gender;
+            if (village) demographicUpdate.village = village;
+
+            if (Object.keys(demographicUpdate).length > 0) {
+                const { data: updatedPatient, error: updateError } =
+                    await supabaseClient
+                        .from('patients')
+                        .update(demographicUpdate)
+                        .eq('id', patient.id)
+                        .select('id, name, contact, age, gender, village')
+                        .single();
+
+                if (updateError) {
+                    console.error('[Health Worker] Patient demographics update failed:', updateError);
+                    alert('Patient found, but the new demographic details could not be saved.');
+                    return;
+                }
+
+                patient = updatedPatient;
+            }
+
+            console.log('[Health Worker] Existing patient found:', patient);
+        }
+
+        // 3. Otherwise create a new patient
+        else {
+            const patientId =
+                'PAT-' + Date.now().toString();
+
+            const { data: newPatient, error: insertError } =
+                await supabaseClient
+                    .from('patients')
+                    .insert({
+                        id: patientId,
+                        name: name,
+                        contact: phone,
+                        age: age,
+                        gender: gender || null,
+                        village: village || null
+                    })
+                    .select('id, name, contact, age, gender, village')
+                    .single();
+
+            if (insertError) {
+                console.error('[Health Worker] Patient creation failed:', insertError);
+                alert('Could not create patient record. Please try again.');
+                return;
+            }
+
+            patient = newPatient;
+
+            console.log('[Health Worker] New patient created:', patient);
+        }
+
+        // 4. Save the database patient ID in the current care journey
+        careSession.patientId = patient.id;
+        careSession.patientName = patient.name;
+        careSession.patientPhone = patient.contact;
+        careSession.patientAge = patient.age ?? age ?? '';
+        careSession.patientGender = patient.gender || gender || '';
+        careSession.patientVillage = patient.village || village || '';
+
+        document.getElementById('inputPatientAge').value =
+            careSession.patientAge === '' ? '' : careSession.patientAge;
+        document.getElementById('inputPatientGender').value =
+            careSession.patientGender || '';
+        document.getElementById('inputPatientVillage').value =
+            careSession.patientVillage || '';
+
+        // 5. Update the page
+        document.getElementById('patientHeaderTitle').innerText =
+            `Care Journey: ${patient.name}`;
+
+        document.getElementById('patientHeaderSubtext').innerText =
+            `Phone: ${patient.contact} · Rampur SC Entry`;
+
+        // 6. Move to triage
+        markStepCompleted(1);
+        unlockStep(2);
+
+        console.log('[Health Worker] Step 1 completed:', careSession);
+
+    } catch (error) {
+        console.error('[Health Worker] Unexpected error:', error);
+        alert('Something went wrong while saving the patient.');
+    }
+}
+
+    // STEP 2 VALIDATION & SUBMIT
+    function submitStep2() {
+      const problem = document.getElementById('selectProblem').value;
+      const burnDegree = document.getElementById('selectBurnDegree').value;
+      const err = document.getElementById('step2Error');
+
+      if (!problem || (problem === 'Burn' && !burnDegree)) {
+        err.classList.remove('hidden');
+        return;
+      }
+      err.classList.add('hidden');
+
+      careSession.selectedProblem = problem;
+      careSession.selectedBurnDegree = burnDegree;
+      careSession.urgencyLevel = deriveUrgencyLevel(problem, burnDegree);
+
+      const urgencyBox = document.getElementById('triageUrgencyResult');
+      const display = urgencyDisplay[careSession.urgencyLevel] || urgencyDisplay.routine;
+      urgencyBox.className = `mb-3 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-2 ${display.classes}`;
+      urgencyBox.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4"></i> Triage Result: ${display.label}`;
+      lucide.createIcons();
+
+      populateHospitals();
+      markStepCompleted(2);
+      unlockStep(3);
+    }
+
+    // STEP 3 POPULATE & SUBMIT
+    async function populateHospitals() {
+  const container = document.getElementById('hospitalListContainer');
+  const urgencyBanner = document.getElementById('triageUrgencyBanner');
+
+  if (urgencyBanner && careSession.urgencyLevel) {
+    const display = urgencyDisplay[careSession.urgencyLevel] || urgencyDisplay.routine;
+    urgencyBanner.className = `mb-3 px-3 py-2 rounded-lg text-xs font-semibold ${display.classes}`;
+    urgencyBanner.innerText = `Recommending facilities for ${display.label} care`;
+  }
+
+  container.innerHTML = `
+    <div class="text-sm text-gray-500 p-3">
+      Loading available facilities...
+    </div>
+  `;
+
+  const problemKey = careSession.selectedProblem;
+
+  const conditionFacilityRules = {
+  "Heart Attack": {
+    services: ["Emergency Care", "Emergency", "Specialist Care"],
+    preferredTypes: ["District Hospital", "CHC"]
+  },
+  "Burn": {
+    services: ["Emergency Care", "Emergency", "Minor Procedures"],
+    preferredTypes: ["CHC", "District Hospital"]
+  },
+  "Fever": {
+    services: ["OPD", "Diagnostics"],
+    preferredTypes: ["PHC"]
+  },
+  "Allergy": {
+    services: ["OPD", "Emergency Care", "Emergency"],
+    preferredTypes: ["PHC", "CHC"]
+  },
+  "Bleeding": {
+    services: ["Emergency Care", "Emergency", "Minor Procedures"],
+    preferredTypes: ["CHC", "District Hospital"]
+  },
+  "Pregnancy": {
+    services: ["Maternal Care", "Obstetrics"],
+    preferredTypes: ["PHC", "CHC", "District Hospital"]
+  },
+  "Others": {
+    services: ["OPD"],
+    preferredTypes: ["PHC"]
+  }
+};
+
+const rule = conditionFacilityRules[problemKey] || conditionFacilityRules["Others"];
+
+  const { data: facilities, error } = await supabaseClient
+    .from('facilities')
+    .select('*')
+    .eq('is_active', true)
+    .order('name');
+
+  if (error) {
+    console.error('[Health Worker] Facility load failed:', error);
+
+    container.innerHTML = `
+      <div class="text-sm text-red-500 p-3">
+        Unable to load facilities. Please try again.
+      </div>
+    `;
+
+    return;
+  }
+
+  if (!facilities || facilities.length === 0) {
+    container.innerHTML = `
+      <div class="text-sm text-gray-500 p-3">
+        No active facilities found.
+      </div>
+    `;
+
+    return;
+  }
+
+  facilities.sort((a, b) => {
+  function getScore(facility) {
+    const services = facility.services || [];
+    let score = 0;
+
+    const hasService = rule.services.some(required =>
+      services.some(service =>
+        service.toLowerCase() === required.toLowerCase()
+      )
+    );
+
+    const typeMatch = rule.preferredTypes.some(type =>
+      facility.facility_type.toLowerCase() === type.toLowerCase()
+    );
+
+    if (hasService) score += 10;
+    if (typeMatch) score += 20;
+
+    return score;
+  }
+
+  return getScore(b) - getScore(a);
+});
+
+  container.innerHTML = '';
+
+  facilities.forEach((facility, idx) => {
+    const services = facility.services || [];
+
+    const isRecommended = idx === 0;
+
+    const div = document.createElement('div');
+
+    div.className = `p-3 rounded-xl border flex items-center justify-between cursor-pointer transition ${
+      isRecommended
+        ? 'border-emerald-500 bg-emerald-50/40'
+        : 'border-gray-200 hover:border-emerald-300'
+    }`;
+
+    div.onclick = () => selectHospitalUI(div, facility.id, facility.name);
+
+    div.innerHTML = `
+      <div class="flex items-center gap-3">
+        <input
+          type="radio"
+          name="hospSelect"
+          ${idx === 0 ? 'checked' : ''}
+          class="text-emerald-600 focus:ring-emerald-500"
+        >
+
+        <div>
+          <div class="text-sm font-bold text-gray-900">
+            ${facility.name}
+          </div>
+
+          <div class="text-xs text-gray-500">
+            ${facility.facility_type} · ${facility.village || facility.district || ''}
+          </div>
+        </div>
+      </div>
+
+      ${
+        isRecommended
+          ? '<span class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">RECOMMENDED</span>'
+          : ''
+      }
+    `;
+
+    container.appendChild(div);
+
+    if (idx === 0) {
+      careSession.selectedHospital = facility.name;
+      careSession.selectedFacilityId = facility.id;
+    }
+  });
+
+  console.log('[Health Worker] Facilities loaded:', facilities);
+}
+
+    function selectHospitalUI(element, facilityId, hospName) {
+      document.querySelectorAll('#hospitalListContainer input[type="radio"]').forEach(r => r.checked = false);
+      const radio = element.querySelector('input[type="radio"]');
+      radio.checked = true;
+      careSession.selectedHospital = hospName;
+      careSession.selectedFacilityId = facilityId;
+    }
+
+    function submitStep3() {
+      markStepCompleted(3);
+      
+      // Setup Step 4 Protocol Details based on condition
+      const key = careSession.selectedProblem;
+      const protocol = conditionProtocols[key] || conditionProtocols['Others'];
+      
+      careSession.assignedDoctor = protocol.doctor;
+      careSession.firstAidText = protocol.firstAid;
+
+      document.getElementById('assignedDoctorDisplay').innerText = protocol.doctor;
+      document.getElementById('firstAidText').innerText = protocol.firstAid;
+
+      unlockStep(4);
+    }
+
+    // STEP 4 INTERACTIVE SPEAK & SUBMIT
+    function speakFirstAidInstructions() {
+      const text = careSession.firstAidText;
+      const btnText = document.getElementById('speakBtnText');
+      
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.9;
+        utterance.onstart = () => btnText.innerText = "Speaking...";
+        utterance.onend = () => btnText.innerText = "Speak First-Aid";
+        window.speechSynthesis.speak(utterance);
+      } else {
+        alert(`First Aid Protocol: ${text}`);
+      }
+    }
+
+    function submitStep4() {
+      markStepCompleted(4);
+
+      // Generate Step 5 Referral Code
+      const refId = 'REF-' + Math.floor(100000 + Math.random() * 900000);
+      careSession.referralId = refId;
+
+      const fullProblem = careSession.selectedProblem === 'Burn' && careSession.selectedBurnDegree
+        ? `Burn (${careSession.selectedBurnDegree})`
+        : careSession.selectedProblem;
+
+      const urgencyTag = (careSession.urgencyLevel || 'routine').toUpperCase();
+      const urgencyClass = careSession.urgencyLevel === 'emergency' 
+        ? 'bg-red-100 text-red-800 border-red-200' 
+        : careSession.urgencyLevel === 'urgent' 
+          ? 'bg-amber-100 text-amber-800 border-amber-200' 
+          : 'bg-emerald-100 text-emerald-800 border-emerald-200';
+
+      document.getElementById('referralSummaryBox').innerHTML = `
+        <!-- Slip Header -->
+        <div class="flex items-center justify-between border-b border-emerald-100 pb-3">
+          <div>
+            <div class="text-[10px] font-bold text-emerald-800 tracking-wider uppercase">Government of Maharashtra · Health Department</div>
+            <div class="text-sm font-extrabold text-gray-900">SETU HEALTH OFFICIAL REFERRAL SLIP</div>
+          </div>
+          <span class="text-xs font-mono font-bold text-emerald-900 bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-md">
+            ${refId}
+          </span>
+        </div>
+
+        <!-- Patient Demographics Summary -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <div class="bg-white p-2.5 rounded-lg border border-gray-100">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Patient Name</div>
+            <div class="font-bold text-gray-900 mt-0.5">${careSession.patientName || 'N/A'}</div>
+          </div>
+          <div class="bg-white p-2.5 rounded-lg border border-gray-100">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Age / Gender</div>
+            <div class="font-bold text-gray-900 mt-0.5">${careSession.patientAge || '—'} yrs / ${careSession.patientGender || '—'}</div>
+          </div>
+          <div class="bg-white p-2.5 rounded-lg border border-gray-100">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Village</div>
+            <div class="font-bold text-gray-900 mt-0.5">${careSession.patientVillage || 'Rampur'}</div>
+          </div>
+          <div class="bg-white p-2.5 rounded-lg border border-gray-100">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Contact</div>
+            <div class="font-bold text-gray-900 mt-0.5">${careSession.patientPhone || '—'}</div>
+          </div>
+        </div>
+
+        <!-- Clinical Details & Transfer Destination -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs pt-1">
+          <div class="bg-white p-3 rounded-lg border border-gray-100 space-y-1">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Clinical Priority & Diagnosis</div>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="px-2 py-0.5 text-[10px] font-bold border rounded-full ${urgencyClass}">${urgencyTag}</span>
+              <span class="font-bold text-gray-800">${fullProblem}</span>
+            </div>
+            <div class="text-gray-500 text-[11px] mt-1">Teleconsult Doctor: <span class="font-semibold text-gray-700">${careSession.assignedDoctor || 'Assigned Specialist'}</span></div>
+          </div>
+
+          <div class="bg-white p-3 rounded-lg border border-emerald-200 space-y-1">
+            <div class="text-[10px] font-semibold text-emerald-700 uppercase">Referred Facility</div>
+            <div class="font-bold text-emerald-950 text-sm mt-0.5">${careSession.selectedHospital || 'Rampur PHC'}</div>
+            <div class="text-gray-500 text-[11px]">Origin: <span class="font-semibold text-gray-700">Rampur Sub-Centre (ASHA Portal)</span></div>
+          </div>
+        </div>
+      `;
+
+      lucide.createIcons();
+      unlockStep(5);
+    }
+
+    // STEP 5 SUBMIT & CALCULATE STEP 6 CHECKUP DATE
+    function submitStep5() {
+      markStepCompleted(5);
+
+      const key = careSession.selectedProblem;
+      const protocol = conditionProtocols[key] || conditionProtocols['Others'];
+      const daysToAdd = protocol.checkupDays;
+
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + daysToAdd);
+      
+      const dateString = futureDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+      
+      careSession.nextCheckupDate = dateString;
+
+      const fullProblem = careSession.selectedProblem === 'Burn' && careSession.selectedBurnDegree
+        ? `Burn (${careSession.selectedBurnDegree})`
+        : careSession.selectedProblem;
+
+      document.getElementById('followupPlanContainer').innerHTML = `
+        <!-- Card Header -->
+        <div class="flex items-center justify-between border-b border-blue-100 pb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center font-bold">
+              <i data-lucide="calendar" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="text-[10px] font-bold text-blue-800 tracking-wider uppercase">Setu Health · Care Continuum</div>
+              <div class="text-xs font-bold text-gray-900">SCHEDULED FOLLOW-UP PLAN</div>
+            </div>
+          </div>
+          <span class="text-xs font-semibold text-blue-900 bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-full flex items-center gap-1">
+            <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-blue-700"></i>
+            <span>Calculated (+${daysToAdd} days)</span>
+          </span>
+        </div>
+
+        <!-- Scheduled Date Highlight Banner -->
+        <div class="bg-blue-600 text-white p-3.5 rounded-lg flex items-center justify-between shadow-sm">
+          <div>
+            <div class="text-[10px] uppercase font-semibold text-blue-100 tracking-wide">Next Check-up Date</div>
+            <div class="text-base font-extrabold mt-0.5">${dateString}</div>
+          </div>
+          <div class="text-right border-l border-blue-400/60 pl-4">
+            <div class="text-[10px] uppercase font-semibold text-blue-100">Interval</div>
+            <div class="text-xs font-bold mt-0.5">${daysToAdd} Day(s) Post-Care</div>
+          </div>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <div class="bg-white p-2.5 rounded-lg border border-gray-100">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Patient Name</div>
+            <div class="font-bold text-gray-900 mt-0.5">${careSession.patientName || 'N/A'}</div>
+          </div>
+          <div class="bg-white p-2.5 rounded-lg border border-gray-100">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Patient ID</div>
+            <div class="font-bold text-gray-900 mt-0.5 truncate">${careSession.patientId || 'Pending'}</div>
+          </div>
+          <div class="bg-white p-2.5 rounded-lg border border-gray-100">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Care Reason</div>
+            <div class="font-bold text-gray-900 mt-0.5">${fullProblem}</div>
+          </div>
+          <div class="bg-white p-2.5 rounded-lg border border-gray-100">
+            <div class="text-[10px] font-semibold text-gray-400 uppercase">Facility</div>
+            <div class="font-bold text-gray-900 mt-0.5 truncate">${careSession.selectedHospital || 'Rampur PHC'}</div>
+          </div>
+        </div>
+
+        <!-- Primary Responsibility -->
+        <div class="bg-white p-3 rounded-lg border border-blue-100 flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2">
+            <i data-lucide="user-check" class="w-4 h-4 text-blue-700"></i>
+            <div>
+              <span class="text-gray-500">Responsible Health Worker:</span>
+              <span class="font-bold text-gray-800 ml-1">Assigned ASHA / ANM Worker</span>
+            </div>
+          </div>
+          <span class="text-[11px] text-blue-800 font-semibold bg-blue-50 px-2 py-0.5 rounded border border-blue-100">Home Visit / Sub-Centre</span>
+        </div>
+      `;
+
+      lucide.createIcons();
+      unlockStep(6);
+    }
+
+    // STEP 6 SUBMIT
+    function submitStep6() {
+      markStepCompleted(6);
+
+      const statusTag = document.getElementById('followupStatusTag');
+      if (statusTag) {
+        statusTag.className = "text-xs text-emerald-800 font-bold bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1.5";
+        statusTag.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i> ✓ Follow-up scheduled`;
+        lucide.createIcons();
+      }
+
+      unlockStep(7);
+    }
+
+    // STEP 7 SUPABASE RECORD INSERTION
+    async function submitStep7() {
+    const syncBtn = document.getElementById('btnSyncSupabase');
+    const statusBox = document.getElementById('supabaseStatusBox');
+
+    syncBtn.disabled = true;
+    syncBtn.classList.add('opacity-50');
+
+    statusBox.innerHTML =
+        '<span class="text-amber-600">Saving patient journey...</span>';
+
+    careSession.completedAt = new Date().toISOString();
+
+    try {
+        // --------------------------------------------------
+        // 1. USE THE PATIENT ALREADY LINKED IN STEP 1
+        // --------------------------------------------------
+        // careSession.patientId is the single source of truth for
+        // "who is this care journey for" — it was set the moment the
+        // patient was found or created back in Step 1. Re-searching by
+        // phone here was risky: if the phone didn't match exactly, this
+        // used to silently create a SECOND patient record, breaking the
+        // "one patient, one record" rule. Now we just look up the exact
+        // patient by id.
+
+        if (!careSession.patientId) {
+            throw new Error(
+                'No patient is linked to this care journey. Please complete Step 1 before saving.'
+            );
+        }
+
+        const { data: patient, error: patientFetchError } =
+            await supabaseClient
+                .from('patients')
+                .select('*')
+                .eq('id', careSession.patientId)
+                .single();
+
+        if (patientFetchError) {
+            throw patientFetchError;
+        }
+
+        // --------------------------------------------------
+        // 2. PERSIST TRIAGE URGENCY ONTO THE PATIENT RECORD
+        // --------------------------------------------------
+        // Reuses the existing patients.risk_level column — no schema
+        // change needed. Non-fatal on failure: we still want the
+        // encounter itself to save even if this update has trouble.
+
+        if (careSession.urgencyLevel) {
+            const riskLevelValue = urgencyToRiskLevel[careSession.urgencyLevel] || 'Green';
+
+            const { data: riskUpdateData, error: riskUpdateError } =
+                await supabaseClient
+                    .from('patients')
+                    .update({ risk_level: riskLevelValue })
+                    .eq('id', patient.id)
+                    .select();
+
+            if (riskUpdateError) {
+                console.warn('[Health Worker] Could not update patient risk_level:', riskUpdateError);
+            } else if (!riskUpdateData || riskUpdateData.length === 0) {
+                // Supabase does NOT return an error when RLS silently
+                // blocks an update — it just matches zero rows. If this
+                // fires, the fix is an RLS policy on patients, not the
+                // JS code.
+                console.warn('[Health Worker] risk_level update matched 0 rows — likely blocked by an RLS policy on patients (no UPDATE policy for this role).');
+            } else {
+                console.log('[Health Worker] Patient risk_level updated:', riskUpdateData[0].risk_level);
+            }
+        }
+
+        // --------------------------------------------------
+        // 3. CREATE ENCOUNTER WITH REFERRAL METADATA
+        // --------------------------------------------------
+
+        const actionText = careSession.referralId && careSession.selectedHospital
+            ? `Referred to ${careSession.selectedHospital} [Ref ID: ${careSession.referralId}]`
+            : careSession.selectedHospital
+                ? `Facility selected: ${careSession.selectedHospital}`
+                : 'Triage completed';
+
+        const encounterTags = [
+            'health-worker',
+            'triage',
+            careSession.selectedProblem,
+            careSession.urgencyLevel || 'routine'
+        ];
+
+        if (careSession.referralId) {
+            encounterTags.push(`ref:${careSession.referralId}`);
+        }
+
+        const { error: encounterError } =
+            await supabaseClient
+                .from('encounters')
+                .insert([{
+                    id: crypto.randomUUID(),
+                    patient_id: patient.id,
+                    date: new Date().toISOString().split('T')[0],
+                    facility_type: 'Primary Health Centre',
+                    facility_name: careSession.selectedHospital || 'Rampur PHC',
+                    provider: careSession.assignedDoctor || 'Health Worker',
+                    reason: careSession.selectedProblem,
+                    findings: `Triage completed for ${careSession.selectedProblem}`,
+                    action_taken: actionText,
+                    tags: encounterTags
+                }]);
+
+        if (encounterError) {
+            throw encounterError;
+        }
+
+        // --------------------------------------------------
+        // 4. SUCCESS
+        // --------------------------------------------------
+
+        statusBox.innerHTML =
+            '<span class="text-emerald-700 font-bold">✓ Patient record and encounter saved successfully.</span>';
+
+        markStepCompleted(7);
+
+        console.log('[Health Worker] Patient saved:', patient);
+        console.log('[Health Worker] Encounter saved successfully.');
+
+    } catch (err) {
+
+        console.error('[Health Worker] Save failed:', err);
+
+        statusBox.innerHTML =
+            '<span class="text-red-600 font-bold">Unable to save the record. Please try again.</span>';
+
+        syncBtn.disabled = false;
+        syncBtn.classList.remove('opacity-50');
+    }
+}
+
+    // HELPER FUNCTIONS TO MANAGE STEP UI TRANSITIONS
+    function markStepCompleted(stepNum) {
+      const card = document.getElementById(`step-card-${stepNum}`);
+      const icon = card.querySelector('.step-icon');
+      const pill = card.querySelector('.status-pill');
+
+      icon.className = "step-icon w-10 h-10 rounded-full bg-emerald-700 text-white flex items-center justify-center shrink-0 z-10 shadow";
+      icon.innerHTML = '<i data-lucide="check" class="w-5 h-5"></i>';
+
+      pill.className = "status-pill bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full";
+      pill.textContent = "Completed";
+
+      const badge = document.getElementById(`badge-${stepNum}`);
+      badge.className = "px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-900 font-semibold border border-emerald-300";
+
+      lucide.createIcons();
+    }
+
+    function unlockStep(stepNum) {
+      currentStep = stepNum;
+      const card = document.getElementById(`step-card-${stepNum}`);
+      card.classList.remove('opacity-40', 'pointer-events-none');
+
+      const pill = card.querySelector('.status-pill');
+      pill.className = "status-pill bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full";
+      pill.textContent = "In Progress";
+
+      const badge = document.getElementById(`badge-${stepNum}`);
+      badge.className = "px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 font-semibold border border-emerald-300";
+
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // ============================================
+// PATIENT RECORD SEARCH
+// ============================================
+
+const patientSearch = document.getElementById('patientSearch');
+const patientSearchResults = document.getElementById('patientSearchResults');
+
+let patientSearchTimer = null;
+
+if (patientSearch) {
+    patientSearch.addEventListener('input', () => {
+        clearTimeout(patientSearchTimer);
+
+        const query = patientSearch.value.trim();
+
+        if (!query) {
+            patientSearchResults.innerHTML = '';
+            patientSearchResults.classList.add('hidden');
+            return;
+        }
+
+        patientSearchTimer = setTimeout(() => {
+            searchPatients(query);
+        }, 300);
+    });
+}
+
+async function searchPatients(query) {
+    patientSearchResults.classList.remove('hidden');
+
+    patientSearchResults.innerHTML = `
+        <div class="p-4 text-sm text-gray-500">
+            Searching patient records...
+        </div>
+    `;
+
+    const { data, error } = await supabaseClient
+        .from('patients')
+        .select('id, abha_id, name, age, gender, village, contact, category, risk_level')
+        .or(
+            `name.ilike.%${query}%,contact.ilike.%${query}%,abha_id.ilike.%${query}%`
+        )
+        .limit(8);
+
+    if (error) {
+        console.error('[Patient Records] Search failed:', error);
+
+        patientSearchResults.innerHTML = `
+            <div class="p-4 text-sm text-red-600">
+                Could not search patient records.
+            </div>
+        `;
+
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        patientSearchResults.innerHTML = `
+            <div class="p-4 text-sm text-gray-500">
+                No patient records found.
+            </div>
+        `;
+
+        return;
+    }
+
+    patientSearchResults.innerHTML = data.map(patient => `
+        <button
+            type="button"
+            onclick='selectPatient(${JSON.stringify(patient)})'
+            class="w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition"
+        >
+            <div class="font-semibold text-gray-900">
+                ${patient.name}
+            </div>
+
+            <div class="text-xs text-gray-500 mt-1">
+                ${patient.contact || 'No phone'}
+                ${patient.village ? ` · ${patient.village}` : ''}
+            </div>
+
+            <div class="text-xs text-gray-400 mt-1">
+                Patient ID: ${patient.id}
+            </div>
+        </button>
+    `).join('');
+}
+
+function selectPatient(patient) {
+    console.log('[Patient Records] Selected:', patient);
+
+    careSession.patientId = patient.id;
+    careSession.patientName = patient.name;
+    careSession.patientPhone = patient.contact || '';
+    careSession.patientAge = patient.age ?? '';
+    careSession.patientGender = patient.gender || '';
+    careSession.patientVillage = patient.village || '';
+
+    const nameInput = document.getElementById('inputPatientName');
+    const phoneInput = document.getElementById('inputPatientPhone');
+    const ageInput = document.getElementById('inputPatientAge');
+    const genderInput = document.getElementById('inputPatientGender');
+    const villageInput = document.getElementById('inputPatientVillage');
+
+    if (nameInput) {
+        nameInput.value = patient.name || '';
+    }
+
+    if (phoneInput) {
+        phoneInput.value = patient.contact || '';
+    }
+
+    if (ageInput) {
+        ageInput.value = patient.age ?? '';
+    }
+
+    if (genderInput) {
+        genderInput.value = patient.gender || '';
+    }
+
+    if (villageInput) {
+        villageInput.value = patient.village || '';
+    }
+
+    const headerTitle = document.getElementById('patientHeaderTitle');
+    const headerSubtitle = document.getElementById('patientHeaderSubtitle');
+
+    if (headerTitle) {
+        headerTitle.innerText = `Care Journey: ${patient.name}`;
+    }
+
+    if (headerSubtitle) {
+        headerSubtitle.innerText = `Patient ID: ${patient.id}`;
+    }
+
+    patientSearch.value = patient.name;
+
+    patientSearchResults.innerHTML = '';
+    patientSearchResults.classList.add('hidden');
+
+    console.log('[Patient Records] Patient loaded into Care Journey');
+
+    loadPatientRecords(patient.id);
+
+    async function loadPatientRecords(patientId) {
+    console.log('[Patient Records] Loading records for:', patientId);
+
+    const { data, error } = await supabaseClient
+        .from('encounters')
+        .select('*')
+        .eq('patient_id', patientId)
+        .order('date', { ascending: false });
+
+    if (error) {
+        console.error('[Patient Records] Failed to load encounters:', error);
+        renderPatientRecords([], error.message);
+        return;
+    }
+
+    console.log('[Patient Records] Encounters loaded:', data);
+
+    renderPatientRecords(data || []);
+  }
+}
+
+function renderPatientRecords(records, errorMessage = '') {
+    let panel = document.getElementById('patientRecordsPanel');
+
+    if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'patientRecordsPanel';
+
+        const main = document.querySelector('main');
+
+        if (main) {
+            main.insertBefore(panel, main.firstElementChild);
+        }
+    }
+
+    if (errorMessage) {
+        panel.innerHTML = `
+            <div class="bg-white border border-red-200 rounded-2xl p-6 shadow-sm mb-6">
+                <h3 class="text-lg font-bold text-red-700">Patient Records</h3>
+                <p class="text-sm text-red-600 mt-2">
+                    Could not load patient records.
+                </p>
+            </div>
+        `;
+        return;
+    }
+
+    const patientName = careSession.patientName || 'Patient';
+    const patientId = careSession.patientId || 'Not recorded';
+    const age = careSession.patientAge !== '' && careSession.patientAge != null
+        ? careSession.patientAge : 'Not recorded';
+    const gender = careSession.patientGender || 'Not recorded';
+    const village = careSession.patientVillage || 'Not recorded';
+    const phone = careSession.patientPhone || 'Not recorded';
+
+    if (!records.length) {
+        panel.innerHTML = `
+            <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                            Patient Records
+                        </p>
+                        <h3 class="text-xl font-bold text-gray-900 mt-1">
+                            ${patientName}
+                        </h3>
+                    </div>
+
+                    <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold">
+                        No previous visits
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
+                    <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                        <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Age</p>
+                        <p class="text-sm font-semibold text-gray-800 mt-1">${age}</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                        <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Gender</p>
+                        <p class="text-sm font-semibold text-gray-800 mt-1">${gender}</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                        <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Village</p>
+                        <p class="text-sm font-semibold text-gray-800 mt-1">${village}</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                        <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Phone</p>
+                        <p class="text-sm font-semibold text-gray-800 mt-1">${phone}</p>
+                    </div>
+                </div>
+
+                <div class="mt-5 p-4 rounded-xl bg-gray-50 border border-gray-100">
+                    <p class="text-sm text-gray-500">
+                        No previous encounter records are available for this patient.
+                    </p>
+                </div>
+            </div>
+        `;
+
+        return;
+    }
+
+    panel.innerHTML = `
+        <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-6">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        Patient Records
+                    </p>
+                    <h3 class="text-xl font-bold text-gray-900 mt-1">
+                        ${patientName}
+                    </h3>
+                    <p class="text-sm text-gray-500 mt-1">Patient ID: ${patientId}</p>
+                </div>
+
+                <span class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">
+                    ${records.length} encounter${records.length === 1 ? '' : 's'}
+                </span>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Age</p>
+                    <p class="text-sm font-semibold text-gray-800 mt-1">${age}</p>
+                </div>
+                <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Gender</p>
+                    <p class="text-sm font-semibold text-gray-800 mt-1">${gender}</p>
+                </div>
+                <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Village</p>
+                    <p class="text-sm font-semibold text-gray-800 mt-1">${village}</p>
+                </div>
+                <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Phone</p>
+                    <p class="text-sm font-semibold text-gray-800 mt-1">${phone}</p>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                ${records.map(record => `
+                    <div class="border border-gray-100 rounded-xl p-4 bg-gray-50">
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-gray-800">
+                                ${record.date || 'Date unavailable'}
+                            </span>
+
+                            <span class="text-xs text-gray-500">
+                                ${record.facility_type || 'Facility'}
+                            </span>
+                        </div>
+
+                        <p class="text-sm font-semibold text-emerald-900 mt-1">
+                            ${record.facility_name || 'Facility not recorded'}
+                        </p>
+
+                        ${record.reason ? `
+                            <p class="text-xs text-gray-600 mt-1">
+                                <span class="font-medium text-gray-400">Condition:</span> ${record.reason}
+                            </p>
+                        ` : ''}
+
+                        ${record.action_taken ? `
+                            <p class="text-xs font-mono text-emerald-800 bg-emerald-50/80 p-2 rounded-lg mt-2 border border-emerald-100">
+                                <span class="font-sans font-semibold text-emerald-900">Action / Referral:</span> ${record.action_taken}
+                            </p>
+                        ` : ''}
+
+                        ${record.provider ? `
+                            <p class="text-[11px] text-gray-400 mt-2">
+                                Provider: ${record.provider}
+                            </p>
+                        ` : ''}
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+    // ============================================
+    // LANGUAGE TRANSLATOR (Hindi, Bengali, Urdu, Telugu)
+    // ============================================
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'en,hi,bn,ur,te',
+        autoDisplay: false
+      }, 'google_translate_element');
+    }
+
+    function translatePage(langCode) {
+      if (!langCode || langCode === 'en') {
+        // Clear translation cookies to restore English
+        document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=" + window.location.hostname + "; path=/;";
+        document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=." + window.location.hostname + "; path=/;";
+      } else {
+        document.cookie = "googtrans=/en/" + langCode + "; path=/;";
+        document.cookie = "googtrans=/en/" + langCode + "; domain=" + window.location.hostname + "; path=/;";
+        document.cookie = "googtrans=/en/" + langCode + "; domain=." + window.location.hostname + "; path=/;";
+      }
+
+      const select = document.querySelector('.goog-te-combo');
+      if (select) {
+        select.value = langCode;
+        select.dispatchEvent(new Event('change'));
+      } else {
+        location.reload();
+      }
+    }
+
+    // Synchronize language dropdown with current translation cookie
+    window.addEventListener('DOMContentLoaded', () => {
+      const match = document.cookie.match(/googtrans=\/en\/([a-z]{2})/i);
+      const selector = document.getElementById('languageSelector');
+      if (match && selector) {
+        selector.value = match[1];
+      }
+    });
+  </script>
+
+  <!-- Google Translate Element & Script -->
+  <div id="google_translate_element" style="display:none;"></div>
+  <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</body>
+</html>
