@@ -1,4 +1,11 @@
 const Auth = {
+    roleDashboards: {
+        asha_anm: 'index5.html',
+        doctor: 'doctor.html',
+        technician: 'technician.html',
+        patient: 'patient.html'
+    },
+
     async login(email, password) {
         const { data, error } = await supabaseClient.auth.signInWithPassword({
             email,
@@ -13,12 +20,38 @@ const Auth = {
         console.log('[Auth] Login successful:', data.user.email);
 
         const profile = await this.getProfile();
+        this.lastProfile = profile;
 
         if (profile) {
             console.log('[Auth] Logged-in role:', profile.role);
         }
 
         return data.user;
+    },
+
+    getDashboardForRole(role) {
+        return this.roleDashboards[role] || null;
+    },
+
+    async loginAndRedirect(email, password) {
+        const user = await this.login(email, password);
+
+        if (!user) {
+            return false;
+        }
+
+        const profile = this.lastProfile || await this.getProfile();
+        const dashboard = profile && this.getDashboardForRole(profile.role);
+
+        if (!dashboard) {
+            console.error('[Auth] No supported dashboard for role:', profile ? profile.role : 'no profile');
+            alert('Your account does not have a supported role profile.');
+            await this.logout();
+            return null;
+        }
+
+        window.location.href = dashboard;
+        return true;
     },
 
     async logout() {
@@ -50,6 +83,25 @@ const Auth = {
         }
 
      return user;
+    },
+
+    async requireRole(expectedRole) {
+        const user = await this.requireAuth();
+
+        if (!user) {
+            return null;
+        }
+
+        const profile = await this.getProfile();
+
+        if (!profile || profile.role !== expectedRole) {
+            console.warn('[Auth] Access denied. Expected role:', expectedRole, 'Actual role:', profile ? profile.role : 'no profile');
+            const dashboard = profile && this.getDashboardForRole(profile.role);
+            window.location.href = dashboard || 'index2.html';
+            return null;
+        }
+
+        return { user, profile };
     },
 
     async getProfile() {

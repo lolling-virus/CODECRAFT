@@ -667,42 +667,10 @@
         return;
     }
 
-    const user = await Auth.login(email, password);
+    const routed = await Auth.loginAndRedirect(email, password);
 
-    if (!user) {
+    if (routed === false) {
         alert('Please enter your email and PIN / password.');
-        return;
-    }
-
-    const profile = await Auth.getProfile();
-
-    if (!profile) {
-        alert('Your account does not have a valid role profile.');
-        return;
-    }
-
-    // Role-based routing
-    switch (profile.role) {
-        case 'patient':
-            window.location.href = 'patient.html';
-            break;
-
-        case 'doctor':
-            window.location.href = 'doctor.html';
-            break;
-
-        case 'asha_anm':
-            window.location.href = 'index5.html';
-            break;
-
-        case 'admin':
-        case 'pharmacist':
-        case 'staff':
-            window.location.href = 'admin.html';
-            break;
-
-        default:
-            alert('Unknown user role: ' + profile.role);
     }
   }
   </script>

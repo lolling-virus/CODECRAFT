@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setu Health - Doctor Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+</head>
+<body>
+  <main id="dashboard" hidden>
+    <h1>Doctor Dashboard</h1>
+    <p id="welcome"></p>
+    <p>Review consultations and referrals from the care team.</p>
+    <button type="button" onclick="Auth.logout()">Sign out</button>
+  </main>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const session = await Auth.requireRole('doctor');
+      if (!session) return;
+      document.getElementById('welcome').textContent = `Signed in as ${session.profile.full_name || session.user.email}`;
+      document.getElementById('dashboard').hidden = false;
+    });
+  </script>
+</body>
+</html>
