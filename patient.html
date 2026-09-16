@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setu Health - Patient Care & Emergency Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { dark: '#0e2a22', cardDark: '#13352b', accent: '#34a87a', lightBg: '#f6f8f7' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    
+    .problem-card {
+      transition: all 0.2s ease-in-out;
+      cursor: pointer;
+    }
+    .problem-card:hover {
+      transform: translateY(-2px);
+      border-color: #34a87a;
+      box-shadow: 0 4px 12px rgba(52, 168, 122, 0.12);
+    }
+    .problem-card.selected {
+      border-color: #1d7a71;
+      background: #e5f4f1;
+      box-shadow: 0 4px 14px rgba(29, 122, 113, 0.18);
+    }
+
+    .emergency-card {
+      transition: all 0.2s ease-in-out;
+      cursor: pointer;
+    }
+    .emergency-card:hover {
+      transform: translateY(-2px);
+      border-color: #ef4444;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+    }
+    .emergency-card.selected {
+      border-color: #dc2626;
+      background: #fef2f2;
+      box-shadow: 0 4px 16px rgba(220, 38, 38, 0.22);
+    }
+
+    .tab-btn {
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active-tab {
+      background-color: #34a87a;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(52, 168, 122, 0.25);
+    }
+
+    .modal-backdrop {
+      background-color: rgba(14, 42, 34, 0.7);
+      backdrop-filter: blur(6px);
+    }
+
+    .pulse-ring {
+      box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
+      animation: pulse-red 2s infinite;
+    }
+
+    @keyframes pulse-red {
+      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
+      70% { box-shadow: 0 0 0 12px rgba(220, 38, 38, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
+  </style>
+</head>
+<body class="bg-[#f6f8f7] text-gray-800 flex flex-col lg:flex-row h-screen overflow-hidden">
+
+  <!-- Mobile Top Navigation Bar -->
+  <div class="lg:hidden bg-[#0e2a22] text-white p-3.5 flex items-center justify-between shrink-0 border-b border-emerald-900 shadow-md">
+    <div class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl bg-[#34a87a] flex items-center justify-center text-white shadow">
+        <i data-lucide="heart-pulse" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-base leading-tight">Setu Health</h1>
+        <p class="text-[10px] text-emerald-300 font-medium" id="mSubtitle">Patient Care Portal</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="speakHelp()" class="p-2 rounded-xl bg-emerald-800/80 text-emerald-200 hover:bg-emerald-700 transition">
+        <i data-lucide="volume-2" class="w-5 h-5"></i>
+      </button>
+      <button onclick="toggleMobileSidebar()" class="p-2 rounded-xl bg-[#13352b] text-emerald-300 hover:bg-emerald-900 transition">
+        <i data-lucide="menu" class="w-5 h-5"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Sidebar Backdrop Overlay -->
+  <div id="mobileSidebarBackdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm hidden lg:hidden"></div>
+
+  <!-- Sidebar Navigation Drawer -->
+  <aside id="patientSidebar" class="fixed inset-y-0 left-0 z-50 w-72 lg:w-64 bg-[#0e2a22] text-white flex flex-col justify-between p-4 shrink-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out lg:static overflow-y-auto">
+    <div>
+      <div class="flex items-center justify-between px-2 py-3 mb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-[#34a87a] flex items-center justify-center text-white shadow-lg">
+            <i data-lucide="heart-pulse" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-lg leading-tight">Setu Health</h1>
+            <p class="text-[11px] text-emerald-300 font-medium" id="sideSubtitle">Patient Portal · 100% Free</p>
+          </div>
+        </div>
+        <button onclick="toggleMobileSidebar()" class="lg:hidden text-gray-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Public Health Mission Box -->
+      <div class="mx-1 mb-4 p-3 rounded-xl bg-[#13352b] border border-emerald-800/60 text-[11px] text-emerald-200 shadow-sm">
+        <div class="flex items-center gap-1.5 font-bold text-white mb-1">
+          <i data-lucide="landmark" class="w-4 h-4 text-emerald-400"></i>
+          <span id="sideMissionTitle">Free Public Healthcare</span>
+        </div>
+        <p class="text-[10px] text-emerald-300/90 font-medium leading-relaxed" id="sideMissionDesc">Direct digital link to Rampur Medical Officer &amp; 108 Emergency Ambulance under NHM.</p>
+      </div>
+
+      <!-- Navigation Tabs / Links -->
+      <nav class="space-y-1.5">
+        <button onclick="switchTab('emergency'); closeMobileSidebar();" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-red-950/70 border border-red-800/70 text-red-200 font-bold text-sm hover:bg-red-900/80 transition">
+          <div class="flex items-center gap-3">
+            <i data-lucide="siren" class="w-4 h-4 text-red-400 animate-pulse"></i>
+            <span id="navReportEmergency">Report Emergency</span>
+          </div>
+          <span class="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">108</span>
+        </button>
+
+        <button onclick="switchTab('opd'); closeMobileSidebar();" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-[#13352b] hover:bg-[#1a4437] text-white font-medium text-sm transition">
+          <i data-lucide="message-circle" class="w-4 h-4 text-emerald-400"></i>
+          <span id="navTellProblem">Tell My Problem</span>
+        </button>
+
+        <button onclick="showMyToken(); closeMobileSidebar();" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-gray-300 hover:bg-[#13352b] font-medium text-sm transition">
+          <div class="flex items-center gap-3"><i data-lucide="ticket" class="w-4 h-4 text-emerald-400"></i><span id="navMyToken">My OPD Token</span></div>
+        </button>
+
+        <button onclick="triggerEmergencySOS(); closeMobileSidebar();" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-red-300 hover:bg-red-950/40 border border-red-900/40 font-medium text-sm transition">
+          <div class="flex items-center gap-3"><i data-lucide="phone-call" class="w-4 h-4 text-red-400"></i><span>108 Ambulance SOS</span></div>
+          <span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">24/7</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="mt-4 pt-4 border-t border-emerald-900/80">
+      <div class="bg-[#13352b] p-3 rounded-xl border border-emerald-800/40">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 flex items-center justify-center font-bold text-xs">P</div>
+          <div class="overflow-hidden">
+            <div class="text-xs font-bold text-white truncate" id="sidebarPatientName">Patient Portal</div>
+            <div class="text-[10px] text-emerald-300 truncate" id="sidePatientTag">Free Care · ABDM Linked</div>
+          </div>
+        </div>
+        <button onclick="Auth.logout()" class="mt-2.5 w-full text-[11px] font-semibold text-emerald-200 border border-emerald-800 rounded-lg py-1.5 hover:bg-emerald-900/40 transition">Sign out</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Work & Presentation Area -->
+  <main class="flex-1 flex flex-col overflow-hidden">
+    
+    <!-- Top Bar Header -->
+    <header class="h-16 lg:h-20 border-b border-gray-200 px-4 lg:px-8 flex items-center justify-between bg-white shrink-0 shadow-sm">
+      <div>
+        <div class="flex items-center gap-2">
+          <h2 class="text-base lg:text-xl font-bold text-gray-900" id="pageTitle">Rampur PHC Patient Portal</h2>
+          <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full font-semibold hidden sm:inline" id="badgePatientRole">Patient</span>
+          <span class="bg-blue-50 text-blue-800 border border-blue-200 text-[10px] px-2 py-0.5 rounded-full font-bold hidden sm:inline">ABDM Linked</span>
+        </div>
+        <p class="text-xs text-gray-500 mt-0.5 hidden sm:block" id="headerSubtitle">Report an emergency or tell your health problem. Care is 100% free.</p>
+      </div>
+      
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Language Switcher Selector -->
+        <div class="flex items-center gap-1.5 bg-emerald-50 p-1.5 rounded-xl border border-emerald-200 shadow-sm">
+          <i data-lucide="globe" class="w-4 h-4 text-emerald-700 ml-1"></i>
+          <select id="languageSelect" onchange="changeLanguage(this.value)" class="bg-transparent text-xs font-bold text-emerald-950 outline-none cursor-pointer pr-1">
+            <option value="en">English</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+            <option value="bn">বাংলা (Bengali)</option>
+            <option value="ta">தமிழ் (Tamil)</option>
+            <option value="te">తెలుగు (Telugu)</option>
+            <option value="mr">मराठी (Marathi)</option>
+            <option value="gu">ગુજરાતી (Gujarati)</option>
+            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+          </select>
+        </div>
+
+        <!-- Text-to-Speech Audio Readout Button -->
+        <button onclick="speakHelp()" class="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-3.5 py-2 rounded-xl shadow transition">
+          <i data-lucide="volume-2" class="w-4 h-4"></i>
+          <span class="hidden sm:inline" id="btnHearText">Hear Instructions</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Sub-header Alert Banner -->
+    <div class="bg-gradient-to-r from-emerald-800 via-teal-900 to-[#0e2a22] text-white px-4 lg:px-8 py-2.5 flex items-center justify-between text-xs">
+      <div class="flex items-center gap-2 truncate">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0"></span>
+        <span class="font-medium text-emerald-100 truncate" id="topNoticeBanner">Stationed Medical Officer: Dr. S. K. Gupta · Rampur PHC Sector 4 · 100% Free Public Healthcare</span>
+      </div>
+      <span class="hidden md:flex items-center gap-1 shrink-0"><i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i> NHM Triage</span>
+    </div>
+
+    <!-- Mode Switcher Tabs -->
+    <div class="px-4 lg:px-8 pt-4 pb-0 bg-gray-50 border-b border-gray-200">
+      <div class="max-w-4xl mx-auto flex items-center gap-2">
+        <button id="tabEmergency" onclick="switchTab('emergency')" class="tab-btn active-tab flex-1 sm:flex-initial px-4 py-2.5 rounded-t-xl font-bold text-xs flex items-center justify-center gap-2 border border-b-0 border-gray-200">
+          <i data-lucide="siren" class="w-4 h-4 text-red-300"></i>
+          <span id="tabLabelEmergency">🚨 Report Emergency (Fast 108 Dispatch)</span>
+        </button>
+        <button id="tabOpd" onclick="switchTab('opd')" class="tab-btn bg-gray-200 hover:bg-gray-300 text-gray-700 flex-1 sm:flex-initial px-4 py-2.5 rounded-t-xl font-bold text-xs flex items-center justify-center gap-2 border border-b-0 border-gray-200">
+          <i data-lucide="stethoscope" class="w-4 h-4 text-emerald-600"></i>
+          <span id="tabLabelOpd">📋 Regular OPD Consult &amp; Token</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Scrollable Body Content -->
+    <div class="flex-1 overflow-y-auto p-4 lg:p-8 space-y-6 max-w-4xl mx-auto w-full">
+
+      <!-- SECTION 1: EMERGENCY REPORTING VIEW -->
+      <section id="emergencyView" class="bg-red-50/90 border-2 border-red-300 rounded-2xl p-5 lg:p-6 shadow-md">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-red-200">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="bg-red-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">FAST 108 RESPONSE</span>
+              <h3 class="text-lg font-extrabold text-red-950" id="emgHeading">Report An Emergency</h3>
+            </div>
+            <p class="text-xs text-red-800 mt-0.5 font-medium" id="emgSubheading">Tap one emergency box below and enter your name to notify 108 Ambulance &amp; Doctor immediately.</p>
+          </div>
+          <button onclick="speakText(translations[currentLang].emgSpeechPrompt)" class="text-xs font-bold text-red-900 bg-red-100 hover:bg-red-200 border border-red-300 px-3 py-1.5 rounded-full flex items-center gap-1.5 w-fit transition">
+            <i data-lucide="volume-2" class="w-4 h-4 text-red-700"></i> <span id="btnListenEmg">Listen Emergency Help</span>
+          </button>
+        </div>
+
+        <!-- Emergency Visual Selectable Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5" id="emergencyCardGrid">
+          
+          <button type="button" onclick="selectEmergencyType('Chest Pain')" class="emergency-card border-2 border-red-200 rounded-2xl p-4 text-left bg-white hover:border-red-500 transition relative shadow-sm" data-type="Chest Pain">
+            <div class="flex items-center justify-between mb-1">
+              <div class="text-3xl">🫀</div>
+              <span onclick="event.stopPropagation(); speakText('Chest Pain. Heart pain or severe tightness.');" class="text-gray-400 hover:text-red-600 p-1"><i data-lucide="volume-2" class="w-4 h-4"></i></span>
+            </div>
+            <div class="font-extrabold text-sm text-red-950 mt-1" id="optChestPain">Chest Pain</div>
+            <div class="text-[11px] text-red-700 font-medium">Heart pain, tightness</div>
+          </button>
+
+          <button type="button" onclick="selectEmergencyType('Cannot Breathe')" class="emergency-card border-2 border-red-200 rounded-2xl p-4 text-left bg-white hover:border-red-500 transition relative shadow-sm" data-type="Cannot Breathe">
+            <div class="flex items-center justify-between mb-1">
+              <div class="text-3xl">🫁</div>
+              <span onclick="event.stopPropagation(); speakText('Cannot Breathe. Severe asthma or gasping.');" class="text-gray-400 hover:text-red-600 p-1"><i data-lucide="volume-2" class="w-4 h-4"></i></span>
+            </div>
+            <div class="font-extrabold text-sm text-red-950 mt-1" id="optBreath">Cannot Breathe</div>
+            <div class="text-[11px] text-red-700 font-medium">Gasping, severe asthma</div>
+          </button>
+
+          <button type="button" onclick="selectEmergencyType('Severe Bleeding')" class="emergency-card border-2 border-red-200 rounded-2xl p-4 text-left bg-white hover:border-red-500 transition relative shadow-sm" data-type="Severe Bleeding">
+            <div class="flex items-center justify-between mb-1">
+              <div class="text-3xl">🩸</div>
+              <span onclick="event.stopPropagation(); speakText('Severe Bleeding. Heavy blood loss or deep cut.');" class="text-gray-400 hover:text-red-600 p-1"><i data-lucide="volume-2" class="w-4 h-4"></i></span>
+            </div>
+            <div class="font-extrabold text-sm text-red-950 mt-1" id="optBleed">Severe Bleeding</div>
+            <div class="text-[11px] text-red-700 font-medium">Deep cut, heavy blood</div>
+          </button>
+
+          <button type="button" onclick="selectEmergencyType('Snake / Animal Bite')" class="emergency-card border-2 border-red-200 rounded-2xl p-4 text-left bg-white hover:border-red-500 transition relative shadow-sm" data-type="Snake / Animal Bite">
+            <div class="flex items-center justify-between mb-1">
+              <div class="text-3xl">🐍</div>
+              <span onclick="event.stopPropagation(); speakText('Snake or Animal Bite. Venomous snake bite emergency.');" class="text-gray-400 hover:text-red-600 p-1"><i data-lucide="volume-2" class="w-4 h-4"></i></span>
+            </div>
+            <div class="font-extrabold text-sm text-red-950 mt-1" id="optSnake">Snake / Animal Bite</div>
+            <div class="text-[11px] text-red-700 font-medium">Snake bite, antivenom</div>
+          </button>
+
+          <button type="button" onclick="selectEmergencyType('High Fever & Fits')" class="emergency-card border-2 border-red-200 rounded-2xl p-4 text-left bg-white hover:border-red-500 transition relative shadow-sm" data-type="High Fever & Fits">
+            <div class="flex items-center justify-between mb-1">
+              <div class="text-3xl">🤒</div>
+              <span onclick="event.stopPropagation(); speakText('High Fever and Fits or fainting.');" class="text-gray-400 hover:text-red-600 p-1"><i data-lucide="volume-2" class="w-4 h-4"></i></span>
+            </div>
+            <div class="font-extrabold text-sm text-red-950 mt-1" id="optFeverFits">High Fever &amp; Convulsion</div>
+            <div class="text-[11px] text-red-700 font-medium">High temp, unconscious</div>
+          </button>
+
+          <button type="button" onclick="selectEmergencyType('Accident / Trauma')" class="emergency-card border-2 border-red-200 rounded-2xl p-4 text-left bg-white hover:border-red-500 transition relative shadow-sm" data-type="Accident / Trauma">
+            <div class="flex items-center justify-between mb-1">
+              <div class="text-3xl">🚑</div>
+              <span onclick="event.stopPropagation(); speakText('Accident or Trauma. Road accident, fall, head injury.');" class="text-gray-400 hover:text-red-600 p-1"><i data-lucide="volume-2" class="w-4 h-4"></i></span>
+            </div>
+            <div class="font-extrabold text-sm text-red-950 mt-1" id="optAccident">Accident / Trauma</div>
+            <div class="text-[11px] text-red-700 font-medium">Road accident, severe fall</div>
+          </button>
+
+          <button type="button" onclick="selectEmergencyType('Pregnancy Labor')" class="emergency-card border-2 border-red-200 rounded-2xl p-4 text-left bg-white hover:border-red-500 transition relative shadow-sm" data-type="Pregnancy Labor">
+            <div class="flex items-center justify-between mb-1">
+              <div class="text-3xl">🤰</div>
+              <span onclick="event.stopPropagation(); speakText('Pregnancy Labor Pain or delivery emergency.');" class="text-gray-400 hover:text-red-600 p-1"><i data-lucide="volume-2" class="w-4 h-4"></i></span>
+            </div>
+            <div class="font-extrabold text-sm text-red-950 mt-1" id="optPregEmg">Pregnancy Labor</div>
+            <div class="text-[11px] text-red-700 font-medium">Labor pains, delivery</div>
+          </button>
+
+          <button type="button" onclick="selectEmergencyType('Other Severe Emergency')" class="emergency-card border-2 border-red-200 rounded-2xl p-4 text-left bg-white hover:border-red-500 transition relative shadow-sm" data-type="Other Severe Emergency">
+            <div class="flex items-center justify-between mb-1">
+              <div class="text-3xl">🚨</div>
+              <span onclick="event.stopPropagation(); speakText('Other severe emergency. Urgent medical help required.');" class="text-gray-400 hover:text-red-600 p-1"><i data-lucide="volume-2" class="w-4 h-4"></i></span>
+            </div>
+            <div class="font-extrabold text-sm text-red-950 mt-1" id="optOtherEmg">Other Emergency</div>
+            <div class="text-[11px] text-red-700 font-medium">Urgent medical help</div>
+          </button>
+
+        </div>
+
+        <!-- Inputs Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-extrabold text-red-950" id="lblEmgName">Your Full Name *</label>
+              <button type="button" onclick="startVoiceInput('emgPatientName')" class="text-[11px] font-bold text-red-700 hover:underline flex items-center gap-1 bg-red-100 px-2 py-0.5 rounded">
+                <i data-lucide="mic" class="w-3.5 h-3.5 text-red-600"></i> <span id="btnSpeakName">Speak</span>
+              </button>
+            </div>
+            <input type="text" id="emgPatientName" placeholder="Enter patient name (e.g. Sunita Devi)" class="w-full px-3.5 py-2.5 border-2 border-red-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-red-500 outline-none bg-white">
+          </div>
+          <div>
+            <label class="block text-xs font-extrabold text-red-950 mb-1" id="lblEmgType">Type of Emergency *</label>
+            <input type="text" id="emgTypeSelected" readonly placeholder="Tap a red card above" class="w-full px-3.5 py-2.5 border-2 border-red-300 rounded-xl text-sm font-bold text-red-900 bg-white outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-extrabold text-red-950 mb-1" id="lblEmgVillage">Village / Location</label>
+            <input type="text" id="emgVillage" value="Rampur" class="w-full px-3.5 py-2.5 border-2 border-red-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-red-500 outline-none bg-white">
+          </div>
+        </div>
+
+        <p id="emgError" class="hidden text-xs text-red-700 font-extrabold mb-3 bg-red-100 p-2.5 rounded-xl border border-red-300">⚠️ Please enter your name and tap an emergency option above.</p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-red-200">
+          <span class="text-xs text-red-900 font-bold flex items-center gap-1.5" id="txtDirect108Tag">
+            <i data-lucide="zap" class="w-4 h-4 text-red-600"></i> Direct alert to 108 Emergency Ambulance &amp; Rampur Medical Officer
+          </span>
+          <button onclick="submitEmergencyReport()" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-extrabold text-sm px-8 py-3.5 rounded-xl transition shadow-xl pulse-ring flex items-center justify-center gap-2">
+            <i data-lucide="siren" class="w-5 h-5 animate-bounce"></i>
+            <span id="btnReportEmgSubmit">REPORT EMERGENCY NOW</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- SECTION 2: REGULAR OPD CONSULTATION VIEW -->
+      <section id="opdView" class="hidden bg-white border border-gray-200 rounded-2xl p-5 lg:p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+          <div>
+            <span class="text-xs text-emerald-700 font-bold uppercase tracking-wider" id="step1Label">Step 2 · OPD Consultation</span>
+            <h3 class="text-lg font-bold text-gray-900 mt-1" id="problemHeading">What is bothering you today?</h3>
+            <p class="text-sm text-gray-600" id="problemSubheading">Select a health topic or describe your symptom for OPD doctor consultation.</p>
+          </div>
+          <button onclick="speakText(translations[currentLang].generalSpeechPrompt)" class="text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-full flex items-center gap-1 w-fit">
+            <i data-lucide="volume-2" class="w-4 h-4"></i> Listen Help
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5" id="problemGrid">
+          <button type="button" class="problem-card border border-gray-200 rounded-2xl p-4 text-left bg-white hover:border-emerald-500 transition shadow-sm" data-problem="Fever">
+            <div class="text-3xl mb-1">🌡️</div>
+            <div class="font-bold text-sm text-gray-900 mt-1" id="optFever">Fever</div>
+            <div class="text-[11px] text-gray-500">Hot body, chills</div>
+          </button>
+          <button type="button" class="problem-card border border-gray-200 rounded-2xl p-4 text-left bg-white hover:border-emerald-500 transition shadow-sm" data-problem="Stomach Pain">
+            <div class="text-3xl mb-1">😣</div>
+            <div class="font-bold text-sm text-gray-900 mt-1" id="optStomach">Stomach Pain</div>
+            <div class="text-[11px] text-gray-500">Loose motion, vomit</div>
+          </button>
+          <button type="button" class="problem-card border border-gray-200 rounded-2xl p-4 text-left bg-white hover:border-emerald-500 transition shadow-sm" data-problem="Pregnancy Checkup">
+            <div class="text-3xl mb-1">🤰</div>
+            <div class="font-bold text-sm text-gray-900 mt-1" id="optPreg">Pregnancy Check</div>
+            <div class="text-[11px] text-gray-500">Mother &amp; baby care</div>
+          </button>
+          <button type="button" class="problem-card border border-gray-200 rounded-2xl p-4 text-left bg-white hover:border-emerald-500 transition shadow-sm" data-problem="Child Care">
+            <div class="text-3xl mb-1">👶</div>
+            <div class="font-bold text-sm text-gray-900 mt-1" id="optChild">Child Sick</div>
+            <div class="text-[11px] text-gray-500">Fever, not eating</div>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1" id="lblPatientPhone">Mobile Phone (optional)</label>
+            <input type="tel" id="patientPhone" placeholder="10-digit mobile number" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-semibold text-gray-700" id="lblProblemNotes">Describe Problem in simple words</label>
+              <button type="button" onclick="startVoiceInput('problemNotes')" class="text-[11px] font-semibold text-emerald-700 hover:underline flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded">
+                <i data-lucide="mic" class="w-3.5 h-3.5 text-emerald-600"></i> Speak Problem
+              </button>
+            </div>
+            <input type="text" id="problemNotes" placeholder="Example: Fever since 2 days" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-100 pt-4">
+          <span class="text-xs text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 font-semibold" id="txtFreeConsultTag">100% Free OPD Consultation under NHM</span>
+          <button onclick="submitPatientProblem()" class="w-full sm:w-auto bg-[#34a87a] hover:bg-emerald-600 text-white font-bold text-sm px-6 py-3 rounded-xl transition flex items-center justify-center gap-2 shadow-md">
+            <span id="btnBookOpd">Get OPD Token</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- RESULT TOKEN & STATUS CARD -->
+      <div id="resultCard" class="hidden bg-white border-2 border-emerald-400 rounded-2xl p-6 shadow-md">
+        <span class="text-xs text-emerald-700 font-bold uppercase tracking-wider" id="resHeaderTag">Your OPD Visit is Booked</span>
+        <h3 class="text-lg font-bold text-gray-900 mt-1 mb-4" id="resTitle">OPD Token &amp; Live Queue Status</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 text-sm">
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-3.5">
+            <div class="text-[10px] uppercase text-blue-700 font-bold">OPD Token</div>
+            <div class="text-2xl font-extrabold text-blue-950" id="resultToken">#14</div>
+          </div>
+          <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5">
+            <div class="text-[10px] uppercase text-emerald-700 font-bold">Estimated Wait</div>
+            <div class="text-lg font-extrabold text-emerald-950" id="resultWait">~12 min</div>
+          </div>
+          <div class="bg-teal-50 border border-teal-200 rounded-xl p-3.5 sm:col-span-2">
+            <div class="text-[10px] uppercase text-teal-700 font-bold">Assigned Facility</div>
+            <div class="text-sm font-bold text-teal-950">Rampur PHC · Room #2</div>
+            <div class="text-[11px] text-teal-700 mt-0.5">Medical Officer: Dr. S. K. Gupta</div>
+          </div>
+        </div>
+        <div class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-center justify-between">
+          <span class="font-medium">✓ Doctor has received your request in live consultation queue.</span>
+          <button onclick="speakText('Your visit is booked. OPD Token number ' + document.getElementById('resultToken').innerText + '. Please wait for your turn.')" class="font-bold text-emerald-800 underline flex items-center gap-1 shrink-0 ml-2">
+            <i data-lucide="volume-2" class="w-4 h-4"></i> Listen Status
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Emergency Dispatch Confirmed Modal -->
+  <div id="modalEmergencyConfirmed" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border-2 border-red-600 overflow-hidden">
+      <div class="px-6 py-4 bg-red-700 text-white flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <i data-lucide="siren" class="w-6 h-6 animate-pulse"></i>
+          <h3 class="font-extrabold text-base">108 Emergency Ambulance Dispatched</h3>
+        </div>
+        <button onclick="closeModal('modalEmergencyConfirmed')"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-6 text-sm text-gray-700 space-y-4">
+        <div class="p-4 bg-red-50 border-2 border-red-200 rounded-xl">
+          <div class="text-xs font-extrabold text-red-900 uppercase tracking-wider">Emergency Dispatch Confirmation</div>
+          <div class="text-xl font-extrabold text-red-950 mt-1" id="confPatientName">Sunita Devi</div>
+          <div class="text-xs text-red-800 font-bold mt-0.5" id="confType">Severe Chest Pain · Rampur</div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div class="bg-gray-50 p-3 rounded-xl border border-gray-200">
+            <span class="text-gray-500 font-bold block">108 Ambulance Status</span>
+            <span class="text-emerald-700 font-extrabold text-sm">EN ROUTE (~8 min)</span>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-xl border border-gray-200">
+            <span class="text-gray-500 font-bold block">Stationed MO Alert</span>
+            <span class="text-blue-900 font-bold">Dr. S. K. Gupta Notified</span>
+          </div>
+        </div>
+
+        <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
+          <div class="font-bold flex items-center gap-1.5"><i data-lucide="info" class="w-4 h-4 text-amber-600"></i> Immediate First-Aid Guidance:</div>
+          <p id="firstAidText" class="leading-relaxed">Keep patient calm, loosen tight clothing, do not give solid foods or water, stay on line for 108 emergency call.</p>
+        </div>
+      </div>
+      <div class="p-4 bg-gray-50 flex items-center justify-between border-t border-gray-100">
+        <button onclick="speakText('108 Emergency ambulance dispatched. Estimated arrival in 8 minutes. Stay calm.')" class="text-xs font-bold text-red-800 flex items-center gap-1 underline">
+          <i data-lucide="volume-2" class="w-4 h-4"></i> Listen Confirmation
+        </button>
+        <button onclick="closeModal('modalEmergencyConfirmed')" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition shadow">Understood</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentLang = 'en';
+    let selectedEmergencyTypeStr = '';
+    let selectedProblemStr = 'Fever';
+
+    const translations = {
+      en: {
+        pageTitle: "Rampur PHC Patient Portal",
+        mSubtitle: "Patient Care Portal",
+        sideSubtitle: "Patient Portal · 100% Free",
+        sideMissionTitle: "Free Public Healthcare",
+        sideMissionDesc: "Direct digital link to Rampur Medical Officer & 108 Emergency Ambulance under NHM.",
+        navReportEmergency: "Report Emergency",
+        navTellProblem: "Tell My Problem",
+        navMyToken: "My OPD Token",
+        badgePatientRole: "Patient",
+        headerSubtitle: "Report an emergency or tell your health problem. Care is 100% free.",
+        topNoticeBanner: "Stationed Medical Officer: Dr. S. K. Gupta · Rampur PHC Sector 4 · 100% Free Public Healthcare",
+        btnHearText: "Hear Instructions",
+        emgHeading: "Report An Emergency",
+        emgSubheading: "Tap one emergency box below and enter your name to notify 108 Ambulance & Doctor immediately.",
+        btnListenEmg: "Listen Emergency Help",
+        lblEmgName: "Your Full Name *",
+        lblEmgType: "Type of Emergency *",
+        lblEmgVillage: "Village / Location",
+        btnSpeakName: "Speak",
+        txtDirect108Tag: "⚡ Direct alert to 108 Emergency Ambulance & Rampur Medical Officer",
+        btnReportEmgSubmit: "REPORT EMERGENCY NOW",
+        step1Label: "Step 2 · OPD Consultation",
+        problemHeading: "What is bothering you today?",
+        problemSubheading: "Select a health topic or describe your symptom for OPD doctor consultation.",
+        lblPatientPhone: "Mobile Phone (optional)",
+        lblProblemNotes: "Describe Problem in simple words",
+        txtFreeConsultTag: "100% Free OPD Consultation under NHM",
+        btnBookOpd: "Get OPD Token",
+        tabLabelEmergency: "🚨 Report Emergency (Fast 108 Dispatch)",
+        tabLabelOpd: "📋 Regular OPD Consult & Token",
+        optChestPain: "Chest Pain",
+        optBreath: "Cannot Breathe",
+        optBleed: "Severe Bleeding",
+        optSnake: "Snake / Animal Bite",
+        optFeverFits: "High Fever & Convulsion",
+        optAccident: "Accident / Trauma",
+        optPregEmg: "Pregnancy Labor",
+        optOtherEmg: "Other Emergency",
+        optFever: "Fever",
+        optStomach: "Stomach Pain",
+        optPreg: "Pregnancy Check",
+        optChild: "Child Sick",
+        emgSpeechPrompt: "To report an emergency, type your name, tap one red emergency card, and press Report Emergency Now.",
+        generalSpeechPrompt: "Welcome to Setu Health. Tap any emergency card or enter your problem to receive free care from Rampur Primary Health Centre."
+      },
+      hi: {
+        pageTitle: "रामपुर पीएचसी मरीज पोर्टल",
+        mSubtitle: "मरीज देखभाल पोर्टल",
+        sideSubtitle: "मरीज पोर्टल · 100% मुफ्त",
+        sideMissionTitle: "मुफ्त सार्वजनिक स्वास्थ्य",
+        sideMissionDesc: "रामपुर मेडिकल ऑफिसर एवं 108 एम्बुलेंस से सीधा संपर्क।",
+        navReportEmergency: "आपातकाल रिपोर्ट करें",
+        navTellProblem: "अपनी समस्या बताएं",
+        navMyToken: "मेरा ओपीडी टोकन",
+        badgePatientRole: "मरीज",
+        headerSubtitle: "अपनी आपात स्थिति या बीमारी बताएं। इलाज 100% मुफ्त है।",
+        topNoticeBanner: "ड्यूटी पर तैनात डॉक्टर: डॉ. एस. के. गुप्ता · रामपुर प्राथमिक स्वास्थ्य केंद्र · 100% मुफ्त इलाज",
+        btnHearText: "निर्देश सुनें",
+        emgHeading: "आपातकालीन रिपोर्ट करें",
+        emgSubheading: "अपना नाम दर्ज करें और 108 एम्बुलेंस तथा डॉक्टर को तुरंत अलर्ट भेजने के लिए आपात स्थिति चुनें।",
+        btnListenEmg: "आपातकालीन सहायता सुनें",
+        lblEmgName: "आपका पूरा नाम *",
+        lblEmgType: "आपात स्थिति का प्रकार *",
+        lblEmgVillage: "गांव / पता",
+        btnSpeakName: "बोलें",
+        txtDirect108Tag: "⚡ सीधे 108 एम्बुलेंस और रामपुर डॉक्टर को संदेश भेजता है",
+        btnReportEmgSubmit: "आपातकाल दर्ज करें",
+        step1Label: "चरण 2 · सामान्य ओपीडी जांच",
+        problemHeading: "आज आपको क्या तकलीफ है?",
+        problemSubheading: "अपनी बीमारी का चयन करें या सरल शब्दों में लिखें।",
+        lblPatientPhone: "मोबाइल नंबर (वैकल्पिक)",
+        lblProblemNotes: "समस्या का विवरण दें",
+        txtFreeConsultTag: "एनएचएम के तहत 100% मुफ्त इलाज",
+        btnBookOpd: "ओपीडी टोकन प्राप्त करें",
+        tabLabelEmergency: "🚨 आपातकाल रिपोर्ट करें (108 एम्बुलेंस)",
+        tabLabelOpd: "📋 सामान्य ओपीडी पर्ची व टोकन",
+        optChestPain: "छाती में दर्द",
+        optBreath: "सांस लेने में तकलीफ",
+        optBleed: "तेज खून बहना",
+        optSnake: "सांप या जानवर का काटना",
+        optFeverFits: "तेज बुखार व दौरे",
+        optAccident: "दुर्घटना / चोट",
+        optPregEmg: "प्रसव पीड़ा",
+        optOtherEmg: "अन्य आपात स्थिति",
+        optFever: "बुखार",
+        optStomach: "पेट दर्द",
+        optPreg: "गर्भावस्था जांच",
+        optChild: "बच्चा बीमार",
+        emgSpeechPrompt: "आपातकाल की रिपोर्ट करने के लिए अपना नाम लिखें, लाल कार्ड चुनें और बटन दबाएं।",
+        generalSpeechPrompt: "सेतु हेल्थ में आपका स्वागत है। रामपुर स्वास्थ्य केंद्र से मुफ्त इलाज के लिए अपनी समस्या दर्ज करें।"
+      },
+      bn: {
+        pageTitle: "রামপুর পিএইচসি রোগী পোর্টাল",
+        mSubtitle: "রোগীর সেবা পোর্টাল",
+        sideSubtitle: "রোগী পোর্টাল · ১০০% ফ্রি",
+        sideMissionTitle: "বিনামূল্যে সরকারি স্বাস্থ্যসেবা",
+        sideMissionDesc: "রামপুর পিএইচসি ডাক্তার এবং ১০৮ অ্যাম্বুলেন্স সেবা।",
+        navReportEmergency: "জরুরী রিপোর্ট করুন",
+        navTellProblem: "সমস্যা জানান",
+        navMyToken: "আমার ওপিডি টোকেন",
+        badgePatientRole: "রোগী",
+        headerSubtitle: "আপনার জরুরী অবস্থা বা স্বাস্থ্য সমস্যা জানান। সেবা সম্পূর্ণ বিনামূল্যে।",
+        topNoticeBanner: "দায়িত্বপ্রাপ্ত চিকিৎসক: ডঃ এস কে গুপ্ত · রামপুর পিএইচসি · ১০০% বিনামূল্যে সেবা",
+        btnHearText: "নির্দেশনা শুনুন",
+        emgHeading: "জরুরী পরিস্থিতি রিপোর্ট করুন",
+        emgSubheading: "আপনার নাম লিখুন এবং জরুরী অ্যাম্বুলেন্স ও ডাক্তার অ্যালার্ট পাঠাতে ধরণ নির্বাচন করুন।",
+        btnListenEmg: "জরুরী সাহায্য শুনুন",
+        lblEmgName: "আপনার পুরো নাম *",
+        lblEmgType: "জরুরী ধরণ *",
+        lblEmgVillage: "গ্রাম / ঠিকানা",
+        btnSpeakName: "বলুন",
+        txtDirect108Tag: "⚡ সরাসরি ১০৮ অ্যাম্বুলেন্স ও রামপুর ডাক্তারকে অ্যালার্ট পাঠায়",
+        btnReportEmgSubmit: "জরুরী রিপোর্ট জমা দিন",
+        step1Label: "ধাপ ২ · ওপিডি পরামর্শ",
+        problemHeading: "আজ আপনার কি সমস্যা?",
+        problemSubheading: "আপনার স্বাস্থ্য সমস্যা নির্বাচন করুন।",
+        lblPatientPhone: "মোবাইল নম্বর",
+        lblProblemNotes: "সমস্যার বিবরণ",
+        txtFreeConsultTag: "১০০% বিনামূল্যে চিকিৎসা",
+        btnBookOpd: "ওপিডি টোকেন নিন",
+        tabLabelEmergency: "🚨 জরুরী রিপোর্ট করুন (১০৮ অ্যাম্বুলেন্স)",
+        tabLabelOpd: "📋 সাধারণ ওপিডি টোকেন",
+        optChestPain: "বুকে ব্যথা",
+        optBreath: "শ্বাসকষ্ট",
+        optBleed: "প্রচুর রক্তপাত",
+        optSnake: "সাপের কামড়",
+        optFeverFits: "তীব্র জ্বর ও খিঁচুনি",
+        optAccident: "দুর্ঘটনা / আঘাত",
+        optPregEmg: "প্রসব বেদনা",
+        optOtherEmg: "অন্যান্য জরুরী",
+        optFever: "জ্বর",
+        optStomach: "পেট ব্যথা",
+        optPreg: "গর্ভকালীন পরীক্ষা",
+        optChild: "শিশু অসুস্থ",
+        emgSpeechPrompt: "জরুরী সাহায্যের জন্য নাম লিখুন এবং লাল কার্ড চেপে জমা দিন।",
+        generalSpeechPrompt: "সেতু হেলথে স্বাগতম। রামপুর প্রাথমিক স্বাস্থ্যকেন্দ্র থেকে বিনামূল্যে সেবা পান।"
+      },
+      mr: {
+        pageTitle: "रामपूर पीएचसी रुग्ण पोर्टल",
+        mSubtitle: "रुग्ण सेवा पोर्टल",
+        sideSubtitle: "रुग्ण पोर्टल · १००% मोफत",
+        sideMissionTitle: "सार्वजनिक आरोग्य सेवा",
+        sideMissionDesc: "रामपूर वैद्यकीय अधिकारी आणि १०८ ॲम्ब्युलन्सची मोफत सुविधा.",
+        navReportEmergency: "आणीबाणी नोंदवा",
+        navTellProblem: "त्रास सांगा",
+        navMyToken: "माझा ओपीडी टोकन",
+        badgePatientRole: "रुग्ण",
+        headerSubtitle: "तुमचा आजार किंवा आणीबाणी सांगा. उपचार १००% मोफत आहेत.",
+        topNoticeBanner: "कर्तव्यदक्ष डॉक्टर: डॉ. एस. के. गुप्ता · रामपूर पीएचसी · १००% मोफत उपचार",
+        btnHearText: "सूचना ऐका",
+        emgHeading: "आणीबाणीची नोंद करा",
+        emgSubheading: "नाव टाका आणि १०८ ॲम्ब्युलन्स व डॉक्टरांना अलर्ट करण्यासाठी प्रकार निवडा.",
+        btnListenEmg: "आणीबाणी मदत ऐका",
+        lblEmgName: "तुमचे पूर्ण नाव *",
+        lblEmgType: "आणीबाणीचा प्रकार *",
+        lblEmgVillage: "गावाचे नाव",
+        btnSpeakName: "बोला",
+        txtDirect108Tag: "⚡ थेट १०८ ॲम्ब्युलन्स आणि डॉक्टरांना अलर्ट पाठवते",
+        btnReportEmgSubmit: "आणीबाणी नोंदवा",
+        step1Label: "टप्पा २ · ओपीडी तपासणी",
+        problemHeading: "आज तुम्हाला काय त्रास होतोय?",
+        problemSubheading: "तुमचा आजार निवडा किंवा लिहा.",
+        lblPatientPhone: "मोबाईल नंबर",
+        lblProblemNotes: "त्रासाची माहिती",
+        txtFreeConsultTag: "१००% मोफत ओपीडी तपासणी",
+        btnBookOpd: "ओपीडी टोकन मिळवा",
+        tabLabelEmergency: "🚨 आणीबाणी नोंदवा (१०८ ॲम्ब्युलन्स)",
+        tabLabelOpd: "📋 सामान्य ओपीडी टोकन",
+        optChestPain: "छातीत दुखणे",
+        optBreath: "दमा / श्वास कोंडणे",
+        optBleed: "रक्तस्राव",
+        optSnake: "सर्पदंश / चावा",
+        optFeverFits: "तीव्र ताप व झटका",
+        optAccident: "अपघात / दुखापत",
+        optPregEmg: "प्रसूती वेदना",
+        optOtherEmg: "इतर आणीबाणी",
+        optFever: "ताप",
+        optStomach: "पोटदुखी",
+        optPreg: "गरोदरपण तपासणी",
+        optChild: "बाळ आजारी",
+        emgSpeechPrompt: "आणीबाणीसाठी नाव लिहा, लाल कार्ड निवडा आणि बटण दाबा.",
+        generalSpeechPrompt: "सेतू हेल्थमध्ये स्वागत आहे. मोफत उपचारासाठी तुमची माहिती नोंदवा."
+      }
+    };
+
+    function toggleMobileSidebar() {
+      const sidebar = document.getElementById('patientSidebar');
+      const backdrop = document.getElementById('mobileSidebarBackdrop');
+      if (sidebar) sidebar.classList.toggle('-translate-x-full');
+      if (backdrop) backdrop.classList.toggle('hidden');
+    }
+
+    function closeMobileSidebar() {
+      const sidebar = document.getElementById('patientSidebar');
+      const backdrop = document.getElementById('mobileSidebarBackdrop');
+      if (sidebar) sidebar.classList.add('-translate-x-full');
+      if (backdrop) backdrop.classList.add('hidden');
+    }
+
+    function switchTab(mode) {
+      const tabEmergency = document.getElementById('tabEmergency');
+      const tabOpd = document.getElementById('tabOpd');
+      const emergencyView = document.getElementById('emergencyView');
+      const opdView = document.getElementById('opdView');
+
+      if (mode === 'emergency') {
+        tabEmergency.className = 'tab-btn active-tab flex-1 sm:flex-initial px-4 py-2.5 rounded-t-xl font-bold text-xs flex items-center justify-center gap-2 border border-b-0 border-gray-200';
+        tabOpd.className = 'tab-btn bg-gray-200 hover:bg-gray-300 text-gray-700 flex-1 sm:flex-initial px-4 py-2.5 rounded-t-xl font-bold text-xs flex items-center justify-center gap-2 border border-b-0 border-gray-200';
+        emergencyView.classList.remove('hidden');
+        opdView.classList.add('hidden');
+      } else {
+        tabOpd.className = 'tab-btn active-tab flex-1 sm:flex-initial px-4 py-2.5 rounded-t-xl font-bold text-xs flex items-center justify-center gap-2 border border-b-0 border-gray-200';
+        tabEmergency.className = 'tab-btn bg-gray-200 hover:bg-gray-300 text-gray-700 flex-1 sm:flex-initial px-4 py-2.5 rounded-t-xl font-bold text-xs flex items-center justify-center gap-2 border border-b-0 border-gray-200';
+        opdView.classList.remove('hidden');
+        emergencyView.classList.add('hidden');
+      }
+    }
+
+    function changeLanguage(lang) {
+      currentLang = translations[lang] ? lang : 'en';
+      const dict = translations[currentLang] || translations.en;
+
+      Object.keys(dict).forEach(key => {
+        const el = document.getElementById(key);
+        if (el) {
+          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.placeholder = dict[key];
+          } else {
+            el.innerText = dict[key];
+          }
+        }
+      });
+      speakText('Language set to ' + (document.getElementById('languageSelect').options[document.getElementById('languageSelect').selectedIndex].text));
+    }
+
+    function speakText(text) {
+      if (!('speechSynthesis' in window)) {
+        alert('Text-to-speech is not supported in this browser.');
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      const langMap = { en: 'en-US', hi: 'hi-IN', bn: 'bn-IN', mr: 'mr-IN', ta: 'ta-IN', te: 'te-IN', gu: 'gu-IN', kn: 'kn-IN' };
+      utterance.lang = langMap[currentLang] || 'en-US';
+      utterance.rate = 0.95;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function speakHelp() {
+      const dict = translations[currentLang] || translations.en;
+      speakText(dict.generalSpeechPrompt || "Welcome to Setu Health.");
+    }
+
+    function startVoiceInput(inputId) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert('Voice speech input is not supported in this browser. Please type.');
+        return;
+      }
+      const recognition = new SpeechRecognition();
+      const langMap = { en: 'en-US', hi: 'hi-IN', bn: 'bn-IN', mr: 'mr-IN', ta: 'ta-IN', te: 'te-IN', gu: 'gu-IN', kn: 'kn-IN' };
+      recognition.lang = langMap[currentLang] || 'en-US';
+      recognition.start();
+
+      speakText('Listening, please speak now...');
+
+      recognition.onresult = (event) => {
+        const spokenText = event.results[0][0].transcript;
+        const target = document.getElementById(inputId);
+        if (target) target.value = spokenText;
+        speakText('Got it: ' + spokenText);
+      };
+
+      recognition.onerror = (err) => {
+        console.warn('Speech recognition error:', err);
+      };
+    }
+
+    function selectEmergencyType(typeStr) {
+      selectedEmergencyTypeStr = typeStr;
+      const input = document.getElementById('emgTypeSelected');
+      if (input) input.value = typeStr;
+
+      const cards = document.querySelectorAll('.emergency-card');
+      cards.forEach(c => c.classList.remove('selected'));
+
+      const activeCard = document.querySelector(`.emergency-card[data-type="${typeStr}"]`);
+      if (activeCard) activeCard.classList.add('selected');
+
+      const err = document.getElementById('emgError');
+      if (err) err.classList.add('hidden');
+    }
+
+    function getEmergenciesList() {
+      try { return JSON.parse(localStorage.getItem('setu_emergencies') || '[]'); }
+      catch (e) { return []; }
+    }
+
+    function saveEmergenciesList(list) {
+      localStorage.setItem('setu_emergencies', JSON.stringify(list));
+    }
+
+    function getPatientQueueList() {
+      try { return JSON.parse(localStorage.getItem('setu_patient_queue') || '[]'); }
+      catch (e) { return []; }
+    }
+
+    function savePatientQueueList(list) {
+      localStorage.setItem('setu_patient_queue', JSON.stringify(list));
+    }
+
+    function submitEmergencyReport() {
+      const name = document.getElementById('emgPatientName').value.trim();
+      const type = document.getElementById('emgTypeSelected').value.trim();
+      const village = document.getElementById('emgVillage').value.trim() || 'Rampur';
+      const err = document.getElementById('emgError');
+
+      if (!name || !type) {
+        if (err) err.classList.remove('hidden');
+        speakText('Please enter your name and select an emergency type.');
+        return;
+      }
+      if (err) err.classList.add('hidden');
+
+      const emgId = 'EMG-' + Math.floor(1000 + Math.random() * 9000);
+      const newEmg = {
+        id: emgId,
+        name: name,
+        emergencyType: type,
+        village: village,
+        phone: '9843' + Math.floor(100000 + Math.random() * 900000),
+        status: 'CRITICAL · 108 Dispatched',
+        time: 'Just now',
+        notes: 'Emergency reported via Patient Portal. Immediate medical officer alert.'
+      };
+
+      const emgList = getEmergenciesList();
+      emgList.unshift(newEmg);
+      saveEmergenciesList(emgList);
+
+      // Also register in OPD Queue for doctor consult
+      const queueList = getPatientQueueList();
+      const tokenNum = '#' + (queueList.length + 14);
+      queueList.unshift({
+        id: 'VIS-' + Date.now(),
+        name: name,
+        village: village,
+        problem: '🚨 EMERGENCY: ' + type,
+        notes: 'Reported directly on Patient Portal. 108 Alert sent.',
+        emergency: true,
+        token: tokenNum,
+        status: 'EMERGENCY',
+        phone: newEmg.phone,
+        createdAt: new Date().toISOString()
+      });
+      savePatientQueueList(queueList);
+
+      // Update Confirmation Modal
+      document.getElementById('confPatientName').innerText = name;
+      document.getElementById('confType').innerText = type + ' · ' + village;
+
+      openModal('modalEmergencyConfirmed');
+      speakText('108 Emergency ambulance dispatched for ' + name + '. Medical officer at Rampur Primary Health Centre has been notified.');
+    }
+
+    function submitPatientProblem() {
+      const name = document.getElementById('emgPatientName').value.trim() || 'Sunita Devi';
+      const phone = document.getElementById('patientPhone').value.trim();
+      const notes = document.getElementById('problemNotes').value.trim();
+
+      const queueList = getPatientQueueList();
+      const tokenNum = 'Token #' + (queueList.length + 15);
+      const newVisit = {
+        id: 'VIS-' + Date.now(),
+        name: name,
+        village: 'Rampur',
+        problem: selectedProblemStr || 'Fever',
+        notes: notes || 'Standard OPD consultation request.',
+        emergency: false,
+        token: tokenNum,
+        status: 'Waiting',
+        phone: phone || '9876543210',
+        createdAt: new Date().toISOString()
+      };
+
+      queueList.push(newVisit);
+      savePatientQueueList(queueList);
+
+      document.getElementById('resultToken').innerText = tokenNum;
+      document.getElementById('resultCard').classList.remove('hidden');
+      document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
+
+      speakText('OPD Visit token generated. Your token is ' + tokenNum + '. Please wait at Rampur Primary Health Centre.');
+    }
+
+    function showMyToken() {
+      const queue = getPatientQueueList();
+      if (queue.length) {
+        const last = queue[queue.length - 1];
+        document.getElementById('resultToken').innerText = last.token || '#14';
+        document.getElementById('resultCard').classList.remove('hidden');
+        document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
+      } else {
+        alert('No active token found. Submit your problem to get a token.');
+      }
+    }
+
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    }
+
+    function triggerEmergencySOS() {
+      switchTab('emergency');
+      selectEmergencyType('Cannot Breathe');
+      document.getElementById('emgPatientName').focus();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) lucide.createIcons();
+
+      // Card selection logic for regular OPD problem
+      const problemCards = document.querySelectorAll('.problem-card');
+      problemCards.forEach(card => {
+        card.addEventListener('click', () => {
+          problemCards.forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          selectedProblemStr = card.getAttribute('data-problem') || 'Fever';
+        });
+      });
+
+      // Default select first problem card
+      if (problemCards.length) problemCards[0].classList.add('selected');
+    });
+  </script>
+
+</body>
+</html>

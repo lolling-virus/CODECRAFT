@@ -48,7 +48,6 @@
     .left-panel {
       width: 48%;
       background-color: var(--bg-dark);
-      /* Subtle grid background pattern */
       background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
       background-size: 24px 24px;
       padding: 48px 64px;
@@ -97,22 +96,22 @@
     }
 
     .feature-list {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
     }
 
     .feature-item {
       display: flex;
       align-items: center;
-      gap: 16px;
-      font-size: 14px;
+      gap: 12px;
+      font-size: 12px;
       color: #d1e0de;
     }
 
     .feature-icon {
-      width: 36px;
-      height: 36px;
+      width: 28px;
+      height: 28px;
       background-color: rgba(255, 255, 255, 0.06);
       border-radius: 50%;
       display: flex;
@@ -184,11 +183,13 @@
 
     .role-card:hover {
       border-color: var(--primary-teal);
+      transform: translateY(-2px);
     }
 
     .role-card.selected {
       background-color: var(--card-selected-bg);
       border-color: var(--card-selected-border);
+      box-shadow: 0 4px 12px rgba(29, 122, 113, 0.12);
     }
 
     .role-card .icon-wrapper {
@@ -300,7 +301,7 @@
       border: none;
       border-radius: 10px;
       font-size: 15px;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -398,19 +399,56 @@
       line-height: 1.4;
     }
 
-    /* Responsive scaling for smaller laptops / tablets */
+    /* ================= MOBILE RESPONSIVE MEDIA QUERIES ================= */
     @media (max-width: 900px) {
+      body {
+        min-height: auto;
+      }
       .container {
         flex-direction: column;
-      }
-      .left-panel, .right-panel {
-        width: 100%;
+        min-height: auto;
       }
       .left-panel {
-        padding: 32px;
+        width: 100%;
+        padding: 32px 24px;
+      }
+      .hero-title {
+        font-size: 28px;
+        margin-bottom: 16px;
+      }
+      .hero-subtitle {
+        font-size: 14px;
+        margin-bottom: 24px;
+      }
+      .feature-list {
+        grid-template-columns: 1fr;
+        gap: 10px;
       }
       .right-panel {
-        padding: 32px 20px;
+        width: 100%;
+        padding: 36px 20px;
+      }
+      .form-container {
+        max-width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .left-panel {
+        padding: 24px 16px;
+      }
+      .right-panel {
+        padding: 24px 16px;
+      }
+      .role-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .hero-title {
+        font-size: 24px;
+      }
+      .form-header h1 {
+        font-size: 24px;
       }
     }
   </style>
@@ -431,55 +469,43 @@
       </div>
 
       <div class="hero-content">
+        <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(52,168,122,0.18); border:1px solid rgba(52,168,122,0.4); padding:4px 12px; border-radius:100px; color:#60d3a5; font-size:11px; font-weight:700; margin-bottom:14px; text-transform:uppercase; letter-spacing:0.5px;">
+          Strengthening — not replacing — the public health system
+        </div>
         <h2 class="hero-title">Quality care for every village, connected or not.</h2>
-        <p class="hero-subtitle">One platform linking patients, doctors and frontline workers across rural public health systems.</p>
+        <p class="hero-subtitle">Equipping Frontline Health Workers (ASHA, ANM, CHO) & Public Medical Officers with digital triage, live medicine availability, and ABDM interoperable records.</p>
 
         <div class="feature-list">
           <div class="feature-item">
             <div class="feature-icon">
-              <!-- Wifi Off / Offline Icon -->
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a59d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="1" y1="1" x2="23" y2="23"></line>
-                <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
-                <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
-                <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
-                <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
-                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
-                <line x1="12" y1="20" x2="12.01" y2="20"></line>
-              </svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a59d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
             </div>
-            <span>Works offline, syncs when connected</span>
+            <span><strong>Digital Triage:</strong> Clinical decision protocols</span>
           </div>
 
           <div class="feature-item">
             <div class="feature-icon">
-              <!-- Shield Check Icon -->
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a59d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                <path d="m9 12 2 2 4-4"/>
-              </svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a59d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
-            <span>ABHA-linked, AES-256 encrypted records</span>
+            <span><strong>Queue & Tokens:</strong> Reduced PHC wait time</span>
           </div>
 
           <div class="feature-item">
             <div class="feature-icon">
-              <!-- Languages Icon -->
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a59d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m5 8 6 6"/>
-                <path d="m4 14 6-6 2 3"/>
-                <path d="M2 5h12"/>
-                <path d="M7 2h1"/>
-                <path d="m22 22-5-10-5 10"/>
-                <path d="M14 18h6"/>
-              </svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a59d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
             </div>
-            <span>Available in 12 regional languages</span>
+            <span><strong>Medicine Stock:</strong> Live EDL drug availability</span>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a59d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+            <span><strong>108 Emergency:</strong> Fast-track ambulance dispatch</span>
           </div>
         </div>
       </div>
 
-      <!-- Empty footer space to balance justify-content -->
       <div></div>
     </div>
 
@@ -489,7 +515,7 @@
         
         <div class="form-header">
           <h1>Sign in</h1>
-          <p>Welcome back. Choose your role to continue.</p>
+          <p>Welcome back. Select your role to continue.</p>
         </div>
 
         <div class="section-label">I AM SIGNING IN AS</div>
@@ -498,7 +524,7 @@
         <div class="role-grid" id="roleGrid">
           
           <!-- Patient -->
-          <div class="role-card" data-role="patient">
+          <div class="role-card" data-role="patient" id="rolePatient">
             <div class="icon-wrapper">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
@@ -506,7 +532,7 @@
               </svg>
             </div>
             <div class="role-title">Patient</div>
-            <div class="role-desc">Access your health records</div>
+            <div class="role-desc">Report emergency &amp; care records</div>
             <div class="check-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
@@ -515,7 +541,7 @@
           </div>
 
           <!-- Doctor -->
-          <div class="role-card" data-role="doctor">
+          <div class="role-card" data-role="doctor" id="roleDoctor">
             <div class="icon-wrapper">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4.8 2.3A.3.3 0 0 0 4.5 2.6V5a4 4 0 0 0 8 0V2.6a.3.3 0 0 0-.3-.3"/>
@@ -524,7 +550,7 @@
               </svg>
             </div>
             <div class="role-title">Doctor</div>
-            <div class="role-desc">Consult & manage referrals</div>
+            <div class="role-desc">Consult desk &amp; live emergencies</div>
             <div class="check-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
@@ -532,8 +558,8 @@
             </div>
           </div>
 
-          <!-- Health Worker (Default Selected) -->
-          <div class="role-card selected" data-role="health-worker">
+          <!-- Health Worker (Selected default) -->
+          <div class="role-card selected" data-role="health-worker" id="roleHW">
             <div class="icon-wrapper">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
@@ -551,7 +577,7 @@
           </div>
 
           <!-- Other -->
-          <div class="role-card" data-role="other">
+          <div class="role-card" data-role="other" id="roleOther">
             <div class="icon-wrapper">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="1"/>
@@ -574,13 +600,13 @@
         <form id="loginForm" onsubmit="handleSignIn(event)">
           
           <div class="form-group">
-            <label class="form-label" for="email">Email</label>
+            <label class="form-label" for="email">Email / Phone</label>
             <div class="input-wrapper" style="margin-top: 8px;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="5" width="18" height="14" rx="2"></rect>
               <path d="M3 7l9 6 9-6"></path>
               </svg>
-              <input type="email" id="email" class="form-input" placeholder="you@example.com" required />
+              <input type="text" id="email" class="form-input" placeholder="Enter email or mobile number" value="doctor@setuhealth.org" />
             </div>
           </div>
 
@@ -594,12 +620,12 @@
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
-              <input type="password" id="password" class="form-input" required />
+              <input type="password" id="password" class="form-input" value="123456" />
             </div>
           </div>
 
-          <button type="submit" class="btn-primary">
-            Sign in
+          <button type="submit" class="btn-primary" id="btnSignIn">
+            Sign in as <span id="submitRoleLabel">Health Worker</span>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
@@ -612,17 +638,17 @@
           <span>or</span>
         </div>
 
-        <button type="button" class="btn-secondary" onclick="alert('Triggering Biometric / OTP authentication...')">
+        <button type="button" class="btn-secondary" onclick="quickLoginCurrentRole()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M2 12C2 6.5 6.5 2 12 2a10 10 0 0 1 8 4"/>
             <path d="M5 19.5C6.3 21 8.6 22 11.5 22c5.5 0 9.5-4 9.5-9.5 0-2-.5-3.8-1.5-5.3"/>
             <path d="M12 12a3 3 0 0 0 3-3c0-2-1.5-3-3-3s-3 1-3 3"/>
             <path d="M12 16a6 6 0 0 0 6-6"/>
           </svg>
-          Use biometric / OTP
+          Quick role entry / OTP
         </button>
 
-        <!-- Bottom Registration Callout -->
+        <!-- Bottom Callout -->
         <div class="register-box">
           <div class="register-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -633,8 +659,8 @@
             </svg>
           </div>
           <div class="register-content">
-            <div class="register-title">No record yet?</div>
-            <div class="register-desc">Create a new health record to register a patient or health worker in the system.</div>
+            <div class="register-title">Public Health Portal</div>
+            <div class="register-desc">Select Patient to report emergency or Doctor for consultation desk &amp; OPD queue.</div>
           </div>
         </div>
 
@@ -642,75 +668,80 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+
   <script>
-    // Handle role card selection
+    // Role selection logic
     const roleCards = document.querySelectorAll('.role-card');
+    const submitRoleLabel = document.getElementById('submitRoleLabel');
+    const emailInput = document.getElementById('email');
     let selectedRole = 'health-worker';
+
+    const defaultEmails = {
+      'patient': 'patient@setuhealth.org',
+      'doctor': 'doctor.gupta@setuhealth.org',
+      'health-worker': 'asha.sunita@setuhealth.org',
+      'other': 'admin@setuhealth.org'
+    };
+
+    const roleDisplayNames = {
+      'patient': 'Patient',
+      'doctor': 'Doctor',
+      'health-worker': 'Health Worker',
+      'other': 'Staff / Admin'
+    };
 
     roleCards.forEach(card => {
       card.addEventListener('click', () => {
         roleCards.forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
         selectedRole = card.getAttribute('data-role');
+        if (submitRoleLabel) {
+          submitRoleLabel.innerText = roleDisplayNames[selectedRole] || 'User';
+        }
+        if (emailInput && (!emailInput.value || Object.values(defaultEmails).includes(emailInput.value))) {
+          emailInput.value = defaultEmails[selectedRole] || 'user@setuhealth.org';
+        }
       });
     });
 
-    // Handle Form Submit
-    async function handleSignIn(e) {
-    e.preventDefault();
-
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-
-    if (!email || !password)  {
-        alert('Please enter your email and password.');
-        return;
-    }
-
-    const user = await Auth.login(email, password);
-
-    if (!user) {
-        alert('Please enter your email and PIN / password.');
-        return;
-    }
-
-    const profile = await Auth.getProfile();
-
-    if (!profile) {
-        alert('Your account does not have a valid role profile.');
-        return;
-    }
-
-    // Role-based routing
-    switch (profile.role) {
+    async function navigateToRole(role) {
+      switch (role) {
         case 'patient':
-            window.location.href = 'patient.html';
-            break;
-
+          window.location.href = 'patient.html';
+          break;
         case 'doctor':
-            window.location.href = 'doctor.html';
-            break;
-
-        case 'asha_anm':
-            window.location.href = 'index5.html';
-            break;
-
-        case 'admin':
-        case 'pharmacist':
-        case 'staff':
-            window.location.href = 'admin.html';
-            break;
-
+          window.location.href = 'doctor.html';
+          break;
+        case 'health-worker':
+          window.location.href = 'index5transoffline.html';
+          break;
         default:
-            alert('Unknown user role: ' + profile.role);
+          window.location.href = 'doctor.html';
+      }
     }
-  }
+
+    async function handleSignIn(e) {
+      if (e) e.preventDefault();
+      const email = document.getElementById('email').value.trim() || defaultEmails[selectedRole];
+      const password = document.getElementById('password').value || '123456';
+
+      const btn = document.getElementById('btnSignIn');
+      if (btn) btn.disabled = true;
+
+      await Auth.login(email, password, selectedRole);
+      navigateToRole(selectedRole);
+    }
+
+    function quickLoginCurrentRole() {
+      const email = defaultEmails[selectedRole] || 'user@setuhealth.org';
+      Auth.login(email, '123456', selectedRole).then(() => {
+        navigateToRole(selectedRole);
+      });
+    }
   </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabaseClient.js"></script>
-  <script src="js/auth.js"></script>
-
 
 </body>
 </html>
