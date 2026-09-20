@@ -1,0 +1,89 @@
+// js/auth.js
+
+let careSession = {
+  patientName: "",
+  patientPhone: "",
+  abhaId: "",
+  age: "",
+  gender: "",
+  village: "",
+  condition: "",
+  burnDegree: "",
+  urgency: "Standard",
+  vitals: {},
+  assignedFacility: "Rampur PHC",
+  assignedDoctor: "",
+  opdToken: "Token #14",
+  referralId: "",
+  followupDate: "",
+  ashaAction: ""
+};
+
+async function syncRecordToSupabase() {
+  const syncBox = document.getElementById("supabaseStatusBox");
+  const syncBtn = document.getElementById("btnSyncSupabase");
+
+  if (syncBtn) syncBtn.disabled = true;
+  if (syncBox) {
+    syncBox.className = "p-3.5 bg-blue-50 border border-blue-200 rounded-xl text-xs font-mono text-blue-800 mb-4 flex items-center gap-2";
+    syncBox.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i> Connecting to https://pmniqaqfibisubepajjo.supabase.co...`;
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  const payload = {
+    patient_name: careSession.patientName || "Unknown Patient",
+    patient_phone: careSession.patientPhone || "N/A",
+    abha_id: careSession.abhaId || null,
+    age: careSession.age ? parseInt(careSession.age) : null,
+    gender: careSession.gender || null,
+    village: careSession.village || null,
+    primary_condition: careSession.condition || "General Primary Care",
+    burn_degree: careSession.burnDegree || null,
+    urgency_level: careSession.urgency || "Standard",
+    vital_bp: careSession.vitals?.bp || null,
+    vital_pulse: careSession.vitals?.pulse || null,
+    vital_spo2: careSession.vitals?.spo2 || null,
+    vital_temp: careSession.vitals?.temp || null,
+    facility_name: careSession.assignedFacility || "Rampur PHC",
+    assigned_doctor: careSession.assignedDoctor || "On-Duty Medical Officer",
+    opd_token: careSession.opdToken || "Token #14",
+    fhir_referral_id: careSession.referralId || `REF-${Date.now()}`,
+    high_risk_category: careSession.conditionProtocols?.riskCategory || "Standard Primary Care",
+    followup_date: careSession.followupDate || null,
+    asha_action: careSession.ashaAction || "Routine Monitoring",
+    abdm_sync_status: "SYNCED_M3",
+    synced_by: "Sunita Devi (ASHA)"
+  };
+
+  try {
+    const { data, error } = await supabase
+      .from("patient_records")
+      .insert([payload])
+      .select();
+
+    if (error) throw error;
+
+    if (syncBox) {
+      syncBox.className = "p-3.5 bg-emerald-50 border border-emerald-300 rounded-xl text-xs font-mono text-emerald-900 mb-4 space-y-1";
+      syncBox.innerHTML = `
+        <div class="font-bold flex items-center gap-1.5 text-emerald-800">
+          <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+          Record Synced to Supabase Project (pmniqaqfibisubepajjo)
+        </div>
+        <div class="text-[11px] text-emerald-700">Record ID: ${data[0].id} · Timestamp: ${new Date().toLocaleTimeString()}</div>
+      `;
+      if (window.lucide) window.lucide.createIcons();
+    }
+  } catch (err) {
+    console.error("Supabase Sync Error:", err);
+    if (syncBox) {
+      syncBox.className = "p-3.5 bg-red-50 border border-red-300 rounded-xl text-xs font-mono text-red-800 mb-4";
+      syncBox.innerHTML = `
+        <div class="font-bold">Sync Failed</div>
+        <div class="text-[11px]">${err.message || err}</div>
+      `;
+    }
+  } finally {
+    if (syncBtn) syncBtn.disabled = false;
+  }
+}

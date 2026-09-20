@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setu Health - Public Health Portal & Sign In</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #122c2a;
+      --bg-light: #f7faf9;
+      --text-white: #ffffff;
+      --text-muted-dark: #8ba3a0;
+      --text-heading: #1a2221;
+      --text-body: #627270;
+      --primary-teal: #1d7a71;
+      --primary-hover: #16615a;
+      --card-selected-bg: #e5f4f1;
+      --card-selected-border: #1d7a71;
+      --border-color: #e2e8e6;
+      --input-bg: #ffffff;
+      --emergency-red: #dc2626;
+      --emergency-bg: #fef2f2;
+      --emergency-border: #fca5a5;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-light);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* ================= LEFT PANEL ================= */
+    .left-panel {
+      width: 46%;
+      background-color: var(--bg-dark);
+      background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+      background-size: 24px 24px;
+      padding: 48px 56px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: var(--text-white);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      background-color: var(--primary-teal);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-content {
+      max-width: 480px;
+      margin: auto 0;
+    }
+
+    .hero-title {
+      font-size: 38px;
+      line-height: 1.22;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      margin-bottom: 20px;
+    }
+
+    .hero-subtitle {
+      color: var(--text-muted-dark);
+      font-size: 14.5px;
+      line-height: 1.6;
+      margin-bottom: 36px;
+    }
+
+    .feature-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: #d1e0de;
+    }
+
+    .feature-icon {
+      width: 28px;
+      height: 28px;
+      background-color: rgba(255, 255, 255, 0.06);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Left panel emergency banner */
+    .left-emergency-badge {
+      background: rgba(220, 38, 38, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .left-emergency-btn {
+      background: var(--emergency-red);
+      color: #ffffff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .left-emergency-btn:hover {
+      background: #b91c1c;
+    }
+
+    /* ================= RIGHT PANEL ================= */
+    .right-panel {
+      width: 54%;
+      background-color: var(--bg-light);
+      padding: 44px 72px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow-y: auto;
+    }
+
+    .form-container {
+      max-width: 500px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .top-action-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .emergency-quick-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .emergency-quick-link:hover {
+      background: #fee2e2;
+      border-color: #f87171;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #dc2626;
+      animation: pulse-dot 1.5s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    .form-header {
+      margin-bottom: 24px;
+    }
+
+    .form-header h1 {
+      font-size: 27px;
+      font-weight: 600;
+      color: var(--text-heading);
+      margin-bottom: 6px;
+    }
+
+    .form-header p {
+      color: var(--text-body);
+      font-size: 14px;
+    }
+
+    .section-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      color: var(--text-body);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    /* Role Cards Grid */
+    .role-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .role-card {
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 14px;
+      background-color: #ffffff;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .role-card:hover {
+      border-color: var(--primary-teal);
+      transform: translateY(-2px);
+    }
+
+    .role-card.selected {
+      background-color: var(--card-selected-bg);
+      border-color: var(--card-selected-border);
+      box-shadow: 0 4px 12px rgba(29, 122, 113, 0.12);
+    }
+
+    .role-card .icon-wrapper {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background-color: #f0f4f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      color: #33413e;
+      transition: all 0.2s ease;
+    }
+
+    .role-card.selected .icon-wrapper {
+      background-color: var(--primary-teal);
+      color: #ffffff;
+    }
+
+    .role-card .check-icon {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      display: none;
+      color: var(--primary-teal);
+    }
+
+    .role-card.selected .check-icon {
+      display: block;
+    }
+
+    .role-title {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text-heading);
+      margin-bottom: 3px;
+    }
+
+    .role-desc {
+      font-size: 11.5px;
+      color: var(--text-body);
+      line-height: 1.3;
+    }
+
+    /* Tab Switcher (Sign In vs New Registration) */
+    .mode-tab-bar {
+      display: flex;
+      background: #edf3f2;
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 20px;
+      gap: 4px;
+    }
+
+    .mode-tab-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-body);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .mode-tab-btn.active {
+      background: #ffffff;
+      color: var(--primary-teal);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+
+    /* Form Controls */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .form-label {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-heading);
+    }
+
+    .form-label .required {
+      color: #dc2626;
+      margin-left: 2px;
+    }
+
+    .forgot-link {
+      font-size: 12.5px;
+      color: var(--primary-teal);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .forgot-link:hover {
+      text-decoration: underline;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrapper svg {
+      position: absolute;
+      left: 14px;
+      color: #889694;
+      pointer-events: none;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 11px 14px 11px 40px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      font-size: 13.5px;
+      color: var(--text-heading);
+      background-color: var(--input-bg);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary-teal);
+      box-shadow: 0 0 0 3px rgba(29, 122, 113, 0.1);
+    }
+
+    .form-input.is-valid {
+      border-color: #16a34a;
+    }
+
+    .form-input.is-invalid {
+      border-color: #dc2626;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .input-hint {
+      font-size: 11px;
+      margin-top: 4px;
+      color: var(--text-body);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .input-hint.match {
+      color: #15803d;
+      font-weight: 600;
+    }
+
+    .input-hint.mismatch {
+      color: #dc2626;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 13px;
+      background-color: var(--primary-teal);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.2s, transform 0.1s;
+      margin-top: 8px;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-primary:active {
+      transform: translateY(1px);
+    }
+
+    .btn-emergency {
+      width: 100%;
+      padding: 13px;
+      background-color: #dc2626;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.2s;
+      margin-top: 8px;
+      text-decoration: none;
+    }
+
+    .btn-emergency:hover {
+      background-color: #b91c1c;
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 20px 0;
+      color: #94a3a0;
+      font-size: 12.5px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .divider span {
+      padding: 0 10px;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 11px;
+      background-color: #ffffff;
+      color: var(--text-heading);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background-color: #f4f7f6;
+      border-color: #cbd5d3;
+    }
+
+    /* Patient Referral Slip Box */
+    .referral-search-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .referral-result-slip {
+      margin-top: 16px;
+      background: #fdfefe;
+      border: 1.5px dashed #99cdca;
+      border-radius: 12px;
+      padding: 16px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slip-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid #e1eeeb;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+
+    .slip-badge {
+      font-size: 11px;
+      font-weight: 700;
+      background: #e5f4f1;
+      color: #16615a;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .slip-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 12.5px;
+    }
+
+    .slip-label {
+      color: var(--text-body);
+    }
+
+    .slip-val {
+      font-weight: 600;
+      color: var(--text-heading);
+      text-align: right;
+    }
+
+    .next-date-highlight {
+      background: #e6f7f2;
+      border: 1px solid #a4dec9;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin: 12px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Registration Box */
+    .register-box {
+      margin-top: 24px;
+      border: 1px dashed #c0d4cf;
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      gap: 12px;
+      background-color: rgba(255, 255, 255, 0.6);
+    }
+
+    .register-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background-color: #e5f4f1;
+      color: var(--primary-teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .register-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .register-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-heading);
+    }
+
+    .register-desc {
+      font-size: 12px;
+      color: var(--text-body);
+      line-height: 1.4;
+    }
+
+    /* Notification Banner */
+    .alert-banner {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      margin-bottom: 14px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .alert-banner.success {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+      display: flex;
+    }
+
+    .alert-banner.error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+      display: flex;
+    }
+
+    /* Quick date chips */
+    .date-chips {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .date-chip {
+      background: #eef4f3;
+      border: 1px solid #d8e5e3;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #375350;
+      transition: background 0.15s;
+    }
+
+    .date-chip:hover {
+      background: #dfece9;
+      border-color: #b7cfcc;
+    }
+
+    /* ================= MOBILE RESPONSIVE MEDIA QUERIES ================= */
+    @media (max-width: 900px) {
+      body {
+        min-height: auto;
+      }
+      .container {
+        flex-direction: column;
+        min-height: auto;
+      }
+      .left-panel {
+        width: 100%;
+        padding: 32px 24px;
+      }
+      .hero-title {
+        font-size: 28px;
+        margin-bottom: 16px;
+      }
+      .hero-subtitle {
+        font-size: 14px;
+        margin-bottom: 24px;
+      }
+      .feature-list {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .right-panel {
+        width: 100%;
+        padding: 32px 20px;
+      }
+      .form-container {
+        max-width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .left-panel {
+        padding: 24px 16px;
+      }
+      .right-panel {
+        padding: 24px 16px;
+      }
+      .role-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .grid-2 {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .hero-title {
+        font-size: 24px;
+      }
+      .form-header h1 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+      <div class="brand">
+        <div class="brand-logo">
+          <!-- Pulse Icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        Setu Health
+      </div>
+
+      <div class="hero-content">
+        <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(52,168,122,0.18); border:1px solid rgba(52,168,122,0.4); padding:4px 12px; border-radius:100px; color:#60d3a5; font-size:11px; font-weight:700; margin-bottom:14px; text-transform:uppercase; letter-spacing:0.5px;">
+          Strengthening — not replacing — the public health system
+        </div>
+        <h2 class="hero-title">Quality care for every village, connected or not.</h2>
+        <p class="hero-subtitle">Equipping Frontline Health Workers (ASHA, ANM, CHO) & Public Medical Officers with digital triage, live medicine availability, and ABDM interoperable records.</p>
+
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a59d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <span><strong>Digital Triage:</strong> Clinical decision protocols</span>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a59d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <span><strong>Queue & Tokens:</strong> Reduced PHC wait time</span>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a59d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </div>
+            <span><strong>Medicine Stock:</strong> Live EDL drug availability</span>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a59d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+            <span><strong>108 Emergency:</strong> Fast-track ambulance dispatch</span>
+          </div>
+        </div>
+
+        <!-- Emergency Left Banner -->
+        <div class="left-emergency-badge">
+          <div>
+            <div style="font-size:13px; font-weight:700; color:#fca5a5; display:flex; align-items:center; gap:6px;">
+              <span class="pulse-dot"></span> 24x7 Critical Emergency Access
+            </div>
+            <div style="font-size:11px; color:#e2e8e6; margin-top:2px;">Instant SOS dispatch &amp; care triage routing</div>
+          </div>
+          <a href="patient.html" class="left-emergency-btn">
+            🚨 Open Emergency
+          </a>
+        </div>
+      </div>
+
+      <div style="font-size:12px; color:var(--text-muted-dark);">
+        Setu Health Platform · ABDM &amp; FHIR R4 Interoperable
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+      <div class="form-container">
+        
+        <!-- Top Bar with Direct Emergency Link -->
+        <div class="top-action-bar">
+          <div style="font-size:12px; color:var(--text-body); font-weight:500;">
+            Public Health Authentication
+          </div>
+          <a href="patient.html" class="emergency-quick-link" title="Direct access to Emergency Patient Portal">
+            <span class="pulse-dot"></span>
+            🚨 Emergency Patient Portal
+          </a>
+        </div>
+
+        <div class="form-header">
+          <h1 id="pageHeading">Sign in</h1>
+          <p id="pageSubheading">Select your role to access your healthcare portal.</p>
+        </div>
+
+        <!-- Notification Message Banner -->
+        <div id="alertBanner" class="alert-banner">
+          <span id="alertBannerText"></span>
+        </div>
+
+        <div class="section-label">I AM SIGNING IN AS</div>
+
+        <!-- Role Selector Grid -->
+        <div class="role-grid" id="roleGrid">
+          
+          <!-- Health Worker (Default) -->
+          <div class="role-card selected" data-role="health-worker" id="roleHW">
+            <div class="icon-wrapper">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                <path d="M12 11v4"/>
+                <path d="M10 13h4"/>
+              </svg>
+            </div>
+            <div class="role-title">Health Worker</div>
+            <div class="role-desc">ASHA / ANM / CHO field portal</div>
+            <div class="check-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Doctor -->
+          <div class="role-card" data-role="doctor" id="roleDoctor">
+            <div class="icon-wrapper">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4.8 2.3A.3.3 0 0 0 4.5 2.6V5a4 4 0 0 0 8 0V2.6a.3.3 0 0 0-.3-.3"/>
+                <path d="M8 9v2a6 6 0 0 0 12 0V9"/>
+                <circle cx="20" cy="9" r="2"/>
+              </svg>
+            </div>
+            <div class="role-title">Doctor</div>
+            <div class="role-desc">Consult desk &amp; OPD queue</div>
+            <div class="check-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Patient -->
+          <div class="role-card" data-role="patient" id="rolePatient">
+            <div class="icon-wrapper">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <div class="role-title">Patient</div>
+            <div class="role-desc">Referral slip, checkup &amp; care</div>
+            <div class="check-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Other / Staff -->
+          <div class="role-card" data-role="other" id="roleOther">
+            <div class="icon-wrapper">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="1"/>
+                <circle cx="19" cy="12" r="1"/>
+                <circle cx="5" cy="12" r="1"/>
+              </svg>
+            </div>
+            <div class="role-title">Other</div>
+            <div class="role-desc">Admin, pharmacist, staff</div>
+            <div class="check-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ================= SECTION 1: DOCTOR & HEALTH WORKER & STAFF FORMS ================= -->
+        <div id="professionalSection">
+          
+          <!-- Mode Tabs (Sign In vs New Registration) -->
+          <div class="mode-tab-bar" id="modeTabBar">
+            <button type="button" class="mode-tab-btn active" id="tabSignIn" onclick="switchAuthMode('signin')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+              <span>Sign In</span>
+            </button>
+            <button type="button" class="mode-tab-btn" id="tabRegister" onclick="switchAuthMode('register')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
+              <span id="tabRegisterLabel">New Registration</span>
+            </button>
+          </div>
+
+          <!-- FORM A: STANDARD SIGN IN (Email/Phone + Password) -->
+          <form id="standardSignInForm" onsubmit="handleSignIn(event)">
+            
+            <div class="form-group">
+              <label class="form-label" for="loginEmail">Email / Phone Number</label>
+              <div class="input-wrapper" style="margin-top: 6px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                  <path d="M3 7l9 6 9-6"></path>
+                </svg>
+                <input type="text" id="loginEmail" class="form-input" placeholder="Enter email or mobile phone number" value="asha.sunita@setuhealth.org" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="label-row">
+                <label class="form-label" for="loginPassword">PIN / Password</label>
+                <a href="#" class="forgot-link" onclick="openForgotPrompt(event)">Forgot?</a>
+              </div>
+              <div class="input-wrapper">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <input type="password" id="loginPassword" class="form-input" value="123456" placeholder="Enter your secret password" required />
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary" id="btnSignIn">
+              <span>Sign in as <strong id="submitRoleLabel">Health Worker</strong></span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+
+            <div class="divider">
+              <span>or</span>
+            </div>
+
+            <button type="button" class="btn-secondary" onclick="quickLoginCurrentRole()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12C2 6.5 6.5 2 12 2a10 10 0 0 1 8 4"/>
+                <path d="M5 19.5C6.3 21 8.6 22 11.5 22c5.5 0 9.5-4 9.5-9.5 0-2-.5-3.8-1.5-5.3"/>
+                <path d="M12 12a3 3 0 0 0 3-3c0-2-1.5-3-3-3s-3 1-3 3"/>
+                <path d="M12 16a6 6 0 0 0 6-6"/>
+              </svg>
+              Quick role demo access / Instant OTP
+            </button>
+
+          </form>
+
+          <!-- FORM B: DOCTOR NEW REGISTRATION -->
+          <form id="doctorRegisterForm" style="display: none;" onsubmit="handleDoctorRegistration(event)">
+            
+            <div class="form-group">
+              <label class="form-label" for="docName">Doctor Full Name <span class="required">*</span></label>
+              <div class="input-wrapper" style="margin-top: 6px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <input type="text" id="docName" class="form-input" placeholder="e.g. Dr. Sunita K. Sharma" required />
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label" for="docSpecialization">Field of Specialization <span class="required">*</span></label>
+                <div class="input-wrapper" style="margin-top: 6px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                  </svg>
+                  <input type="text" id="docSpecialization" class="form-input" placeholder="e.g. General Medicine, OBGYN" required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="docHospital">Hospital / PHC Facility <span class="required">*</span></label>
+                <div class="input-wrapper" style="margin-top: 6px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 21h18"/>
+                    <path d="M9 8h1"/>
+                    <path d="M9 12h1"/>
+                    <path d="M9 16h1"/>
+                    <path d="M14 8h1"/>
+                    <path d="M14 12h1"/>
+                    <path d="M14 16h1"/>
+                    <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/>
+                  </svg>
+                  <input type="text" id="docHospital" class="form-input" placeholder="e.g. Rampur Primary Health Centre" required />
+                </div>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label" for="docEmail">Official Email <span class="required">*</span></label>
+                <div class="input-wrapper" style="margin-top: 6px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                    <path d="M3 7l9 6 9-6"></path>
+                  </svg>
+                  <input type="email" id="docEmail" class="form-input" placeholder="doctor.name@setuhealth.org" required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="docPhone">Phone Number <span class="required">*</span></label>
+                <div class="input-wrapper" style="margin-top: 6px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                  <input type="tel" id="docPhone" class="form-input" placeholder="+91 98765 43210" required />
+                </div>
+              </div>
+            </div>
+
+            <!-- Doctor Password Creation: 2 Boxes (Enter & Reset/Confirm) -->
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label" for="docPassword">Create Password <span class="required">*</span></label>
+                <div class="input-wrapper" style="margin-top: 6px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                  <input type="password" id="docPassword" class="form-input" placeholder="Enter password" oninput="validateDoctorPasswordMatch()" required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="docPasswordConfirm">Reset / Confirm Password <span class="required">*</span></label>
+                <div class="input-wrapper" style="margin-top: 6px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 2v6h-6"></path>
+                    <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                    <path d="M3 22v-6h6"></path>
+                    <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                  </svg>
+                  <input type="password" id="docPasswordConfirm" class="form-input" placeholder="Re-enter to confirm" oninput="validateDoctorPasswordMatch()" required />
+                </div>
+              </div>
+            </div>
+            <div id="docPassHint" class="input-hint" style="margin-top: -10px; margin-bottom: 14px;">
+              <span>Enter matching password in both boxes to register.</span>
+            </div>
+
+            <button type="submit" class="btn-primary" id="btnDocRegister">
+              <span>Register &amp; Access Doctor Desk</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+
+          </form>
+
+          <!-- FORM C: HEALTH WORKER NEW REGISTRATION -->
+          <form id="hwRegisterForm" style="display: none;" onsubmit="handleHWRegistration(event)">
+            
+            <div class="form-group">
+              <label class="form-label" for="hwPhone">Phone Number <span class="required">*</span></label>
+              <div class="input-wrapper" style="margin-top: 6px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                <input type="tel" id="hwPhone" class="form-input" placeholder="+91 98765 00000" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="hwLocation">Location of Posting <span class="required">*</span></label>
+              <div class="input-wrapper" style="margin-top: 6px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <input type="text" id="hwLocation" class="form-input" placeholder="e.g. Rampur Sub-Center / Ward 4 / Baramati Block" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="hwEmail">Email Address <span class="required">*</span></label>
+              <div class="input-wrapper" style="margin-top: 6px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                  <path d="M3 7l9 6 9-6"></path>
+                </svg>
+                <input type="email" id="hwEmail" class="form-input" placeholder="asha.rampur@setuhealth.org" required />
+              </div>
+            </div>
+
+            <!-- Health Worker Password Creation: 2 Boxes (Enter & Re-enter to compare) -->
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label" for="hwPassword">Create Password / PIN <span class="required">*</span></label>
+                <div class="input-wrapper" style="margin-top: 6px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                  <input type="password" id="hwPassword" class="form-input" placeholder="Enter password / PIN" oninput="validateHWPasswordMatch()" required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="hwPasswordConfirm">Re-enter Password to Compare <span class="required">*</span></label>
+                <div class="input-wrapper" style="margin-top: 6px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                  <input type="password" id="hwPasswordConfirm" class="form-input" placeholder="Compare & confirm" oninput="validateHWPasswordMatch()" required />
+                </div>
+              </div>
+            </div>
+            <div id="hwPassHint" class="input-hint" style="margin-top: -10px; margin-bottom: 14px;">
+              <span>Re-enter the exact same password in box 2 to verify.</span>
+            </div>
+
+            <button type="submit" class="btn-primary" id="btnHWRegister">
+              <span>Register Health Worker &amp; Open Portal</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+
+          </form>
+
+        </div>
+
+        <!-- ================= SECTION 2: PATIENT PORTAL & REFERRAL LOOKUP ================= -->
+        <div id="patientSection" style="display: none;">
+          
+          <!-- Referral Slip & Next Checkup Date Lookup Box -->
+          <div class="referral-search-card">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+              <div style="width:28px; height:28px; border-radius:6px; background:#e5f4f1; color:var(--primary-teal); display:flex; align-items:center; justify-content:center;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              </div>
+              <div>
+                <h3 style="font-size:14.5px; font-weight:600; color:var(--text-heading);">Check Referral Slip &amp; Next Checkup Date</h3>
+                <p style="font-size:12px; color:var(--text-body);">Enter the consultation / referral date to retrieve your official digital slip.</p>
+              </div>
+            </div>
+
+            <form id="referralDateForm" onsubmit="checkReferralByDate(event)">
+              <div class="form-group" style="margin-bottom:10px;">
+                <label class="form-label" for="referralDateInput">Enter Referral / Visit Date <span class="required">*</span></label>
+                <div class="input-wrapper" style="margin-top: 6px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <input type="date" id="referralDateInput" class="form-input" required />
+                </div>
+                
+                <!-- Quick Date Selectors -->
+                <div class="date-chips">
+                  <span class="date-chip" onclick="setReferralDatePreset('today')">📅 Today (17 Sep 2026)</span>
+                  <span class="date-chip" onclick="setReferralDatePreset('yesterday')">Yesterday</span>
+                  <span class="date-chip" onclick="setReferralDatePreset('sample')">Sample Follow-up</span>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:12px;">
+                <label class="form-label" for="patientSearchIdentifier">Patient Phone or ABHA ID (Optional)</label>
+                <div class="input-wrapper" style="margin-top: 6px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  <input type="text" id="patientSearchIdentifier" class="form-input" placeholder="e.g. 9876543210 or 91-8273-9182-0192" value="9876543210" />
+                </div>
+              </div>
+
+              <button type="submit" class="btn-primary" style="padding:10px; font-size:13.5px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Find Referral Slip &amp; Next Checkup Date
+              </button>
+            </form>
+
+            <!-- Dynamic Referral Slip Display -->
+            <div id="referralResultSlip" class="referral-result-slip" style="display: none;">
+              <div class="slip-header">
+                <div>
+                  <div style="font-size:13.5px; font-weight:700; color:#1a2221;" id="slipPatientName">Sunita Devi (Age 28, F)</div>
+                  <div style="font-size:11px; color:#5f7572;" id="slipAbha">ABHA: 91-8273-9182-0192</div>
+                </div>
+                <span class="slip-badge" id="slipRefNumber">ABDM-REF-584912</span>
+              </div>
+
+              <div class="slip-row">
+                <span class="slip-label">Referred Facility:</span>
+                <span class="slip-val" id="slipFacility">Baramati CHC (First Referral Unit)</span>
+              </div>
+              <div class="slip-row">
+                <span class="slip-label">Consulting Doctor:</span>
+                <span class="slip-val" id="slipDoctor">Dr. S. K. Gupta · OBGYN &amp; Medicine</span>
+              </div>
+              <div class="slip-row">
+                <span class="slip-label">Clinical Indication:</span>
+                <span class="slip-val" id="slipDiagnosis">High Risk Pregnancy (Anemia Hb 7.2)</span>
+              </div>
+              <div class="slip-row">
+                <span class="slip-label">Referral Date:</span>
+                <span class="slip-val" id="slipDateFormatted">17 Sep 2026</span>
+              </div>
+
+              <!-- Highlighted Next Checkup Date Box -->
+              <div class="next-date-highlight">
+                <div>
+                  <div style="font-size:11px; font-weight:700; color:#0e594d; text-transform:uppercase; letter-spacing:0.5px;">
+                    🗓️ Next Checkup &amp; Follow-up Date
+                  </div>
+                  <div style="font-size:15px; font-weight:700; color:#064e3b; margin-top:2px;" id="slipNextCheckupDate">
+                    24 Sep 2026 (In 7 Days)
+                  </div>
+                </div>
+                <div style="background:#10b981; color:#ffffff; font-size:11px; font-weight:700; padding:4px 8px; border-radius:6px;" id="slipTokenBadge">
+                  Token #14
+                </div>
+              </div>
+
+              <div style="display:flex; gap:8px; margin-top:10px;">
+                <button type="button" class="btn-secondary" style="font-size:12px; padding:8px;" onclick="window.print()">
+                  🖨️ Print Slip
+                </button>
+                <button type="button" class="btn-primary" style="font-size:12px; padding:8px; margin-top:0;" onclick="navigateToPatientPortal()">
+                  Open Patient Care Desk →
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Direct Patient Portal Access & Emergency Section -->
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <button type="button" class="btn-primary" onclick="navigateToPatientPortal()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              Continue to Patient Care Portal
+            </button>
+
+            <!-- Prominent Emergency SOS Route -->
+            <a href="patient.html" class="btn-emergency">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              🚨 EMERGENCY CARE &amp; 108 SOS DISPATCH
+            </a>
+          </div>
+
+        </div>
+
+        <!-- Bottom Informational Callout -->
+        <div class="register-box">
+          <div class="register-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <line x1="19" y1="8" x2="19" y2="14"/>
+              <line x1="16" y1="11" x2="22" y2="11"/>
+            </svg>
+          </div>
+          <div class="register-content">
+            <div class="register-title" id="footerNoteTitle">Public Health Interoperable Network</div>
+            <div class="register-desc" id="footerNoteDesc">Select Doctor for OPD desk, Health Worker for field triage &amp; medicine stock, or Patient to view referral slips and emergency SOS.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+
+  <script>
+    // State management
+    let selectedRole = 'health-worker';
+    let currentAuthMode = 'signin'; // 'signin' or 'register'
+
+    const defaultEmails = {
+      'patient': 'patient@setuhealth.org',
+      'doctor': 'doctor.gupta@setuhealth.org',
+      'health-worker': 'asha.sunita@setuhealth.org',
+      'other': 'admin@setuhealth.org'
+    };
+
+    const roleDisplayNames = {
+      'patient': 'Patient',
+      'doctor': 'Doctor',
+      'health-worker': 'Health Worker',
+      'other': 'Staff / Admin'
+    };
+
+    // DOM Elements
+    const roleCards = document.querySelectorAll('.role-card');
+    const professionalSection = document.getElementById('professionalSection');
+    const patientSection = document.getElementById('patientSection');
+    const standardSignInForm = document.getElementById('standardSignInForm');
+    const doctorRegisterForm = document.getElementById('doctorRegisterForm');
+    const hwRegisterForm = document.getElementById('hwRegisterForm');
+    const modeTabBar = document.getElementById('modeTabBar');
+    const tabSignIn = document.getElementById('tabSignIn');
+    const tabRegister = document.getElementById('tabRegister');
+    const tabRegisterLabel = document.getElementById('tabRegisterLabel');
+    const submitRoleLabel = document.getElementById('submitRoleLabel');
+    const loginEmailInput = document.getElementById('loginEmail');
+    const alertBanner = document.getElementById('alertBanner');
+    const alertBannerText = document.getElementById('alertBannerText');
+    const referralDateInput = document.getElementById('referralDateInput');
+
+    // Initialize default date in date picker to today (2026-09-17)
+    document.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().split('T')[0];
+      if (referralDateInput) {
+        referralDateInput.value = today;
+      }
+      updateUIForRole(selectedRole);
+    });
+
+    // Role selection handling
+    roleCards.forEach(card => {
+      card.addEventListener('click', () => {
+        roleCards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedRole = card.getAttribute('data-role');
+        updateUIForRole(selectedRole);
+      });
+    });
+
+    function updateUIForRole(role) {
+      hideAlert();
+
+      if (submitRoleLabel) {
+        submitRoleLabel.innerText = roleDisplayNames[role] || 'User';
+      }
+
+      if (role === 'patient') {
+        professionalSection.style.display = 'none';
+        patientSection.style.display = 'block';
+        document.getElementById('pageHeading').innerText = 'Patient Care & Slip Desk';
+        document.getElementById('pageSubheading').innerText = 'Check your referral slip, upcoming checkup schedule, or emergency care.';
+      } else {
+        patientSection.style.display = 'none';
+        professionalSection.style.display = 'block';
+        document.getElementById('pageHeading').innerText = 'Sign in';
+        document.getElementById('pageSubheading').innerText = `Welcome to Setu Health. Access your ${roleDisplayNames[role]} portal.`;
+
+        // Update registration tab label
+        if (role === 'doctor') {
+          tabRegisterLabel.innerText = 'New Doctor Registration';
+        } else if (role === 'health-worker') {
+          tabRegisterLabel.innerText = 'New Worker Registration';
+        } else {
+          tabRegisterLabel.innerText = 'New Registration';
+        }
+
+        if (loginEmailInput && (!loginEmailInput.value || Object.values(defaultEmails).includes(loginEmailInput.value))) {
+          loginEmailInput.value = defaultEmails[role] || 'user@setuhealth.org';
+        }
+
+        // Apply current auth mode (sign in or register)
+        renderAuthModeForms();
+      }
+    }
+
+    function switchAuthMode(mode) {
+      currentAuthMode = mode;
+      if (mode === 'signin') {
+        tabSignIn.classList.add('active');
+        tabRegister.classList.remove('active');
+      } else {
+        tabRegister.classList.add('active');
+        tabSignIn.classList.remove('active');
+      }
+      renderAuthModeForms();
+    }
+
+    function renderAuthModeForms() {
+      hideAlert();
+      if (currentAuthMode === 'signin') {
+        standardSignInForm.style.display = 'block';
+        doctorRegisterForm.style.display = 'none';
+        hwRegisterForm.style.display = 'none';
+      } else {
+        standardSignInForm.style.display = 'none';
+        if (selectedRole === 'doctor') {
+          doctorRegisterForm.style.display = 'block';
+          hwRegisterForm.style.display = 'none';
+        } else {
+          // Health worker or other
+          doctorRegisterForm.style.display = 'none';
+          hwRegisterForm.style.display = 'block';
+        }
+      }
+    }
+
+    // Password comparison & validation for Doctor Registration
+    function validateDoctorPasswordMatch() {
+      const p1 = document.getElementById('docPassword').value;
+      const p2 = document.getElementById('docPasswordConfirm').value;
+      const hint = document.getElementById('docPassHint');
+      const input2 = document.getElementById('docPasswordConfirm');
+
+      if (!p2) {
+        hint.innerHTML = '<span>Enter matching password in both boxes.</span>';
+        hint.className = 'input-hint';
+        input2.classList.remove('is-valid', 'is-invalid');
+        return true;
+      }
+
+      if (p1 === p2) {
+        hint.innerHTML = '<span>✓ Passwords match successfully</span>';
+        hint.className = 'input-hint match';
+        input2.classList.remove('is-invalid');
+        input2.classList.add('is-valid');
+        return true;
+      } else {
+        hint.innerHTML = '<span>✕ Passwords do not match. Please re-enter.</span>';
+        hint.className = 'input-hint mismatch';
+        input2.classList.remove('is-valid');
+        input2.classList.add('is-invalid');
+        return false;
+      }
+    }
+
+    // Password comparison & validation for Health Worker Registration
+    function validateHWPasswordMatch() {
+      const p1 = document.getElementById('hwPassword').value;
+      const p2 = document.getElementById('hwPasswordConfirm').value;
+      const hint = document.getElementById('hwPassHint');
+      const input2 = document.getElementById('hwPasswordConfirm');
+
+      if (!p2) {
+        hint.innerHTML = '<span>Re-enter the exact same password in box 2 to verify.</span>';
+        hint.className = 'input-hint';
+        input2.classList.remove('is-valid', 'is-invalid');
+        return true;
+      }
+
+      if (p1 === p2) {
+        hint.innerHTML = '<span>✓ Passwords match successfully</span>';
+        hint.className = 'input-hint match';
+        input2.classList.remove('is-invalid');
+        input2.classList.add('is-valid');
+        return true;
+      } else {
+        hint.innerHTML = '<span>✕ Passwords do not match. Check and re-enter.</span>';
+        hint.className = 'input-hint mismatch';
+        input2.classList.remove('is-valid');
+        input2.classList.add('is-invalid');
+        return false;
+      }
+    }
+
+    // Navigation routing
+    async function navigateToRole(role) {
+      switch (role) {
+        case 'patient':
+          window.location.href = 'patient.html';
+          break;
+        case 'doctor':
+          window.location.href = 'doctor.html';
+          break;
+        case 'health-worker':
+          window.location.href = 'index5transoffline.html';
+          break;
+        default:
+          window.location.href = 'doctor.html';
+      }
+    }
+
+    function navigateToPatientPortal() {
+      window.location.href = 'patient.html';
+    }
+
+    // Form Submissions
+    async function handleSignIn(e) {
+      if (e) e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim() || defaultEmails[selectedRole];
+      const password = document.getElementById('loginPassword').value || '123456';
+
+      const btn = document.getElementById('btnSignIn');
+      if (btn) btn.disabled = true;
+
+      showAlert('Authenticating secure session...', 'success');
+      await Auth.login(email, password, selectedRole);
+      navigateToRole(selectedRole);
+    }
+
+    async function handleDoctorRegistration(e) {
+      if (e) e.preventDefault();
+      
+      const p1 = document.getElementById('docPassword').value;
+      const p2 = document.getElementById('docPasswordConfirm').value;
+      if (p1 !== p2) {
+        showAlert('Passwords do not match. Please verify and reset your confirmation box.', 'error');
+        return;
+      }
+
+      const docName = document.getElementById('docName').value.trim();
+      const docSpec = document.getElementById('docSpecialization').value.trim();
+      const docHospital = document.getElementById('docHospital').value.trim();
+      const docEmail = document.getElementById('docEmail').value.trim();
+      const docPhone = document.getElementById('docPhone').value.trim();
+
+      const btn = document.getElementById('btnDocRegister');
+      if (btn) btn.disabled = true;
+
+      // Store customized doctor profile locally and in auth
+      const doctorProfile = {
+        name: docName,
+        specialization: docSpec,
+        hospital: docHospital,
+        email: docEmail,
+        phone: docPhone,
+        role: 'doctor',
+        registeredAt: new Date().toISOString()
+      };
+      localStorage.setItem('setu_doctor_profile', JSON.stringify(doctorProfile));
+      localStorage.setItem('setu_user_name', docName);
+
+      showAlert(`Registration successful for ${docName}! Entering Doctor Desk...`, 'success');
+      await Auth.login(docEmail, p1, 'doctor');
+      setTimeout(() => {
+        window.location.href = 'doctor.html';
+      }, 700);
+    }
+
+    async function handleHWRegistration(e) {
+      if (e) e.preventDefault();
+
+      const p1 = document.getElementById('hwPassword').value;
+      const p2 = document.getElementById('hwPasswordConfirm').value;
+      if (p1 !== p2) {
+        showAlert('Passwords do not match. Please re-enter the password to compare correctly.', 'error');
+        return;
+      }
+
+      const hwPhone = document.getElementById('hwPhone').value.trim();
+      const hwLocation = document.getElementById('hwLocation').value.trim();
+      const hwEmail = document.getElementById('hwEmail').value.trim();
+
+      const btn = document.getElementById('btnHWRegister');
+      if (btn) btn.disabled = true;
+
+      const hwProfile = {
+        phone: hwPhone,
+        location: hwLocation,
+        email: hwEmail,
+        role: 'health-worker',
+        registeredAt: new Date().toISOString()
+      };
+      localStorage.setItem('setu_hw_profile', JSON.stringify(hwProfile));
+      localStorage.setItem('setu_hw_location', hwLocation);
+
+      showAlert(`Health Worker registered at ${hwLocation}! Entering field portal...`, 'success');
+      await Auth.login(hwEmail, p1, 'health-worker');
+      setTimeout(() => {
+        window.location.href = 'index5transoffline.html';
+      }, 700);
+    }
+
+    function quickLoginCurrentRole() {
+      const email = defaultEmails[selectedRole] || 'user@setuhealth.org';
+      showAlert(`Signing in with verified public health token for ${roleDisplayNames[selectedRole]}...`, 'success');
+      Auth.login(email, '123456', selectedRole).then(() => {
+        navigateToRole(selectedRole);
+      });
+    }
+
+    // Patient Referral Slip & Checkup Date Lookup
+    function setReferralDatePreset(type) {
+      const dateInput = document.getElementById('referralDateInput');
+      const d = new Date();
+      if (type === 'yesterday') {
+        d.setDate(d.getDate() - 1);
+      } else if (type === 'sample') {
+        d.setDate(d.getDate() - 5);
+      }
+      dateInput.value = d.toISOString().split('T')[0];
+      checkReferralByDate();
+    }
+
+    function checkReferralByDate(e) {
+      if (e) e.preventDefault();
+      const dateVal = document.getElementById('referralDateInput').value;
+      if (!dateVal) {
+        showAlert('Please select a date to find your referral slip.', 'error');
+        return;
+      }
+
+      const parsedDate = new Date(dateVal);
+      const options = { day: '2-digit', month: 'short', year: 'numeric' };
+      const formattedReferralDate = parsedDate.toLocaleDateString('en-GB', options);
+
+      // Compute Next Checkup Date (7 days after the entered date)
+      const nextDate = new Date(parsedDate);
+      nextDate.setDate(nextDate.getDate() + 7);
+      const formattedNextDate = nextDate.toLocaleDateString('en-GB', options);
+
+      // Update Result Slip
+      document.getElementById('slipDateFormatted').innerText = formattedReferralDate;
+      document.getElementById('slipNextCheckupDate').innerText = `${formattedNextDate} (Scheduled Follow-up)`;
+      document.getElementById('referralResultSlip').style.display = 'block';
+
+      showAlert(`Referral slip found for date ${formattedReferralDate}. Next checkup is on ${formattedNextDate}.`, 'success');
+    }
+
+    function showAlert(msg, type = 'success') {
+      if (alertBanner && alertBannerText) {
+        alertBannerText.innerText = msg;
+        alertBanner.className = `alert-banner ${type}`;
+        alertBanner.style.display = 'flex';
+      }
+    }
+
+    function hideAlert() {
+      if (alertBanner) alertBanner.style.display = 'none';
+    }
+
+    function openForgotPrompt(e) {
+      if (e) e.preventDefault();
+      const input = prompt('Enter your registered Email / Phone Number for password reset OTP:');
+      if (input) {
+        alert(`A 6-digit verification PIN has been dispatched to ${input}. Please check your phone / SMS.`);
+      }
+    }
+  </script>
+
+</body>
+</html>
