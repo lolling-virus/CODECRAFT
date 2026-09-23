@@ -956,7 +956,7 @@
                   <rect x="3" y="5" width="18" height="14" rx="2"></rect>
                   <path d="M3 7l9 6 9-6"></path>
                 </svg>
-                <input type="text" id="loginEmail" class="form-input" placeholder="Enter email or mobile phone number" value="asha.sunita@setuhealth.org" required />
+                <input type="email" id="loginEmail" class="form-input" placeholder="Enter your email" required />
               </div>
             </div>
 
@@ -970,7 +970,7 @@
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
-                <input type="password" id="loginPassword" class="form-input" value="123456" placeholder="Enter your secret password" required />
+                <input type="password" id="loginPassword" class="form-input" placeholder="Enter your secret password" required />
               </div>
             </div>
 
@@ -1181,6 +1181,22 @@
 
         <!-- ================= SECTION 2: PATIENT PORTAL & REFERRAL LOOKUP ================= -->
         <div id="patientSection" style="display: none;">
+          <div class="referral-search-card" style="margin-bottom:16px;">
+            <div style="font-size:14.5px; font-weight:600; color:var(--text-heading); margin-bottom:6px;">Patient sign in</div>
+            <p style="font-size:12px; color:var(--text-body); margin-bottom:12px;">Sign in with your existing patient account to open your linked care portal.</p>
+            <form onsubmit="handlePatientLogin(event)">
+              <div class="form-group">
+                <label class="form-label" for="patientLoginEmail">Email</label>
+                <input type="email" id="patientLoginEmail" class="form-input" placeholder="Enter your email" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="patientLoginPassword">Password</label>
+                <input type="password" id="patientLoginPassword" class="form-input" placeholder="Enter your password" required />
+              </div>
+              <button type="submit" class="btn-primary" style="padding:10px; font-size:13.5px;">Sign in to Patient Care Portal</button>
+            </form>
+            <p style="font-size:11px; color:var(--text-body); margin:12px 0 0;">Patient registration is not available here yet. A health facility must first securely link an existing patient record to the account.</p>
+          </div>
           
           <!-- Referral Slip & Next Checkup Date Lookup Box -->
           <div class="referral-search-card">
@@ -1297,7 +1313,7 @@
             </button>
 
             <!-- Prominent Emergency SOS Route -->
-            <a href="patient.html" class="btn-emergency">
+            <a href="#" onclick="navigateToPatientPortal(); return false;" class="btn-emergency">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon>
                 <line x1="12" y1="8" x2="12" y2="12"></line>
@@ -1337,13 +1353,6 @@
     // State management
     let selectedRole = 'health-worker';
     let currentAuthMode = 'signin'; // 'signin' or 'register'
-
-    const defaultEmails = {
-      'patient': 'patient@setuhealth.org',
-      'doctor': 'doctor.gupta@setuhealth.org',
-      'health-worker': 'asha.sunita@setuhealth.org',
-      'other': 'admin@setuhealth.org'
-    };
 
     const roleDisplayNames = {
       'patient': 'Patient',
@@ -1413,10 +1422,6 @@
           tabRegisterLabel.innerText = 'New Worker Registration';
         } else {
           tabRegisterLabel.innerText = 'New Registration';
-        }
-
-        if (loginEmailInput && (!loginEmailInput.value || Object.values(defaultEmails).includes(loginEmailInput.value))) {
-          loginEmailInput.value = defaultEmails[role] || 'user@setuhealth.org';
         }
 
         // Apply current auth mode (sign in or register)
@@ -1523,15 +1528,16 @@
           window.location.href = 'doctor.html';
           return true;
         case 'asha_anm':
-          window.location.href = 'index5transoffline.html';
+          window.location.href = '../index5.html';
           return true;
         default:
           return false;
       }
     }
 
-    function navigateToPatientPortal() {
-      window.location.href = 'patient.html';
+    async function navigateToPatientPortal() {
+      const authContext = await Auth.requireRole('patient');
+      if (authContext) window.location.href = 'patient.html';
     }
 
     // Form Submissions
@@ -1574,32 +1580,28 @@
       }
 
       const docName = document.getElementById('docName').value.trim();
-      const docSpec = document.getElementById('docSpecialization').value.trim();
-      const docHospital = document.getElementById('docHospital').value.trim();
       const docEmail = document.getElementById('docEmail').value.trim();
-      const docPhone = document.getElementById('docPhone').value.trim();
 
       const btn = document.getElementById('btnDocRegister');
       if (btn) btn.disabled = true;
 
-      // Store customized doctor profile locally and in auth
-      const doctorProfile = {
-        name: docName,
-        specialization: docSpec,
-        hospital: docHospital,
-        email: docEmail,
-        phone: docPhone,
-        role: 'doctor',
-        registeredAt: new Date().toISOString()
-      };
-      localStorage.setItem('setu_doctor_profile', JSON.stringify(doctorProfile));
-      localStorage.setItem('setu_user_name', docName);
-
-      showAlert(`Registration successful for ${docName}! Entering Doctor Desk...`, 'success');
-      await Auth.login(docEmail, p1, 'doctor');
-      setTimeout(() => {
+      try {
+        const result = await Auth.signup(docEmail, p1, { full_name: docName, role: 'doctor' });
+        if (result.error) {
+          showAlert(`Registration could not be completed: ${result.error.message}`, 'error');
+          return;
+        }
+        if (result.confirmationRequired) {
+          showAlert('Check your email to confirm the account, then sign in.', 'success');
+          return;
+        }
         window.location.href = 'doctor.html';
-      }, 700);
+      } catch (error) {
+        console.error('[Auth] Doctor registration failed:', error);
+        showAlert('Registration could not be completed. Please try again.', 'error');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
     }
 
     async function handleHWRegistration(e) {
@@ -1612,32 +1614,29 @@
         return;
       }
 
-      const hwPhone = document.getElementById('hwPhone').value.trim();
       const hwLocation = document.getElementById('hwLocation').value.trim();
-      const hwEmail = document.getElementById('hwEmail').value.trim();
-
-      const btn = document.getElementById('btnHWRegister');
-      if (btn) btn.disabled = true;
-
-      const hwProfile = {
-        phone: hwPhone,
-        location: hwLocation,
-        email: hwEmail,
-        role: 'health-worker',
-        registeredAt: new Date().toISOString()
-      };
-      localStorage.setItem('setu_hw_profile', JSON.stringify(hwProfile));
-      localStorage.setItem('setu_hw_location', hwLocation);
-
-      showAlert(`Health Worker registered at ${hwLocation}! Entering field portal...`, 'success');
-      await Auth.login(hwEmail, p1, 'health-worker');
-      setTimeout(() => {
-        window.location.href = 'index5transoffline.html';
-      }, 700);
+      showAlert(`Health Worker self-registration is unavailable for ${hwLocation}. Please use a facility-provisioned asha_anm account to sign in.`, 'error');
     }
 
     function quickLoginCurrentRole() {
       handleSignIn();
+    }
+
+    async function handlePatientLogin(e) {
+      if (e) e.preventDefault();
+      const email = document.getElementById('patientLoginEmail').value.trim();
+      const password = document.getElementById('patientLoginPassword').value;
+      const user = await Auth.login(email, password);
+      if (!user) {
+        showAlert('Login failed. Please check your email and password.', 'error');
+        return;
+      }
+      const profile = Auth.lastProfile || await Auth.getProfile();
+      if (!profile || profile.role !== 'patient' || !profile.patient_id) {
+        showAlert('This account is not linked to a patient record.', 'error');
+        return;
+      }
+      window.location.href = 'patient.html';
     }
 
     // Patient Referral Slip & Checkup Date Lookup

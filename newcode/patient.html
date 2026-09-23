@@ -7,8 +7,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabaseClient.js"></script>
-  <script src="js/auth.js"></script>
+  <script src="../js/supabaseClient.js"></script>
+  <script src="../js/auth.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -337,7 +337,7 @@
                 <i data-lucide="mic" class="w-3.5 h-3.5 text-red-600"></i> <span id="btnSpeakName">Speak</span>
               </button>
             </div>
-            <input type="text" id="emgPatientName" placeholder="Enter patient name (e.g. Sunita Devi)" class="w-full px-3.5 py-2.5 border-2 border-red-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-red-500 outline-none bg-white">
+            <input type="text" id="emgPatientName" placeholder="Enter your full name" class="w-full px-3.5 py-2.5 border-2 border-red-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-red-500 outline-none bg-white">
           </div>
           <div>
             <label class="block text-xs font-extrabold text-red-950 mb-1" id="lblEmgType">Type of Emergency *</label>
@@ -353,7 +353,7 @@
 
         <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-red-200">
           <span class="text-xs text-red-900 font-bold flex items-center gap-1.5" id="txtDirect108Tag">
-            <i data-lucide="zap" class="w-4 h-4 text-red-600"></i> Direct alert to 108 Emergency Ambulance &amp; Rampur Medical Officer
+            <i data-lucide="zap" class="w-4 h-4 text-red-600"></i> Emergency submission requires a linked patient record
           </span>
           <button onclick="submitEmergencyReport()" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-extrabold text-sm px-8 py-3.5 rounded-xl transition shadow-xl pulse-ring flex items-center justify-center gap-2">
             <i data-lucide="siren" class="w-5 h-5 animate-bounce"></i>
@@ -428,25 +428,26 @@
         <h3 class="text-lg font-bold text-gray-900 mt-1 mb-4" id="resTitle">OPD Token &amp; Live Queue Status</h3>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 text-sm">
           <div class="bg-blue-50 border border-blue-200 rounded-xl p-3.5">
-            <div class="text-[10px] uppercase text-blue-700 font-bold">OPD Token</div>
+            <div class="text-[10px] uppercase text-blue-700 font-bold" id="resultTokenLabel">Appointment ID</div>
             <div class="text-2xl font-extrabold text-blue-950" id="resultToken">#14</div>
           </div>
           <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5">
-            <div class="text-[10px] uppercase text-emerald-700 font-bold">Estimated Wait</div>
-            <div class="text-lg font-extrabold text-emerald-950" id="resultWait">~12 min</div>
+            <div class="text-[10px] uppercase text-emerald-700 font-bold">Scheduled time</div>
+            <div class="text-sm font-extrabold text-emerald-950" id="resultWait">—</div>
           </div>
           <div class="bg-teal-50 border border-teal-200 rounded-xl p-3.5 sm:col-span-2">
             <div class="text-[10px] uppercase text-teal-700 font-bold">Assigned Facility</div>
-            <div class="text-sm font-bold text-teal-950">Rampur PHC · Room #2</div>
-            <div class="text-[11px] text-teal-700 mt-0.5">Medical Officer: Dr. S. K. Gupta</div>
+            <div class="text-sm font-bold text-teal-950" id="resultFacility">Appointment request</div>
+            <div class="text-[11px] text-teal-700 mt-0.5" id="resultProvider">Doctor assignment pending</div>
           </div>
         </div>
         <div class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-center justify-between">
-          <span class="font-medium">✓ Doctor has received your request in live consultation queue.</span>
-          <button onclick="speakText('Your visit is booked. OPD Token number ' + document.getElementById('resultToken').innerText + '. Please wait for your turn.')" class="font-bold text-emerald-800 underline flex items-center gap-1 shrink-0 ml-2">
+          <span class="font-medium" id="resultMessage">✓ Doctor has received your request in live consultation queue.</span>
+          <button onclick="speakText('Your appointment request details are shown. Scheduling confirmation may still be pending.')" class="font-bold text-emerald-800 underline flex items-center gap-1 shrink-0 ml-2">
             <i data-lucide="volume-2" class="w-4 h-4"></i> Listen Status
           </button>
         </div>
+        <div id="appointmentList" class="mt-4 space-y-2" aria-live="polite"></div>
       </div>
 
     </div>
@@ -465,7 +466,7 @@
       <div class="p-6 text-sm text-gray-700 space-y-4">
         <div class="p-4 bg-red-50 border-2 border-red-200 rounded-xl">
           <div class="text-xs font-extrabold text-red-900 uppercase tracking-wider">Emergency Dispatch Confirmation</div>
-          <div class="text-xl font-extrabold text-red-950 mt-1" id="confPatientName">Sunita Devi</div>
+          <div class="text-xl font-extrabold text-red-950 mt-1" id="confPatientName">—</div>
           <div class="text-xs text-red-800 font-bold mt-0.5" id="confType">Severe Chest Pain · Rampur</div>
         </div>
 
@@ -514,13 +515,13 @@
         topNoticeBanner: "Stationed Medical Officer: Dr. S. K. Gupta · Rampur PHC Sector 4 · 100% Free Public Healthcare",
         btnHearText: "Hear Instructions",
         emgHeading: "Report An Emergency",
-        emgSubheading: "Tap one emergency box below and enter your name to notify 108 Ambulance & Doctor immediately.",
+        emgSubheading: "Emergency reporting is a prototype only. This portal does not send an ambulance or doctor alert.",
         btnListenEmg: "Listen Emergency Help",
         lblEmgName: "Your Full Name *",
         lblEmgType: "Type of Emergency *",
         lblEmgVillage: "Village / Location",
         btnSpeakName: "Speak",
-        txtDirect108Tag: "⚡ Direct alert to 108 Emergency Ambulance & Rampur Medical Officer",
+        txtDirect108Tag: "⚡ Prototype only — no emergency alert or ambulance dispatch is sent",
         btnReportEmgSubmit: "REPORT EMERGENCY NOW",
         step1Label: "Step 2 · OPD Consultation",
         problemHeading: "What is bothering you today?",
@@ -529,7 +530,7 @@
         lblProblemNotes: "Describe Problem in simple words",
         txtFreeConsultTag: "100% Free OPD Consultation under NHM",
         btnBookOpd: "Get OPD Token",
-        tabLabelEmergency: "🚨 Report Emergency (Fast 108 Dispatch)",
+        tabLabelEmergency: "🚨 Emergency Reporting (Prototype)",
         tabLabelOpd: "📋 Regular OPD Consult & Token",
         optChestPain: "Chest Pain",
         optBreath: "Cannot Breathe",
@@ -560,13 +561,13 @@
         topNoticeBanner: "ड्यूटी पर तैनात डॉक्टर: डॉ. एस. के. गुप्ता · रामपुर प्राथमिक स्वास्थ्य केंद्र · 100% मुफ्त इलाज",
         btnHearText: "निर्देश सुनें",
         emgHeading: "आपातकालीन रिपोर्ट करें",
-        emgSubheading: "अपना नाम दर्ज करें और 108 एम्बुलेंस तथा डॉक्टर को तुरंत अलर्ट भेजने के लिए आपात स्थिति चुनें।",
+        emgSubheading: "आपातकाल रिपोर्टिंग केवल प्रोटोटाइप है। यह पोर्टल एम्बुलेंस या डॉक्टर को अलर्ट नहीं भेजता।",
         btnListenEmg: "आपातकालीन सहायता सुनें",
         lblEmgName: "आपका पूरा नाम *",
         lblEmgType: "आपात स्थिति का प्रकार *",
         lblEmgVillage: "गांव / पता",
         btnSpeakName: "बोलें",
-        txtDirect108Tag: "⚡ सीधे 108 एम्बुलेंस और रामपुर डॉक्टर को संदेश भेजता है",
+        txtDirect108Tag: "⚡ केवल प्रोटोटाइप — कोई आपातकालीन अलर्ट या एम्बुलेंस नहीं भेजी जाती",
         btnReportEmgSubmit: "आपातकाल दर्ज करें",
         step1Label: "चरण 2 · सामान्य ओपीडी जांच",
         problemHeading: "आज आपको क्या तकलीफ है?",
@@ -575,7 +576,7 @@
         lblProblemNotes: "समस्या का विवरण दें",
         txtFreeConsultTag: "एनएचएम के तहत 100% मुफ्त इलाज",
         btnBookOpd: "ओपीडी टोकन प्राप्त करें",
-        tabLabelEmergency: "🚨 आपातकाल रिपोर्ट करें (108 एम्बुलेंस)",
+        tabLabelEmergency: "🚨 आपातकाल रिपोर्टिंग (प्रोटोटाइप)",
         tabLabelOpd: "📋 सामान्य ओपीडी पर्ची व टोकन",
         optChestPain: "छाती में दर्द",
         optBreath: "सांस लेने में तकलीफ",
@@ -606,13 +607,13 @@
         topNoticeBanner: "দায়িত্বপ্রাপ্ত চিকিৎসক: ডঃ এস কে গুপ্ত · রামপুর পিএইচসি · ১০০% বিনামূল্যে সেবা",
         btnHearText: "নির্দেশনা শুনুন",
         emgHeading: "জরুরী পরিস্থিতি রিপোর্ট করুন",
-        emgSubheading: "আপনার নাম লিখুন এবং জরুরী অ্যাম্বুলেন্স ও ডাক্তার অ্যালার্ট পাঠাতে ধরণ নির্বাচন করুন।",
+        emgSubheading: "জরুরী রিপোর্টিং শুধুমাত্র প্রোটোটাইপ। এই পোর্টাল অ্যাম্বুলেন্স বা ডাক্তারকে অ্যালার্ট পাঠায় না।",
         btnListenEmg: "জরুরী সাহায্য শুনুন",
         lblEmgName: "আপনার পুরো নাম *",
         lblEmgType: "জরুরী ধরণ *",
         lblEmgVillage: "গ্রাম / ঠিকানা",
         btnSpeakName: "বলুন",
-        txtDirect108Tag: "⚡ সরাসরি ১০৮ অ্যাম্বুলেন্স ও রামপুর ডাক্তারকে অ্যালার্ট পাঠায়",
+        txtDirect108Tag: "⚡ শুধুমাত্র প্রোটোটাইপ — কোনও জরুরী অ্যালার্ট বা অ্যাম্বুলেন্স পাঠানো হয় না",
         btnReportEmgSubmit: "জরুরী রিপোর্ট জমা দিন",
         step1Label: "ধাপ ২ · ওপিডি পরামর্শ",
         problemHeading: "আজ আপনার কি সমস্যা?",
@@ -621,7 +622,7 @@
         lblProblemNotes: "সমস্যার বিবরণ",
         txtFreeConsultTag: "১০০% বিনামূল্যে চিকিৎসা",
         btnBookOpd: "ওপিডি টোকেন নিন",
-        tabLabelEmergency: "🚨 জরুরী রিপোর্ট করুন (১০৮ অ্যাম্বুলেন্স)",
+        tabLabelEmergency: "🚨 জরুরী রিপোর্টিং (প্রোটোটাইপ)",
         tabLabelOpd: "📋 সাধারণ ওপিডি টোকেন",
         optChestPain: "বুকে ব্যথা",
         optBreath: "শ্বাসকষ্ট",
@@ -652,13 +653,13 @@
         topNoticeBanner: "कर्तव्यदक्ष डॉक्टर: डॉ. एस. के. गुप्ता · रामपूर पीएचसी · १००% मोफत उपचार",
         btnHearText: "सूचना ऐका",
         emgHeading: "आणीबाणीची नोंद करा",
-        emgSubheading: "नाव टाका आणि १०८ ॲम्ब्युलन्स व डॉक्टरांना अलर्ट करण्यासाठी प्रकार निवडा.",
+        emgSubheading: "आणीबाणी रिपोर्टिंग फक्त प्रोटोटाइप आहे. हे पोर्टल ॲम्ब्युलन्स किंवा डॉक्टरांना अलर्ट पाठवत नाही.",
         btnListenEmg: "आणीबाणी मदत ऐका",
         lblEmgName: "तुमचे पूर्ण नाव *",
         lblEmgType: "आणीबाणीचा प्रकार *",
         lblEmgVillage: "गावाचे नाव",
         btnSpeakName: "बोला",
-        txtDirect108Tag: "⚡ थेट १०८ ॲम्ब्युलन्स आणि डॉक्टरांना अलर्ट पाठवते",
+        txtDirect108Tag: "⚡ फक्त प्रोटोटाइप — कोणताही आणीबाणी अलर्ट किंवा ॲम्ब्युलन्स पाठवली जात नाही",
         btnReportEmgSubmit: "आणीबाणी नोंदवा",
         step1Label: "टप्पा २ · ओपीडी तपासणी",
         problemHeading: "आज तुम्हाला काय त्रास होतोय?",
@@ -667,7 +668,7 @@
         lblProblemNotes: "त्रासाची माहिती",
         txtFreeConsultTag: "१००% मोफत ओपीडी तपासणी",
         btnBookOpd: "ओपीडी टोकन मिळवा",
-        tabLabelEmergency: "🚨 आणीबाणी नोंदवा (१०८ ॲम्ब्युलन्स)",
+        tabLabelEmergency: "🚨 आणीबाणी रिपोर्टिंग (प्रोटोटाइप)",
         tabLabelOpd: "📋 सामान्य ओपीडी टोकन",
         optChestPain: "छातीत दुखणे",
         optBreath: "दमा / श्वास कोंडणे",
@@ -794,118 +795,159 @@
       if (err) err.classList.add('hidden');
     }
 
-    function getEmergenciesList() {
-      try { return JSON.parse(localStorage.getItem('setu_emergencies') || '[]'); }
-      catch (e) { return []; }
+    let patientProfile = null;
+    let currentPatientId = null;
+    let currentPatient = null;
+    let currentAppointments = [];
+    let patientPortalReady = false;
+
+    function showPortalError(message) {
+      const card = document.getElementById('resultCard');
+      document.getElementById('resHeaderTag').innerText = 'Patient portal unavailable';
+      document.getElementById('resTitle').innerText = 'Request not submitted';
+      document.getElementById('resultToken').innerText = '—';
+      document.getElementById('resultWait').innerText = 'Not submitted';
+      document.getElementById('resultMessage').innerText = message;
+      document.getElementById('appointmentList').replaceChildren();
+      card.classList.remove('hidden');
+      card.scrollIntoView({ behavior: 'smooth' });
     }
 
-    function saveEmergenciesList(list) {
-      localStorage.setItem('setu_emergencies', JSON.stringify(list));
+    function formatAppointmentTime(value) {
+      const time = new Date(value);
+      return Number.isNaN(time.getTime()) ? 'Scheduled time unavailable' : time.toLocaleString();
     }
 
-    function getPatientQueueList() {
-      try { return JSON.parse(localStorage.getItem('setu_patient_queue') || '[]'); }
-      catch (e) { return []; }
+    function renderAppointments() {
+      const list = document.getElementById('appointmentList');
+      list.replaceChildren();
+
+      currentAppointments.forEach(appointment => {
+        const item = document.createElement('div');
+        item.className = 'border border-gray-200 rounded-xl p-3 text-xs bg-gray-50';
+
+        const title = document.createElement('div');
+        title.className = 'font-bold text-gray-900';
+        title.textContent = `${appointment.consultation_type} · ${appointment.status}`;
+
+        const detail = document.createElement('div');
+        detail.className = 'text-gray-600 mt-1';
+        detail.textContent = `${formatAppointmentTime(appointment.scheduled_time)}${appointment.doctor_name ? ` · ${appointment.doctor_name}` : ''}`;
+
+        item.append(title, detail);
+        list.appendChild(item);
+      });
     }
 
-    function savePatientQueueList(list) {
-      localStorage.setItem('setu_patient_queue', JSON.stringify(list));
+    function showAppointment(appointment, message) {
+      const card = document.getElementById('resultCard');
+      document.getElementById('resHeaderTag').innerText = 'Your appointment request';
+      document.getElementById('resTitle').innerText = 'Appointment status';
+      document.getElementById('resultTokenLabel').innerText = 'Appointment ID';
+      document.getElementById('resultToken').innerText = appointment.id;
+      document.getElementById('resultWait').innerText = formatAppointmentTime(appointment.scheduled_time);
+      document.getElementById('resultFacility').innerText = appointment.consultation_type;
+      document.getElementById('resultProvider').innerText = appointment.doctor_name || 'Doctor assignment pending';
+      document.getElementById('resultMessage').innerText = message || `Status: ${appointment.status}.`;
+      card.classList.remove('hidden');
+      renderAppointments();
+    }
+
+    function requirePatientContext() {
+      if (patientPortalReady && currentPatientId) return true;
+      showPortalError('Your account is not linked to a patient record. No clinical request was created.');
+      return false;
+    }
+
+    function populatePatientInfo(patient) {
+      document.getElementById('sidebarPatientName').innerText = patient.name || patientProfile.full_name || 'Patient';
+      document.getElementById('sidePatientTag').innerText = [patient.category, patient.risk_level].filter(Boolean).join(' · ') || 'Patient record linked';
+      document.getElementById('emgPatientName').value = patient.name || '';
+      document.getElementById('emgVillage').value = patient.village || '';
+      document.getElementById('patientPhone').value = patient.contact || '';
+    }
+
+    async function loadPatientRecord() {
+      const { data, error } = await supabaseClient
+        .from('patients')
+        .select('id, name, age, gender, village, contact, abha_id, category, risk_level')
+        .eq('id', currentPatientId)
+        .single();
+
+      if (error || !data) {
+        console.error('[Patient Portal] Patient record load failed:', error?.message);
+        patientPortalReady = false;
+        showPortalError('Your linked patient record could not be loaded. No clinical request can be submitted.');
+        return false;
+      }
+
+      currentPatient = data;
+      populatePatientInfo(data);
+      return true;
+    }
+
+    async function loadAppointments() {
+      const { data, error } = await supabaseClient
+        .from('appointments')
+        .select('id, patient_id, consultation_type, status, scheduled_time, doctor_name, doctor_notes, prescription_json, created_at')
+        .eq('patient_id', currentPatientId)
+        .order('scheduled_time', { ascending: true });
+
+      if (error) {
+        console.error('[Patient Portal] Appointment load failed:', error.message);
+        showPortalError('Appointments could not be loaded. Please try again later.');
+        return false;
+      }
+
+      currentAppointments = data || [];
+      if (currentAppointments.length) {
+        showAppointment(currentAppointments[0]);
+      }
+      return true;
     }
 
     function submitEmergencyReport() {
-      const name = document.getElementById('emgPatientName').value.trim();
-      const type = document.getElementById('emgTypeSelected').value.trim();
-      const village = document.getElementById('emgVillage').value.trim() || 'Rampur';
       const err = document.getElementById('emgError');
-
-      if (!name || !type) {
-        if (err) err.classList.remove('hidden');
-        speakText('Please enter your name and select an emergency type.');
-        return;
+      if (err) {
+        err.innerText = '⚠️ Emergency reporting is a prototype in this portal. No emergency alert or ambulance dispatch was sent.';
+        err.classList.remove('hidden');
       }
-      if (err) err.classList.add('hidden');
-
-      const emgId = 'EMG-' + Math.floor(1000 + Math.random() * 9000);
-      const newEmg = {
-        id: emgId,
-        name: name,
-        emergencyType: type,
-        village: village,
-        phone: '9843' + Math.floor(100000 + Math.random() * 900000),
-        status: 'CRITICAL · 108 Dispatched',
-        time: 'Just now',
-        notes: 'Emergency reported via Patient Portal. Immediate medical officer alert.'
-      };
-
-      const emgList = getEmergenciesList();
-      emgList.unshift(newEmg);
-      saveEmergenciesList(emgList);
-
-      // Also register in OPD Queue for doctor consult
-      const queueList = getPatientQueueList();
-      const tokenNum = '#' + (queueList.length + 14);
-      queueList.unshift({
-        id: 'VIS-' + Date.now(),
-        name: name,
-        village: village,
-        problem: '🚨 EMERGENCY: ' + type,
-        notes: 'Reported directly on Patient Portal. 108 Alert sent.',
-        emergency: true,
-        token: tokenNum,
-        status: 'EMERGENCY',
-        phone: newEmg.phone,
-        createdAt: new Date().toISOString()
-      });
-      savePatientQueueList(queueList);
-
-      // Update Confirmation Modal
-      document.getElementById('confPatientName').innerText = name;
-      document.getElementById('confType').innerText = type + ' · ' + village;
-
-      openModal('modalEmergencyConfirmed');
-      speakText('108 Emergency ambulance dispatched for ' + name + '. Medical officer at Rampur Primary Health Centre has been notified.');
     }
 
-    function submitPatientProblem() {
-      const name = document.getElementById('emgPatientName').value.trim() || 'Sunita Devi';
-      const phone = document.getElementById('patientPhone').value.trim();
-      const notes = document.getElementById('problemNotes').value.trim();
+    async function submitPatientProblem() {
+      if (!requirePatientContext()) return;
 
-      const queueList = getPatientQueueList();
-      const tokenNum = 'Token #' + (queueList.length + 15);
-      const newVisit = {
-        id: 'VIS-' + Date.now(),
-        name: name,
-        village: 'Rampur',
-        problem: selectedProblemStr || 'Fever',
-        notes: notes || 'Standard OPD consultation request.',
-        emergency: false,
-        token: tokenNum,
-        status: 'Waiting',
-        phone: phone || '9876543210',
-        createdAt: new Date().toISOString()
-      };
+      // Prototype default: request one hour from submission; this is not a confirmed slot.
+      const scheduledTime = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+      const { data, error } = await supabaseClient
+        .from('appointments')
+        .insert({
+          patient_id: currentPatientId,
+          consultation_type: selectedProblemStr,
+          status: 'requested',
+          scheduled_time: scheduledTime
+        })
+        .select('id, patient_id, consultation_type, status, scheduled_time, doctor_name, doctor_notes, prescription_json, created_at')
+        .single();
 
-      queueList.push(newVisit);
-      savePatientQueueList(queueList);
+      if (error || !data) {
+        console.error('[Patient Portal] Appointment request failed:', error?.message);
+        showPortalError('Your appointment request could not be submitted. Please try again.');
+        return;
+      }
 
-      document.getElementById('resultToken').innerText = tokenNum;
-      document.getElementById('resultCard').classList.remove('hidden');
-      document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
-
-      speakText('OPD Visit token generated. Your token is ' + tokenNum + '. Please wait at Rampur Primary Health Centre.');
+      await loadAppointments();
+      showAppointment(data, 'Your request was submitted. Scheduling confirmation is pending.');
+      speakText('Your appointment request was submitted. Scheduling confirmation is pending.');
     }
 
     function showMyToken() {
-      const queue = getPatientQueueList();
-      if (queue.length) {
-        const last = queue[queue.length - 1];
-        document.getElementById('resultToken').innerText = last.token || '#14';
-        document.getElementById('resultCard').classList.remove('hidden');
-        document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
-      } else {
-        alert('No active token found. Submit your problem to get a token.');
+      if (!requirePatientContext()) return;
+      if (!currentAppointments.length) {
+        showPortalError('No appointment requests are currently available for your patient record.');
+        return;
       }
+      showAppointment(currentAppointments[0]);
     }
 
     function openModal(id) {
@@ -924,8 +966,40 @@
       document.getElementById('emgPatientName').focus();
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       if (window.lucide) lucide.createIcons();
+
+      const user = await Auth.getCurrentUser();
+      if (!user) {
+        window.location.href = 'index2.html';
+        return;
+      }
+      const { data: profile, error } = await supabaseClient
+        .from('user_profiles')
+        .select('id, full_name, role, patient_id')
+        .eq('id', user.id)
+        .single();
+      if (error || !profile) {
+        console.error('[Patient Portal] Profile load failed:', error?.message);
+        showPortalError('Your profile could not be loaded. No clinical data was loaded.');
+        return;
+      }
+      if (profile.role !== 'patient') {
+        window.location.href = 'index2.html';
+        return;
+      }
+      patientProfile = profile;
+      document.getElementById('sidebarPatientName').innerText = profile.full_name || user.email;
+
+      if (!profile.patient_id) {
+        showPortalError('Your patient account is not linked to a patient record. Please contact the health facility.');
+        return;
+      }
+
+      currentPatientId = profile.patient_id;
+      if (!await loadPatientRecord()) return;
+      patientPortalReady = true;
+      await loadAppointments();
 
       // Card selection logic for regular OPD problem
       const problemCards = document.querySelectorAll('.problem-card');

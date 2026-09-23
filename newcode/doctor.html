@@ -7,8 +7,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabaseClient.js"></script>
-  <script src="js/auth.js"></script>
+  <script src="../js/supabaseClient.js"></script>
+  <script src="../js/auth.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -291,10 +291,10 @@
       </div>
       <div class="p-6 text-sm text-gray-700 space-y-3">
         <div class="p-3 bg-red-50 border border-red-200 rounded-xl font-bold text-red-900 text-xs">
-          🚨 Advanced Life Support (ALS) Ambulance Alert Triggered
+          108 dispatch integration is not configured in this portal.
         </div>
-        <p>District Trauma Control Center and 108 Emergency Dispatch have been notified. Doctor on duty: <strong>Dr. S. K. Gupta</strong> at Rampur PHC.</p>
-        <div class="text-xs text-gray-500">Dispatch ID: <span class="font-mono font-bold text-gray-800" id="sosRefCode">108-EMG-7482</span></div>
+        <p>Use the approved emergency-dispatch workflow. This portal does not send an ambulance request.</p>
+        <div class="text-xs text-gray-500">Reference: <span class="font-mono font-bold text-gray-800" id="sosRefCode">Not dispatched</span></div>
       </div>
       <div class="p-4 bg-gray-50 flex justify-end">
         <button onclick="closeModal('modalEmergencySOS')" class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition">Acknowledge &amp; Close</button>
@@ -433,21 +433,15 @@
     function speakDoctorAlerts() {
       const emgs = getEmergencies();
       if (emgs.length) {
-        speakDoctorText('Warning: ' + emgs.length + ' active emergency patient alerts on the board. Primary case: ' + emgs[0].name + ', ' + emgs[0].emergencyType + '.');
+        speakDoctorText('Warning: ' + emgs.length + ' active emergency patient alerts on the board. Primary case: ' + emgs[0].name + ', ' + emgs[0].problem + '.');
       } else {
         speakDoctorText('No critical emergency alerts on board.');
       }
     }
 
-    const demoSeedVisits = [
-      { id: 'VIS-101', name: 'Ramesh Kumar', village: 'Rampur East', problem: 'High Fever & Chills', notes: 'Fever since 3 days, body ache', emergency: false, token: 'Token #12', status: 'Waiting', phone: '9482910293', createdAt: new Date().toISOString() },
-      { id: 'VIS-102', name: 'Kavita Bai', village: 'Rampur Central', problem: 'Pregnancy Checkup', notes: '6th Month ANC check, BP routine', emergency: false, token: 'Token #13', status: 'Waiting', phone: '9832104928', createdAt: new Date().toISOString() }
-    ];
-
-    const demoSeedEmergencies = [
-      { id: 'EMG-201', name: 'Sunita Devi', village: 'Rampur Sector 2', emergencyType: 'Severe Chest Pain', phone: '9843210982', status: 'CRITICAL · 108 Dispatched', time: '10 mins ago', notes: 'Sudden onset acute chest discomfort, sweating' },
-      { id: 'EMG-202', name: 'Raju Sharma', village: 'Baramati Outskirts', emergencyType: 'Cannot Breathe', phone: '9765432109', status: 'Pending Doctor Triage', time: '25 mins ago', notes: 'Asthma exacerbation, difficulty speaking' }
-    ];
+    let queueAppointments = [];
+    let emergencyAppointments = [];
+    let doctorProfile = null;
 
     function toggleMobileSidebar() {
       const sidebar = document.getElementById('doctorSidebar');
@@ -463,26 +457,47 @@
       if (backdrop) backdrop.classList.add('hidden');
     }
 
-    function getQueue() {
-      try {
-        const data = JSON.parse(localStorage.getItem('setu_patient_queue') || '[]');
-        return data.length ? data : demoSeedVisits;
-      } catch (e) { return demoSeedVisits; }
+    function getQueue() { return queueAppointments; }
+    function getEmergencies() { return emergencyAppointments; }
+
+    function appointmentToVisit(appointment) {
+      const patient = appointment.patients || {};
+      return {
+        id: appointment.id,
+        name: patient.full_name || 'Unnamed patient',
+        village: patient.village || '—',
+        problem: appointment.consultation_type || 'In-Person OPD',
+        notes: appointment.doctor_notes || '',
+        token: new Date(appointment.scheduled_time).toLocaleString(),
+        time: new Date(appointment.scheduled_time).toLocaleString(),
+        status: appointment.status || 'Scheduled',
+        phone: patient.phone || '',
+        appointment
+      };
     }
 
-    function saveQueue(list) {
-      localStorage.setItem('setu_patient_queue', JSON.stringify(list));
+    async function loadAppointments() {
+      const { data, error } = await supabaseClient
+        .from('appointments')
+        .select('id, patient_id, consultation_type, status, scheduled_time, doctor_name, doctor_notes, prescription_json, patients(full_name, phone, village)')
+        .order('scheduled_time', { ascending: true });
+
+      if (error) {
+        console.error('[Doctor Desk] Appointment load failed:', error.message);
+        queueAppointments = [];
+        emergencyAppointments = [];
+        return;
+      }
+
+      const visits = (data || []).map(appointmentToVisit);
+      queueAppointments = visits.filter(v => v.appointment.consultation_type !== 'Emergency');
+      emergencyAppointments = visits.filter(v => v.appointment.consultation_type === 'Emergency' && v.status !== 'Completed');
     }
 
-    function getEmergencies() {
-      try {
-        const data = JSON.parse(localStorage.getItem('setu_emergencies') || '[]');
-        return data.length ? data : demoSeedEmergencies;
-      } catch (e) { return demoSeedEmergencies; }
-    }
-
-    function saveEmergencies(list) {
-      localStorage.setItem('setu_emergencies', JSON.stringify(list));
+    function escapeHtml(value) {
+      const node = document.createElement('div');
+      node.textContent = String(value ?? '');
+      return node.innerHTML;
     }
 
     function renderQueue() {
@@ -498,11 +513,11 @@
       container.innerHTML = list.map(v => `
         <button type="button" onclick="openVisit('${v.id}')" class="visit-row w-full text-left p-3.5 rounded-xl border border-gray-200 hover:border-emerald-400 transition bg-white ${activeVisitId === v.id ? 'active' : ''}">
           <div class="flex items-center justify-between">
-            <span class="font-bold text-sm text-gray-900">${v.name}</span>
+            <span class="font-bold text-sm text-gray-900">${escapeHtml(v.name)}</span>
             <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full ${v.status === 'Seen' ? 'bg-emerald-100 text-emerald-800' : (v.status === 'Referred' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800')}">${v.status || 'Waiting'}</span>
           </div>
-          <div class="text-[11px] text-gray-600 mt-1 font-medium">${v.token || '#OPD'} · ${v.problem}</div>
-          <div class="text-[10px] text-gray-400 mt-0.5">${v.village || 'Rampur'} ${v.phone ? '· Tel: ' + v.phone : ''}</div>
+          <div class="text-[11px] text-gray-600 mt-1 font-medium">${escapeHtml(v.token)} · ${escapeHtml(v.problem)}</div>
+          <div class="text-[10px] text-gray-400 mt-0.5">${escapeHtml(v.village)} ${v.phone ? '· Tel: ' + escapeHtml(v.phone) : ''}</div>
         </button>
       `).join('');
     }
@@ -529,15 +544,15 @@
         <div class="bg-white border-2 border-red-300 rounded-xl p-3.5 shadow-sm flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between gap-2 mb-1.5">
-              <span class="font-extrabold text-sm text-red-950">${e.name}</span>
+              <span class="font-extrabold text-sm text-red-950">${escapeHtml(e.name)}</span>
               <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
                 EMERGENCY
               </span>
             </div>
-            <div class="text-xs font-bold text-red-800 mb-1">🚨 ${e.emergencyType || e.problem || 'Critical Incident'}</div>
-            <div class="text-[11px] text-gray-600">Location: <strong>${e.village || 'Rampur'}</strong> ${e.phone ? '· Tel: ' + e.phone : ''}</div>
-            <div class="text-[11px] text-gray-500 italic mt-1 bg-red-50 p-2 rounded-lg border border-red-100">"${e.notes || 'Emergency assistance requested.'}"</div>
+            <div class="text-xs font-bold text-red-800 mb-1">🚨 ${escapeHtml(e.problem || 'Emergency appointment')}</div>
+            <div class="text-[11px] text-gray-600">Location: <strong>${escapeHtml(e.village)}</strong> ${e.phone ? '· Tel: ' + escapeHtml(e.phone) : ''}</div>
+            <div class="text-[11px] text-gray-500 italic mt-1 bg-red-50 p-2 rounded-lg border border-red-100">"${escapeHtml(e.notes || 'No clinical note provided.')}"</div>
           </div>
           <div class="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between gap-2">
             <span class="text-[10px] text-gray-400 font-semibold">${e.time || 'Just now'}</span>
@@ -550,7 +565,7 @@
     }
 
     function openVisit(id) {
-      const visit = getQueue().find(v => v.id === id);
+      const visit = [...getQueue(), ...getEmergencies()].find(v => v.id === id);
       if (!visit) return;
       activeVisitId = id;
 
@@ -562,35 +577,49 @@
       document.getElementById('cToken').innerText = (visit.token || '#OPD') + ' · Village: ' + (visit.village || 'Rampur');
       document.getElementById('cProblem').innerText = visit.problem;
       document.getElementById('cNotes').innerText = visit.notes || 'No extra notes provided.';
+      document.getElementById('adviceText').value = visit.appointment.doctor_notes || '';
       document.getElementById('consultStatus').classList.add('hidden');
 
       renderQueue();
     }
 
-    function updateActiveStatus(status) {
-      const list = getQueue().map(v => v.id === activeVisitId ? { ...v, status } : v);
-      saveQueue(list);
-      renderQueue();
+    async function updateActiveStatus(status, extraFields = {}) {
+      const { error } = await supabaseClient
+        .from('appointments')
+        .update({ status, ...extraFields })
+        .eq('id', activeVisitId);
+      if (error) throw error;
+      await refreshData();
     }
 
-    function completeConsult() {
+    async function completeConsult() {
       if (!activeVisitId) return;
-      updateActiveStatus('Seen');
       const statusEl = document.getElementById('consultStatus');
-      statusEl.classList.remove('hidden');
-      statusEl.innerText = '✓ Consult completed. Prescribed EDL medicine: ' + document.getElementById('medicineSelect').value;
+      try {
+        const medicine = document.getElementById('medicineSelect').value;
+        await updateActiveStatus('Completed', {
+          doctor_name: doctorProfile.full_name || null,
+          doctor_notes: document.getElementById('adviceText').value.trim() || null,
+          prescription_json: { medicine }
+        });
+        statusEl.classList.remove('hidden');
+        statusEl.innerText = '✓ Consultation saved to the appointment.';
+      } catch (error) {
+        console.error('[Doctor Desk] Consultation save failed:', error.message);
+        statusEl.classList.remove('hidden');
+        statusEl.innerText = 'Unable to save the consultation.';
+      }
     }
 
     function referPatient() {
       if (!activeVisitId) return;
-      updateActiveStatus('Referred');
       const statusEl = document.getElementById('consultStatus');
       statusEl.classList.remove('hidden');
-      statusEl.innerText = '✓ ABDM FHIR Referral token created for Baramati CHC Specialist Care.';
+      statusEl.innerText = 'Referral was not saved: this portal has no selected destination facility or referral workflow.';
     }
 
     function takeEmergencyAction(id) {
-      document.getElementById('sosRefCode').innerText = '108-EMG-' + Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('sosRefCode').innerText = 'Not dispatched';
       openModal('modalEmergencySOS');
     }
 
@@ -605,11 +634,12 @@
     }
 
     function triggerEmergencySOS() {
-      document.getElementById('sosRefCode').innerText = '108-EMG-' + Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('sosRefCode').innerText = 'Not dispatched';
       openModal('modalEmergencySOS');
     }
 
-    function refreshData() {
+    async function refreshData() {
+      await loadAppointments();
       renderQueue();
       renderEmergencies();
     }
@@ -617,14 +647,22 @@
     document.addEventListener('DOMContentLoaded', async () => {
       if (window.lucide) lucide.createIcons();
       const user = await Auth.getCurrentUser();
-      if (user && user.email) {
-        const docNameEl = document.getElementById('docNameDisplay');
-        if (docNameEl && user.email.includes('gupta')) {
-          docNameEl.innerText = 'Dr. S. K. Gupta, M.D.';
-        }
+      if (!user) {
+        window.location.href = 'index2.html';
+        return;
       }
-      renderQueue();
-      renderEmergencies();
+      const { data: profile, error } = await supabaseClient
+        .from('user_profiles')
+        .select('id, full_name, role')
+        .eq('id', user.id)
+        .single();
+      if (error || !profile || profile.role !== 'doctor') {
+        window.location.href = 'index2.html';
+        return;
+      }
+      doctorProfile = profile;
+      document.getElementById('docNameDisplay').innerText = profile.full_name || user.email;
+      await refreshData();
     });
   </script>
 </body>
