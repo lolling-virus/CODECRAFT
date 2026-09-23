@@ -29,6 +29,44 @@ const Auth = {
         return data.user;
     },
 
+    async signup(email, password, profile) {
+        const { data, error } = await supabaseClient.auth.signUp({ email, password });
+
+        if (error || !data.user) {
+            console.error('[Auth] Signup failed:', error ? error.message : 'No user returned');
+            return { user: null, profile: null, error: error || new Error('No user returned from signup') };
+        }
+
+        const profilePayload = {
+            id: data.user.id,
+            full_name: profile.full_name,
+            role: profile.role
+        };
+        if (profile.role === 'patient') {
+            profilePayload.patient_id = profile.patient_id;
+        }
+
+        // No profile-creation trigger is documented in this repository. A session is
+        // required for the client-side insert to remain subject to RLS.
+        if (!data.session) {
+            return { user: data.user, profile: null, error: null, confirmationRequired: true };
+        }
+
+        const { data: createdProfile, error: profileError } = await supabaseClient
+            .from('user_profiles')
+            .insert(profilePayload)
+            .select('id, full_name, role, patient_id')
+            .single();
+
+        if (profileError) {
+            console.error('[Auth] Profile creation failed:', profileError.message);
+            return { user: data.user, profile: null, error: profileError };
+        }
+
+        this.lastProfile = createdProfile;
+        return { user: data.user, profile: createdProfile, error: null, confirmationRequired: false };
+    },
+
     getDashboardForRole(role) {
         return this.roleDashboards[role] || null;
     },
@@ -86,9 +124,9 @@ const Auth = {
     },
 
     async requireRole(expectedRole) {
-        const user = await this.requireAuth();
-
+        const user = await this.getCurrentUser();
         if (!user) {
+            window.location.href = 'index2.html';
             return null;
         }
 
@@ -96,8 +134,7 @@ const Auth = {
 
         if (!profile || profile.role !== expectedRole) {
             console.warn('[Auth] Access denied. Expected role:', expectedRole, 'Actual role:', profile ? profile.role : 'no profile');
-            const dashboard = profile && this.getDashboardForRole(profile.role);
-            window.location.href = dashboard || 'index2.html';
+            window.location.href = 'index2.html';
             return null;
         }
 
@@ -114,7 +151,7 @@ const Auth = {
 
         const { data, error } = await supabaseClient
             .from('user_profiles')
-            .select('id, full_name, role')
+            .select('id, full_name, role, patient_id')
             .eq('id', user.id)
             .single();
 
